@@ -94,7 +94,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 ---
 
-## Phase 7 — Distribution 🧊
+## Phase 7 — Distribution
 
 | # | Item | Status |
 |---|------|--------|
