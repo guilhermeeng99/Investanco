@@ -19,10 +19,12 @@ import 'package:investanco/features/profile/domain/repositories/settings_reposit
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:investanco/features/profile/presentation/theme_mode_mapper.dart';
 import 'package:investanco/features/quotes/data/datasources/awesomeapi_fx_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/bcb_sgs_index_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/brapi_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/tesouro_direto_data_source.dart';
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
+import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
@@ -94,6 +96,7 @@ void _initQuotes() {
   sl
     ..registerLazySingleton<Dio>(createDio)
     ..registerLazySingleton<FxDataSource>(() => AwesomeApiFxDataSource(sl()))
+    ..registerLazySingleton<IndexDataSource>(() => BcbSgsIndexDataSource(sl()))
     ..registerLazySingleton<QuoteRepository>(
       () => QuoteRepositoryImpl(sl(), [
         BrapiQuoteDataSource(sl()),
@@ -109,7 +112,7 @@ void _initDashboard() {
       () => SnapshotRepositoryImpl(sl()),
     )
     ..registerFactory<DashboardCubit>(
-      () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()),
+      () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()),
     );
 }
 

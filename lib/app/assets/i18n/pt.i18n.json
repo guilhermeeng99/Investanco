@@ -70,6 +70,15 @@
     "currency": "Moeda",
     "tesouroName": "Nome no Tesouro Direto",
     "tesouroNameHelp": "Exato como no site, ex.: Tesouro Selic 2027.",
+    "fixedIncomeBasis": "Indexador",
+    "fixedIncomeRate": "Taxa contratada (%)",
+    "fixedIncomeRateHelp": "CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.",
+    "basis": {
+      "cdi": "CDI",
+      "selic": "Selic",
+      "prefixed": "Prefixado",
+      "ipca": "IPCA+"
+    },
     "deleteConfirm": "Excluir este ativo?",
     "inUseError": "Não é possível excluir: há lançamentos vinculados.",
     "saveError": "Erro ao salvar.",

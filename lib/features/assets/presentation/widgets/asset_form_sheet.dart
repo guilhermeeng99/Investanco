@@ -7,6 +7,8 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
+import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
+import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Bottom sheet to add or edit an [Asset].
@@ -42,7 +44,9 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   late final TextEditingController _tickerController;
   late final TextEditingController _nameController;
   late final TextEditingController _tesouroNameController;
+  late final TextEditingController _fiRateController;
   late AssetKind _kind;
+  late FixedIncomeBasis _fiBasis;
   late Market _market;
   late Currency _currency;
   bool _saving = false;
@@ -56,6 +60,12 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _tesouroNameController = TextEditingController(
       text: existing?.metadata['tesouroName'] ?? '',
     );
+    _fiRateController = TextEditingController(
+      text: existing?.metadata[FixedIncomeMetadata.rateKey] ?? '',
+    );
+    final fiBasis =
+        existing == null ? null : FixedIncomeMetadata.read(existing)?.$1;
+    _fiBasis = fiBasis ?? FixedIncomeBasis.cdi;
     _kind = existing?.kind ?? AssetKind.stockBr;
     _market = existing?.market ?? Market.br;
     _currency = existing?.currency ?? Currency.brl;
@@ -66,6 +76,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _tickerController.dispose();
     _nameController.dispose();
     _tesouroNameController.dispose();
+    _fiRateController.dispose();
     super.dispose();
   }
 
@@ -132,6 +143,19 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     if (picked != null) setState(() => _currency = picked);
   }
 
+  Future<void> _pickFiBasis() async {
+    final picked = await showOptionPicker<FixedIncomeBasis>(
+      context,
+      title: t.assets.fixedIncomeBasis,
+      selected: _fiBasis,
+      items: [
+        for (final basis in FixedIncomeBasis.values)
+          OptionPickerItem(value: basis, label: fixedIncomeBasisLabel(basis)),
+      ],
+    );
+    if (picked != null) setState(() => _fiBasis = picked);
+  }
+
   (Market, Currency) _defaultsForKind(AssetKind kind) => switch (kind) {
         AssetKind.stockBr ||
         AssetKind.fiiBr ||
@@ -147,18 +171,34 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           (Market.br, Currency.brl),
       };
 
-  /// Carries kind-specific metadata. Only Tesouro Direto needs the bond name
-  /// today; it is dropped when the kind is not treasury so stale keys don't
-  /// linger after a kind change.
+  /// Carries kind-specific metadata. Each block is dropped when the kind no
+  /// longer matches so stale keys don't linger after a kind change.
   Map<String, String> _buildMetadata() {
     final metadata = Map<String, String>.from(widget.existing?.metadata ?? {});
+    _applyTesouroName(metadata);
+    _applyFixedIncome(metadata);
+    return metadata;
+  }
+
+  void _applyTesouroName(Map<String, String> metadata) {
     final tesouroName = _tesouroNameController.text.trim();
     if (_kind == AssetKind.treasury && tesouroName.isNotEmpty) {
       metadata['tesouroName'] = tesouroName;
     } else {
       metadata.remove('tesouroName');
     }
-    return metadata;
+  }
+
+  void _applyFixedIncome(Map<String, String> metadata) {
+    final rate =
+        double.tryParse(_fiRateController.text.trim().replaceAll(',', '.'));
+    if (_kind == AssetKind.fixedIncome && rate != null) {
+      metadata.addAll(FixedIncomeMetadata.write(_fiBasis, rate));
+    } else {
+      metadata
+        ..remove(FixedIncomeMetadata.basisKey)
+        ..remove(FixedIncomeMetadata.rateKey);
+    }
   }
 
   Future<void> _submit() async {
@@ -275,6 +315,23 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
                   controller: _tesouroNameController,
                   textCapitalization: TextCapitalization.words,
                   helperText: t.assets.tesouroNameHelp,
+                ),
+              ],
+              if (_kind == AssetKind.fixedIncome) ...[
+                const SizedBox(height: 12),
+                InvestancoPickerField(
+                  label: t.assets.fixedIncomeBasis,
+                  value: fixedIncomeBasisLabel(_fiBasis),
+                  placeholder: t.assets.fixedIncomeBasis,
+                  onTap: _pickFiBasis,
+                ),
+                const SizedBox(height: 12),
+                InvestancoTextField(
+                  label: t.assets.fixedIncomeRate,
+                  controller: _fiRateController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  helperText: t.assets.fixedIncomeRateHelp,
                 ),
               ],
               const SizedBox(height: 24),

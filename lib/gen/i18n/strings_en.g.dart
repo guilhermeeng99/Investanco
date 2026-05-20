@@ -153,6 +153,10 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get currency => 'Currency';
 	@override String get tesouroName => 'Tesouro Direto name';
 	@override String get tesouroNameHelp => 'Exactly as on the site, e.g. Tesouro Selic 2027.';
+	@override String get fixedIncomeBasis => 'Index';
+	@override String get fixedIncomeRate => 'Contracted rate (%)';
+	@override String get fixedIncomeRateHelp => 'CDI/Selic: % of the index. Prefixed: % p.a. IPCA+: spread % p.a.';
+	@override late final _TranslationsAssetsBasisEn basis = _TranslationsAssetsBasisEn._(_root);
 	@override String get deleteConfirm => 'Delete this asset?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
@@ -223,6 +227,19 @@ class _TranslationsInstitutionsKindsEn implements TranslationsInstitutionsKindsP
 	@override String get internationalBroker => 'International brokerage';
 	@override String get crypto => 'Crypto';
 	@override String get other => 'Other';
+}
+
+// Path: assets.basis
+class _TranslationsAssetsBasisEn implements TranslationsAssetsBasisPt {
+	_TranslationsAssetsBasisEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get cdi => 'CDI';
+	@override String get selic => 'Selic';
+	@override String get prefixed => 'Prefixed';
+	@override String get ipca => 'IPCA+';
 }
 
 // Path: assets.kinds
@@ -335,6 +352,13 @@ extension on TranslationsEn {
 			'assets.currency' => 'Currency',
 			'assets.tesouroName' => 'Tesouro Direto name',
 			'assets.tesouroNameHelp' => 'Exactly as on the site, e.g. Tesouro Selic 2027.',
+			'assets.fixedIncomeBasis' => 'Index',
+			'assets.fixedIncomeRate' => 'Contracted rate (%)',
+			'assets.fixedIncomeRateHelp' => 'CDI/Selic: % of the index. Prefixed: % p.a. IPCA+: spread % p.a.',
+			'assets.basis.cdi' => 'CDI',
+			'assets.basis.selic' => 'Selic',
+			'assets.basis.prefixed' => 'Prefixed',
+			'assets.basis.ipca' => 'IPCA+',
 			'assets.deleteConfirm' => 'Delete this asset?',
 			'assets.inUseError' => 'Cannot delete: there are linked transactions.',
 			'assets.saveError' => 'Error while saving.',

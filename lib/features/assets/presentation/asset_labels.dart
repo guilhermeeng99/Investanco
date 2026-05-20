@@ -1,4 +1,5 @@
 import 'package:investanco/features/assets/domain/entities/asset.dart';
+import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Localized label for an [AssetKind].
@@ -21,4 +22,12 @@ String marketLabel(Market market) => switch (market) {
       Market.br => t.assets.markets.br,
       Market.us => t.assets.markets.us,
       Market.global => t.assets.markets.global,
+    };
+
+/// Localized label for a fixed-income accrual basis.
+String fixedIncomeBasisLabel(FixedIncomeBasis basis) => switch (basis) {
+      FixedIncomeBasis.cdi => t.assets.basis.cdi,
+      FixedIncomeBasis.selic => t.assets.basis.selic,
+      FixedIncomeBasis.prefixed => t.assets.basis.prefixed,
+      FixedIncomeBasis.ipca => t.assets.basis.ipca,
     };

@@ -265,6 +265,17 @@ class TranslationsAssetsPt {
 	/// pt: 'Exato como no site, ex.: Tesouro Selic 2027.'
 	String get tesouroNameHelp => 'Exato como no site, ex.: Tesouro Selic 2027.';
 
+	/// pt: 'Indexador'
+	String get fixedIncomeBasis => 'Indexador';
+
+	/// pt: 'Taxa contratada (%)'
+	String get fixedIncomeRate => 'Taxa contratada (%)';
+
+	/// pt: 'CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.'
+	String get fixedIncomeRateHelp => 'CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.';
+
+	late final TranslationsAssetsBasisPt basis = TranslationsAssetsBasisPt._(_root);
+
 	/// pt: 'Excluir este ativo?'
 	String get deleteConfirm => 'Excluir este ativo?';
 
@@ -418,6 +429,27 @@ class TranslationsInstitutionsKindsPt {
 	String get other => 'Outro';
 }
 
+// Path: assets.basis
+class TranslationsAssetsBasisPt {
+	TranslationsAssetsBasisPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'CDI'
+	String get cdi => 'CDI';
+
+	/// pt: 'Selic'
+	String get selic => 'Selic';
+
+	/// pt: 'Prefixado'
+	String get prefixed => 'Prefixado';
+
+	/// pt: 'IPCA+'
+	String get ipca => 'IPCA+';
+}
+
 // Path: assets.kinds
 class TranslationsAssetsKindsPt {
 	TranslationsAssetsKindsPt._(this._root);
@@ -562,6 +594,13 @@ extension on Translations {
 			'assets.currency' => 'Moeda',
 			'assets.tesouroName' => 'Nome no Tesouro Direto',
 			'assets.tesouroNameHelp' => 'Exato como no site, ex.: Tesouro Selic 2027.',
+			'assets.fixedIncomeBasis' => 'Indexador',
+			'assets.fixedIncomeRate' => 'Taxa contratada (%)',
+			'assets.fixedIncomeRateHelp' => 'CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.',
+			'assets.basis.cdi' => 'CDI',
+			'assets.basis.selic' => 'Selic',
+			'assets.basis.prefixed' => 'Prefixado',
+			'assets.basis.ipca' => 'IPCA+',
 			'assets.deleteConfirm' => 'Excluir este ativo?',
 			'assets.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
 			'assets.saveError' => 'Erro ao salvar.',

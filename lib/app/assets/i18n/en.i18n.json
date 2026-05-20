@@ -70,6 +70,15 @@
     "currency": "Currency",
     "tesouroName": "Tesouro Direto name",
     "tesouroNameHelp": "Exactly as on the site, e.g. Tesouro Selic 2027.",
+    "fixedIncomeBasis": "Index",
+    "fixedIncomeRate": "Contracted rate (%)",
+    "fixedIncomeRateHelp": "CDI/Selic: % of the index. Prefixed: % p.a. IPCA+: spread % p.a.",
+    "basis": {
+      "cdi": "CDI",
+      "selic": "Selic",
+      "prefixed": "Prefixed",
+      "ipca": "IPCA+"
+    },
     "deleteConfirm": "Delete this asset?",
     "inUseError": "Cannot delete: there are linked transactions.",
     "saveError": "Error while saving.",

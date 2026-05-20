@@ -16,6 +16,17 @@ enum FixedIncomeBasis {
   ipca,
 }
 
+/// Maps an accrual basis to the BCB index whose series it needs.
+extension FixedIncomeBasisIndex on FixedIncomeBasis {
+  /// The economic index to fetch, or null for `prefixed` (needs no series).
+  EconomicIndex? get economicIndex => switch (this) {
+        FixedIncomeBasis.cdi => EconomicIndex.cdi,
+        FixedIncomeBasis.selic => EconomicIndex.selic,
+        FixedIncomeBasis.ipca => EconomicIndex.ipca,
+        FixedIncomeBasis.prefixed => null,
+      };
+}
+
 /// Everything needed to accrue one fixed-income holding to its current value.
 ///
 /// [ratePercent] meaning depends on [basis]:

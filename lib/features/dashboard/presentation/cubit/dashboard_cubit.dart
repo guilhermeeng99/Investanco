@@ -5,14 +5,19 @@ import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
+import 'package:investanco/features/holdings/domain/entities/holding.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
+import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
+import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
+import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
 /// Builds the consolidated portfolio from local data, then refreshes quotes/FX
@@ -29,6 +34,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     this._fxDataSource,
     this._valuationService,
     this._snapshotRepository,
+    this._indexDataSource,
   ) : super(const DashboardLoading()) {
     _transactionSub = _transactionRepository.watchAll().listen(
       (value) {
@@ -61,6 +67,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   final FxDataSource _fxDataSource;
   final ValuationService _valuationService;
   final SnapshotRepository _snapshotRepository;
+  final IndexDataSource _indexDataSource;
 
   late final StreamSubscription<List<AssetTransaction>> _transactionSub;
   late final StreamSubscription<List<Asset>> _assetSub;
@@ -71,6 +78,11 @@ class DashboardCubit extends Cubit<DashboardState> {
   List<Institution>? _institutions;
 
   double _fxUsdToBrl = 1;
+
+  /// Index series fetched on refresh, reused by `_recompute` to accrue fixed
+  /// income. Keyed by index; each holding filters it from its own purchase date.
+  final Map<EconomicIndex, List<IndexPoint>> _indexSeries = {};
+
   DateTime? _lastSyncAt;
   bool _refreshing = false;
   bool _autoRefreshed = false;
@@ -92,6 +104,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     final heldAssets = assets.where((a) => heldIds.contains(a.id)).toList();
 
     await _quoteRepository.refresh(heldAssets);
+    await _refreshIndices(heldAssets, transactions);
     if (heldAssets.any((a) => a.currency != Currency.brl)) {
       final fx = await _fxDataSource.rate(Currency.usd, Currency.brl);
       fx.fold((_) {}, (rate) => _fxUsdToBrl = rate);
@@ -130,6 +143,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       holdings.map((h) => h.assetId).toList(),
     );
     final quotesById = {for (final q in quotes) q.assetId: q};
+    final earliestBuy = _earliestBuyByHolding(transactions);
 
     final inputs = [
       for (final holding in holdings)
@@ -139,6 +153,7 @@ class DashboardCubit extends Cubit<DashboardState> {
             asset: asset,
             quote: quotesById[holding.assetId],
             fxToBase: asset.currency == Currency.brl ? 1.0 : _fxUsdToBrl,
+            fixedIncome: _termsFor(asset, holding, earliestBuy),
           ),
     ];
 
@@ -168,6 +183,80 @@ class DashboardCubit extends Cubit<DashboardState> {
       unawaited(refresh());
     }
   }
+
+  /// Fetches the index series each held fixed-income asset needs, from the
+  /// earliest purchase across positions using that index. Failures are ignored
+  /// (the holding shows cost until a series arrives).
+  Future<void> _refreshIndices(
+    List<Asset> heldAssets,
+    List<AssetTransaction> transactions,
+  ) async {
+    final earliestByIndex = <EconomicIndex, DateTime>{};
+    for (final asset in heldAssets) {
+      final index = _indexFor(asset);
+      final purchase = _earliestBuyForAsset(asset.id, transactions);
+      if (index == null || purchase == null) continue;
+      final current = earliestByIndex[index];
+      if (current == null || purchase.isBefore(current)) {
+        earliestByIndex[index] = purchase;
+      }
+    }
+    for (final entry in earliestByIndex.entries) {
+      final result = await _indexDataSource.series(entry.key, entry.value);
+      result.fold((_) {}, (points) => _indexSeries[entry.key] = points);
+    }
+  }
+
+  /// The BCB index a fixed-income asset accrues against, or null otherwise.
+  EconomicIndex? _indexFor(Asset asset) {
+    if (asset.kind != AssetKind.fixedIncome) return null;
+    return FixedIncomeMetadata.read(asset)?.$1.economicIndex;
+  }
+
+  /// Accrual terms for a fixed-income holding, or null when not applicable.
+  FixedIncomeTerms? _termsFor(
+    Asset asset,
+    Holding holding,
+    Map<String, DateTime> earliestBuy,
+  ) {
+    if (asset.kind != AssetKind.fixedIncome) return null;
+    final parsed = FixedIncomeMetadata.read(asset);
+    final purchase =
+        earliestBuy[_holdingKey(holding.assetId, holding.institutionId)];
+    if (parsed == null || purchase == null) return null;
+    final (basis, rate) = parsed;
+    final index = basis.economicIndex;
+    return FixedIncomeTerms(
+      basis: basis,
+      ratePercent: rate,
+      purchaseDate: purchase,
+      series: index == null ? const [] : (_indexSeries[index] ?? const []),
+    );
+  }
+
+  /// Earliest buy date per holding key (`assetId|institutionId`).
+  Map<String, DateTime> _earliestBuyByHolding(List<AssetTransaction> txns) {
+    final earliest = <String, DateTime>{};
+    for (final tx in txns) {
+      if (tx.kind != TransactionKind.buy) continue;
+      final key = _holdingKey(tx.assetId, tx.institutionId);
+      final current = earliest[key];
+      if (current == null || tx.date.isBefore(current)) earliest[key] = tx.date;
+    }
+    return earliest;
+  }
+
+  DateTime? _earliestBuyForAsset(String assetId, List<AssetTransaction> txns) {
+    DateTime? earliest;
+    for (final tx in txns) {
+      if (tx.kind != TransactionKind.buy || tx.assetId != assetId) continue;
+      if (earliest == null || tx.date.isBefore(earliest)) earliest = tx.date;
+    }
+    return earliest;
+  }
+
+  String _holdingKey(String assetId, String institutionId) =>
+      '$assetId|$institutionId';
 
   void _onError(Object _, StackTrace _) => emit(const DashboardError());
 
