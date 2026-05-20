@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:investanco/app/widgets/widgets.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/money_input.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
+import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/transaction_labels.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/features/transactions/presentation/transaction_visuals.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Bottom sheet to add or edit an [AssetTransaction].
 class TransactionFormSheet extends StatefulWidget {
@@ -101,10 +106,46 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     super.dispose();
   }
 
-  Asset get _selectedAsset =>
-      widget.assets.firstWhere((a) => a.id == _assetId);
+  Asset get _selectedAsset => widget.assets.firstWhere((a) => a.id == _assetId);
+
+  Institution get _selectedInstitution =>
+      widget.institutions.firstWhere((i) => i.id == _institutionId);
 
   bool get _isDividend => _kind == TransactionKind.dividend;
+
+  Future<void> _pickAsset() async {
+    final picked = await showOptionPicker<String>(
+      context,
+      title: t.transactions.asset,
+      selected: _assetId,
+      items: [
+        for (final asset in widget.assets)
+          OptionPickerItem(
+            value: asset.id,
+            label: '${asset.ticker}  ·  ${asset.name}',
+            leading: BrandAvatar(
+              size: 32,
+              background: assetKindColor(asset.kind),
+              initials: _initials(asset.ticker),
+            ),
+          ),
+      ],
+    );
+    if (picked != null) setState(() => _assetId = picked);
+  }
+
+  Future<void> _pickInstitution() async {
+    final picked = await showOptionPicker<String>(
+      context,
+      title: t.transactions.institution,
+      selected: _institutionId,
+      items: [
+        for (final institution in widget.institutions)
+          OptionPickerItem(value: institution.id, label: institution.name),
+      ],
+    );
+    if (picked != null) setState(() => _institutionId = picked);
+  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -121,7 +162,8 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     setState(() => _saving = true);
 
     final currency = _selectedAsset.currency;
-    final fees = Money.fromMajor(parseMajor(_feesController.text) ?? 0, currency);
+    final fees =
+        Money.fromMajor(parseMajor(_feesController.text) ?? 0, currency);
     final quantity = _isDividend ? 0.0 : parseMajor(_quantityController.text)!;
     final unitPrice = _isDividend
         ? Money.zero(currency)
@@ -175,120 +217,135 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     return parseMajor(value) == null ? t.common.required : null;
   }
 
+  String _initials(String ticker) {
+    final clean = ticker.trim().toUpperCase();
+    return clean.length <= 4 ? clean : clean.substring(0, 4);
+  }
+
+  static const _decimalKeyboard =
+      TextInputType.numberWithOptions(decimal: true);
+
+  List<TextInputFormatter> get _decimalFormatters => [
+        FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
+      ];
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final symbol = _selectedAsset.currency.symbol;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
+      padding: EdgeInsets.only(bottom: bottomInset),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const SheetHandle(),
+              const SizedBox(height: 8),
               Text(
                 widget.existing == null
                     ? t.transactions.add
                     : t.transactions.edit,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<TransactionKind>(
-                initialValue: _kind,
-                decoration: InputDecoration(labelText: t.transactions.kind),
-                items: [
-                  for (final kind in TransactionKind.values)
-                    DropdownMenuItem(
-                      value: kind,
-                      child: Text(transactionKindLabel(kind)),
-                    ),
-                ],
-                onChanged: (value) => setState(() => _kind = value ?? _kind),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _assetId,
-                decoration: InputDecoration(labelText: t.transactions.asset),
-                items: [
-                  for (final asset in widget.assets)
-                    DropdownMenuItem(
-                      value: asset.id,
-                      child: Text('${asset.ticker} · ${asset.name}'),
-                    ),
-                ],
-                onChanged: (value) =>
-                    setState(() => _assetId = value ?? _assetId),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _institutionId,
-                decoration:
-                    InputDecoration(labelText: t.transactions.institution),
-                items: [
-                  for (final institution in widget.institutions)
-                    DropdownMenuItem(
-                      value: institution.id,
-                      child: Text(institution.name),
-                    ),
-                ],
-                onChanged: (value) =>
-                    setState(() => _institutionId = value ?? _institutionId),
-              ),
-              const SizedBox(height: 12),
-              if (!_isDividend) ...[
-                TextFormField(
-                  controller: _quantityController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(labelText: t.transactions.quantity),
-                  validator: _requiredNumber,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _priceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(labelText: t.transactions.unitPrice),
-                  validator: _requiredNumber,
-                ),
-              ] else
-                TextFormField(
-                  controller: _amountController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(labelText: t.transactions.amount),
-                  validator: _requiredNumber,
-                ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _feesController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: t.transactions.fees),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(t.transactions.date),
-                subtitle: Text(
-                  '${_date.day.toString().padLeft(2, '0')}/'
-                  '${_date.month.toString().padLeft(2, '0')}/${_date.year}',
-                ),
-                trailing: const Icon(Icons.calendar_today_outlined),
-                onTap: _pickDate,
-              ),
-              TextFormField(
-                controller: _notesController,
-                decoration: InputDecoration(labelText: t.transactions.notes),
+                style: context.textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _saving ? null : _submit,
-                child: Text(t.common.save),
+              InvestancoPillToggle<TransactionKind>(
+                selected: _kind,
+                onChanged: (value) => setState(() => _kind = value),
+                options: [
+                  for (final kind in TransactionKind.values)
+                    InvestancoPillToggleOption(
+                      value: kind,
+                      label: transactionKindLabel(kind),
+                      icon: transactionKindIcon(kind),
+                      accent: transactionKindColor(kind, context.appColors),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              InvestancoPickerField(
+                label: t.transactions.asset,
+                value: '${_selectedAsset.ticker}  ·  ${_selectedAsset.name}',
+                placeholder: t.transactions.asset,
+                onTap: _pickAsset,
+                leading: BrandAvatar(
+                  size: 32,
+                  background: assetKindColor(_selectedAsset.kind),
+                  initials: _initials(_selectedAsset.ticker),
+                ),
+              ),
+              const SizedBox(height: 12),
+              InvestancoPickerField(
+                label: t.transactions.institution,
+                value: _selectedInstitution.name,
+                placeholder: t.transactions.institution,
+                onTap: _pickInstitution,
+              ),
+              const SizedBox(height: 12),
+              if (!_isDividend)
+                Row(
+                  children: [
+                    Expanded(
+                      child: InvestancoTextField(
+                        label: t.transactions.quantity,
+                        controller: _quantityController,
+                        keyboardType: _decimalKeyboard,
+                        inputFormatters: _decimalFormatters,
+                        validator: _requiredNumber,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InvestancoTextField(
+                        label: t.transactions.unitPrice,
+                        controller: _priceController,
+                        keyboardType: _decimalKeyboard,
+                        inputFormatters: _decimalFormatters,
+                        prefixText: '$symbol ',
+                        validator: _requiredNumber,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                InvestancoTextField(
+                  label: t.transactions.amount,
+                  controller: _amountController,
+                  keyboardType: _decimalKeyboard,
+                  inputFormatters: _decimalFormatters,
+                  prefixText: '$symbol ',
+                  validator: _requiredNumber,
+                ),
+              const SizedBox(height: 12),
+              InvestancoTextField(
+                label: t.transactions.fees,
+                controller: _feesController,
+                keyboardType: _decimalKeyboard,
+                inputFormatters: _decimalFormatters,
+                prefixText: '$symbol ',
+              ),
+              const SizedBox(height: 12),
+              InvestancoPickerField(
+                label: t.transactions.date,
+                value: _formatDate(_date),
+                placeholder: t.transactions.date,
+                onTap: _pickDate,
+              ),
+              const SizedBox(height: 12),
+              InvestancoTextField(
+                label: t.transactions.notes,
+                controller: _notesController,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 24),
+              InvestancoButton(
+                label: t.common.save,
+                isLoading: _saving,
+                onPressed: _submit,
               ),
             ],
           ),
@@ -296,4 +353,8 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       ),
     );
   }
+
+  String _formatDate(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/${date.year}';
 }

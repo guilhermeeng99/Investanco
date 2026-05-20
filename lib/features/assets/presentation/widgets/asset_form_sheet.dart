@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:investanco/app/widgets/widgets.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
+import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Bottom sheet to add or edit an [Asset].
 class AssetFormSheet extends StatefulWidget {
@@ -61,11 +64,49 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     super.dispose();
   }
 
-  void _onMarketChanged(Market? value) {
-    if (value == null) return;
+  /// Picking a kind pre-fills market and currency to the usual pairing
+  /// (US kinds → EUA/USD, BR kinds → Brasil/BRL); both remain editable.
+  Future<void> _pickKind() async {
+    final picked = await showOptionPicker<AssetKind>(
+      context,
+      title: t.assets.kind,
+      selected: _kind,
+      items: [
+        for (final kind in AssetKind.values)
+          OptionPickerItem(
+            value: kind,
+            label: assetKindLabel(kind),
+            leading: BrandAvatar(
+              size: 32,
+              background: assetKindColor(kind),
+              icon: assetKindIcon(kind),
+            ),
+          ),
+      ],
+    );
+    if (picked == null) return;
+    final (market, currency) = _defaultsForKind(picked);
     setState(() {
-      _market = value;
-      _currency = switch (value) {
+      _kind = picked;
+      _market = market;
+      _currency = currency;
+    });
+  }
+
+  Future<void> _pickMarket() async {
+    final picked = await showOptionPicker<Market>(
+      context,
+      title: t.assets.market,
+      selected: _market,
+      items: [
+        for (final market in Market.values)
+          OptionPickerItem(value: market, label: marketLabel(market)),
+      ],
+    );
+    if (picked == null) return;
+    setState(() {
+      _market = picked;
+      _currency = switch (picked) {
         Market.us => Currency.usd,
         Market.br => Currency.brl,
         Market.global => _currency,
@@ -73,16 +114,17 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     });
   }
 
-  /// Picking a kind pre-fills market and currency to the usual pairing
-  /// (US kinds → EUA/USD, BR kinds → Brasil/BRL); both remain editable.
-  void _onKindChanged(AssetKind? value) {
-    if (value == null) return;
-    final (market, currency) = _defaultsForKind(value);
-    setState(() {
-      _kind = value;
-      _market = market;
-      _currency = currency;
-    });
+  Future<void> _pickCurrency() async {
+    final picked = await showOptionPicker<Currency>(
+      context,
+      title: t.assets.currency,
+      selected: _currency,
+      items: [
+        for (final currency in Currency.values)
+          OptionPickerItem(value: currency, label: currencyLabel(currency)),
+      ],
+    );
+    if (picked != null) setState(() => _currency = picked);
   }
 
   (Market, Currency) _defaultsForKind(AssetKind kind) => switch (kind) {
@@ -138,80 +180,78 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
+      padding: EdgeInsets.only(bottom: bottomInset),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const SheetHandle(),
+              const SizedBox(height: 8),
               Text(
                 widget.existing == null ? t.assets.add : t.assets.edit,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _tickerController,
-                autofocus: true,
-                textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(labelText: t.assets.ticker),
-                validator: (value) => (value == null || value.trim().isEmpty)
-                    ? t.common.required
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: t.assets.name),
-                validator: (value) => (value == null || value.trim().isEmpty)
-                    ? t.common.required
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<AssetKind>(
-                initialValue: _kind,
-                decoration: InputDecoration(labelText: t.assets.kind),
-                items: [
-                  for (final kind in AssetKind.values)
-                    DropdownMenuItem(
-                      value: kind,
-                      child: Text(assetKindLabel(kind)),
-                    ),
-                ],
-                onChanged: _onKindChanged,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<Market>(
-                initialValue: _market,
-                decoration: InputDecoration(labelText: t.assets.market),
-                items: [
-                  for (final market in Market.values)
-                    DropdownMenuItem(
-                      value: market,
-                      child: Text(marketLabel(market)),
-                    ),
-                ],
-                onChanged: _onMarketChanged,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<Currency>(
-                initialValue: _currency,
-                decoration: InputDecoration(labelText: t.assets.currency),
-                items: [
-                  for (final currency in Currency.values)
-                    DropdownMenuItem(
-                      value: currency,
-                      child: Text(currencyLabel(currency)),
-                    ),
-                ],
-                onChanged: (value) =>
-                    setState(() => _currency = value ?? _currency),
+                style: context.textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _saving ? null : _submit,
-                child: Text(t.common.save),
+              InvestancoTextField(
+                label: t.assets.ticker,
+                controller: _tickerController,
+                textCapitalization: TextCapitalization.characters,
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? t.common.required
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              InvestancoTextField(
+                label: t.assets.name,
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? t.common.required
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              InvestancoPickerField(
+                label: t.assets.kind,
+                value: assetKindLabel(_kind),
+                placeholder: t.assets.kind,
+                onTap: _pickKind,
+                leading: BrandAvatar(
+                  size: 32,
+                  background: assetKindColor(_kind),
+                  icon: assetKindIcon(_kind),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: InvestancoPickerField(
+                      label: t.assets.market,
+                      value: marketLabel(_market),
+                      placeholder: t.assets.market,
+                      onTap: _pickMarket,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InvestancoPickerField(
+                      label: t.assets.currency,
+                      value: _currency.code,
+                      placeholder: t.assets.currency,
+                      onTap: _pickCurrency,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              InvestancoButton(
+                label: t.common.save,
+                isLoading: _saving,
+                onPressed: _submit,
               ),
             ],
           ),

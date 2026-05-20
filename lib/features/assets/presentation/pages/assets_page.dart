@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
+import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
+import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
 import 'package:investanco/features/assets/presentation/widgets/asset_form_sheet.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Manage assets (PETR4, AAPL, …). See `docs/specs/assets.md`.
 class AssetsPage extends StatelessWidget {
@@ -40,6 +44,7 @@ class _AssetsView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        title: Text(asset.ticker),
         content: Text(t.assets.deleteConfirm),
         actions: [
           TextButton(
@@ -67,60 +72,143 @@ class _AssetsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<AssetsCubit>();
     return Scaffold(
-      appBar: AppBar(title: Text(t.assets.title)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => AssetFormSheet.show(context, cubit),
-        child: const Icon(Icons.add),
+      appBar: InvestancoAppBar(
+        title: t.assets.title,
+        actions: [
+          IconButton(
+            tooltip: t.assets.add,
+            onPressed: () => AssetFormSheet.show(context, cubit),
+            icon: const FaIcon(FontAwesomeIcons.plus, size: 18),
+          ),
+        ],
       ),
       body: BlocBuilder<AssetsCubit, AssetsState>(
         builder: (context, state) {
           return switch (state) {
-            AssetsLoading() => const Center(child: CircularProgressIndicator()),
-            AssetsError() => Center(child: Text(t.assets.saveError)),
-            AssetsLoaded(:final assets) when assets.isEmpty =>
-              const _EmptyState(),
-            AssetsLoaded(:final assets) => ListView.builder(
+            AssetsLoading() => const LoadingShimmerList(),
+            AssetsError() => ErrorView(
+                message: t.assets.saveError,
+                onRetry: () {},
+              ),
+            AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
+                icon: FontAwesomeIcons.coins,
+                title: t.assets.title,
+                message: t.assets.empty,
+                actionLabel: t.assets.add,
+                onAction: () => AssetFormSheet.show(context, cubit),
+              ),
+            AssetsLoaded(:final assets) => ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                 itemCount: assets.length,
-                itemBuilder: (context, index) {
-                  final asset = assets[index];
-                  return ListTile(
-                    leading: CircleAvatar(child: Text(_initials(asset.ticker))),
-                    title: Text('${asset.ticker} · ${asset.name}'),
-                    subtitle: Text(
-                      '${assetKindLabel(asset.kind)} · '
-                      '${marketLabel(asset.market)} · ${asset.currency.code}',
-                    ),
-                    onTap: () =>
-                        AssetFormSheet.show(context, cubit, existing: asset),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _confirmDelete(context, cubit, asset),
-                    ),
-                  );
-                },
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) => _AssetTile(
+                  asset: assets[index],
+                  onTap: () =>
+                      AssetFormSheet.show(context, cubit, existing: assets[index]),
+                  onDelete: () => _confirmDelete(context, cubit, assets[index]),
+                ),
               ),
           };
         },
       ),
     );
   }
-
-  String _initials(String ticker) =>
-      ticker.isEmpty ? '?' : ticker.substring(0, ticker.length >= 2 ? 2 : 1);
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+class _AssetTile extends StatelessWidget {
+  const _AssetTile({
+    required this.asset,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  final Asset asset;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          t.assets.empty,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
+    final colors = context.appColors;
+    return InvestancoCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        children: [
+          BrandAvatar(
+            background: assetKindColor(asset.kind),
+            initials: _initials(asset.ticker),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(asset.ticker, style: context.textTheme.titleSmall),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        asset.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: colors.onBackgroundLight,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    _Tag(assetKindLabel(asset.kind), assetKindColor(asset.kind)),
+                    _Tag(asset.currency.code, colors.neutral),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: t.common.delete,
+            icon: FaIcon(
+              FontAwesomeIcons.trashCan,
+              size: 16,
+              color: colors.onBackgroundLight,
+            ),
+            onPressed: onDelete,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _initials(String ticker) {
+    final clean = ticker.trim().toUpperCase();
+    return clean.length <= 4 ? clean : clean.substring(0, 4);
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag(this.label, this.color);
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: context.textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

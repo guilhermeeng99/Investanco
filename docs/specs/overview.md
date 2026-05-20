@@ -171,5 +171,5 @@ CSV / scraper later) all sit behind a `PositionSource` port so they are additive
 
 ## 9. Phasing
 
-See `ROADMAP.md`. Build order: foundation → domain+DB → quotes+valuation →
+See `../ROADMAP.md`. Build order: foundation → domain+DB → quotes+valuation →
 dashboard → snapshots → sync/polish → (cloud) → (auto-import).

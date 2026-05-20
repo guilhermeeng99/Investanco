@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:investanco/app/widgets/widgets.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/presentation/cubit/institutions_cubit.dart';
 import 'package:investanco/features/institutions/presentation/institution_labels.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/features/institutions/presentation/institution_visuals.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Bottom sheet to add or edit an [Institution].
 class InstitutionFormSheet extends StatefulWidget {
@@ -56,6 +59,40 @@ class _InstitutionFormSheetState extends State<InstitutionFormSheet> {
     super.dispose();
   }
 
+  Future<void> _pickKind() async {
+    final picked = await showOptionPicker<InstitutionKind>(
+      context,
+      title: t.institutions.kind,
+      selected: _kind,
+      items: [
+        for (final kind in InstitutionKind.values)
+          OptionPickerItem(
+            value: kind,
+            label: institutionKindLabel(kind),
+            leading: BrandAvatar(
+              size: 32,
+              background: institutionKindColor(kind),
+              icon: institutionKindIcon(kind),
+            ),
+          ),
+      ],
+    );
+    if (picked != null) setState(() => _kind = picked);
+  }
+
+  Future<void> _pickCurrency() async {
+    final picked = await showOptionPicker<Currency>(
+      context,
+      title: t.institutions.currency,
+      selected: _currency,
+      items: [
+        for (final currency in Currency.values)
+          OptionPickerItem(value: currency, label: currencyLabel(currency)),
+      ],
+    );
+    if (picked != null) setState(() => _currency = picked);
+  }
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
@@ -90,62 +127,59 @@ class _InstitutionFormSheetState extends State<InstitutionFormSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              widget.existing == null
-                  ? t.institutions.add
-                  : t.institutions.edit,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameController,
-              autofocus: true,
-              decoration: InputDecoration(labelText: t.institutions.name),
-              validator: (value) =>
-                  (value == null || value.trim().isEmpty)
-                      ? t.common.required
-                      : null,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<InstitutionKind>(
-              initialValue: _kind,
-              decoration: InputDecoration(labelText: t.institutions.kind),
-              items: [
-                for (final kind in InstitutionKind.values)
-                  DropdownMenuItem(
-                    value: kind,
-                    child: Text(institutionKindLabel(kind)),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _kind = value ?? _kind),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<Currency>(
-              initialValue: _currency,
-              decoration: InputDecoration(labelText: t.institutions.currency),
-              items: [
-                for (final currency in Currency.values)
-                  DropdownMenuItem(
-                    value: currency,
-                    child: Text(currencyLabel(currency)),
-                  ),
-              ],
-              onChanged: (value) =>
-                  setState(() => _currency = value ?? _currency),
-            ),
-            const SizedBox(height: 20),
-            FilledButton(
-              onPressed: _saving ? null : _submit,
-              child: Text(t.common.save),
-            ),
-          ],
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SheetHandle(),
+              const SizedBox(height: 8),
+              Text(
+                widget.existing == null
+                    ? t.institutions.add
+                    : t.institutions.edit,
+                style: context.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 20),
+              InvestancoTextField(
+                label: t.institutions.name,
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? t.common.required
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              InvestancoPickerField(
+                label: t.institutions.kind,
+                value: institutionKindLabel(_kind),
+                placeholder: t.institutions.kind,
+                onTap: _pickKind,
+                leading: BrandAvatar(
+                  size: 32,
+                  background: institutionKindColor(_kind),
+                  icon: institutionKindIcon(_kind),
+                ),
+              ),
+              const SizedBox(height: 12),
+              InvestancoPickerField(
+                label: t.institutions.currency,
+                value: currencyLabel(_currency),
+                placeholder: t.institutions.currency,
+                onTap: _pickCurrency,
+              ),
+              const SizedBox(height: 24),
+              InvestancoButton(
+                label: t.common.save,
+                isLoading: _saving,
+                onPressed: _submit,
+              ),
+            ],
+          ),
         ),
       ),
     );

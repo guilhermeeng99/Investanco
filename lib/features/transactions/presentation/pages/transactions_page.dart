@@ -2,14 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
-import 'package:investanco/core/format/currency_formatter.dart';
+import 'package:investanco/app/widgets/widgets.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_state.dart';
 import 'package:investanco/features/transactions/presentation/transaction_labels.dart';
+import 'package:investanco/features/transactions/presentation/transaction_visuals.dart';
 import 'package:investanco/features/transactions/presentation/widgets/transaction_form_sheet.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Manage transactions (buy/sell/dividend). See `docs/specs/transactions.md`.
 class TransactionsPage extends StatelessWidget {
@@ -33,12 +36,6 @@ class TransactionsPage extends StatelessWidget {
 
 class _TransactionsView extends StatelessWidget {
   const _TransactionsView();
-
-  IconData _kindIcon(TransactionKind kind) => switch (kind) {
-        TransactionKind.buy => Icons.south_west,
-        TransactionKind.sell => Icons.north_east,
-        TransactionKind.dividend => Icons.payments_outlined,
-      };
 
   void _openForm(
     BuildContext context,
@@ -71,6 +68,7 @@ class _TransactionsView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        title: Text(t.transactions.title),
         content: Text(t.transactions.deleteConfirm),
         actions: [
           TextButton(
@@ -91,31 +89,37 @@ class _TransactionsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<TransactionsCubit>();
     return Scaffold(
-      appBar: AppBar(title: Text(t.transactions.title)),
-      floatingActionButton:
+      appBar: InvestancoAppBar(
+        title: t.transactions.title,
+        actions: [
           BlocBuilder<TransactionsCubit, TransactionsState>(
-        builder: (context, state) {
-          if (state is! TransactionsLoaded) return const SizedBox.shrink();
-          return FloatingActionButton(
-            onPressed: () => _openForm(context, cubit, state),
-            child: const Icon(Icons.add),
-          );
-        },
+            builder: (context, state) {
+              if (state is! TransactionsLoaded) return const SizedBox.shrink();
+              return IconButton(
+                tooltip: t.transactions.add,
+                onPressed: () => _openForm(context, cubit, state),
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 18),
+              );
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<TransactionsCubit, TransactionsState>(
         builder: (context, state) {
           return switch (state) {
-            TransactionsLoading() =>
-              const Center(child: CircularProgressIndicator()),
-            TransactionsError() =>
-              Center(child: Text(t.transactions.saveError)),
+            TransactionsLoading() => const LoadingShimmerList(),
+            TransactionsError() => ErrorView(
+                message: t.transactions.saveError,
+                onRetry: () {},
+              ),
             TransactionsLoaded(:final transactions) when transactions.isEmpty =>
-              const _EmptyState(),
+              _EmptyState(
+                onAdd: () => _openForm(context, cubit, state),
+              ),
             TransactionsLoaded() => _TransactionsList(
                 state: state,
                 onTap: (tx) => _openForm(context, cubit, state, existing: tx),
                 onDelete: (id) => _confirmDelete(context, cubit, id),
-                kindIcon: _kindIcon,
               ),
           };
         },
@@ -129,47 +133,105 @@ class _TransactionsList extends StatelessWidget {
     required this.state,
     required this.onTap,
     required this.onDelete,
-    required this.kindIcon,
   });
 
   final TransactionsLoaded state;
   final void Function(AssetTransaction) onTap;
   final void Function(String) onDelete;
-  final IconData Function(TransactionKind) kindIcon;
 
   @override
   Widget build(BuildContext context) {
     final assetById = {for (final a in state.assets) a.id: a};
     final institutionById = {for (final i in state.institutions) i.id: i};
 
-    return ListView.builder(
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
       itemCount: state.transactions.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = state.transactions[index];
-        final asset = assetById[tx.assetId];
-        final institution = institutionById[tx.institutionId];
-        return ListTile(
-          leading: Icon(kindIcon(tx.kind)),
-          title: Text(
-            '${transactionKindLabel(tx.kind)} · ${asset?.ticker ?? '—'}',
-          ),
-          subtitle: Text(
-            '${institution?.name ?? '—'} · '
-            '${_formatDate(tx.date)}',
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(formatCurrency(tx.amount)),
-              IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => onDelete(tx.id),
-              ),
-            ],
-          ),
+        return _TransactionTile(
+          tx: tx,
+          ticker: assetById[tx.assetId]?.ticker,
+          institution: institutionById[tx.institutionId]?.name,
           onTap: () => onTap(tx),
+          onDelete: () => onDelete(tx.id),
         );
       },
+    );
+  }
+}
+
+class _TransactionTile extends StatelessWidget {
+  const _TransactionTile({
+    required this.tx,
+    required this.ticker,
+    required this.institution,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  final AssetTransaction tx;
+  final String? ticker;
+  final String? institution;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final accent = transactionKindColor(tx.kind, colors);
+    final signed = tx.amount * transactionKindSign(tx.kind);
+
+    return InvestancoCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        children: [
+          BrandAvatar(
+            background: accent,
+            icon: transactionKindIcon(tx.kind),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      transactionKindLabel(tx.kind),
+                      style: context.textTheme.titleSmall,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        ticker ?? '—',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textTheme.titleSmall?.copyWith(
+                          color: colors.onBackgroundLight,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${institution ?? '—'}  ·  ${_formatDate(tx.date)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: colors.onBackgroundLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          SignedAmount(money: signed, fontSize: 14),
+        ],
+      ),
     );
   }
 
@@ -179,19 +241,18 @@ class _TransactionsList extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.onAdd});
+
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          t.transactions.empty,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      ),
+    return EmptyState(
+      icon: FontAwesomeIcons.rightLeft,
+      title: t.transactions.title,
+      message: t.transactions.empty,
+      actionLabel: t.transactions.add,
+      onAction: onAdd,
     );
   }
 }

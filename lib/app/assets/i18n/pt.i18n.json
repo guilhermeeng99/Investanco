@@ -7,7 +7,8 @@
     "edit": "Editar",
     "add": "Adicionar",
     "confirm": "Confirmar",
-    "required": "Campo obrigatório"
+    "required": "Campo obrigatório",
+    "retry": "Tentar novamente"
   },
   "currencies": {
     "brl": "Real (BRL)",
@@ -23,6 +24,9 @@
   "dashboard": {
     "title": "Carteira",
     "empty": "Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.",
+    "emptyTitle": "Comece sua carteira",
+    "addFirst": "Adicionar instituição",
+    "loadError": "Não foi possível carregar sua carteira.",
     "total": "Patrimônio total",
     "invested": "Investido",
     "profit": "Lucro/Prejuízo",
@@ -111,6 +115,12 @@
   },
   "settings": {
     "title": "Configurações",
+    "appearance": "Aparência",
+    "quotes": "Cotações e dados",
+    "general": "Geral",
+    "language": "Idioma",
+    "languagePt": "Português",
+    "languageEn": "Inglês",
     "theme": "Tema",
     "themeSystem": "Sistema",
     "themeLight": "Claro",

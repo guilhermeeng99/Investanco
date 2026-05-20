@@ -28,12 +28,18 @@ auth/captcha/aggregator) and free to run. See `docs/specs/overview.md`.
 
 ```
 lib/
-├── app/          # App shell: DI, routing, theme, shared widgets
+├── app/
+│   ├── assets/   # App assets: i18n/ (slang sources), images/
+│   ├── di/       # get_it service locator
+│   ├── router/   # go_router config + shell
+│   ├── theme/    # AppColors, AppTypography, AppTheme, ThemeCubit
+│   └── widgets/  # Shared design-system widgets (Investanco* + helpers)
 ├── core/         # Shared: database, errors, network, extensions, utils
 ├── features/     # Feature modules (each with data/domain/presentation)
-├── i18n/         # slang translation sources (*.i18n.json)
-└── gen/          # Generated code (i18n strings)
+└── gen/          # Generated code (i18n strings in gen/i18n)
 ```
+
+Translation sources live in `lib/app/assets/i18n/` (`pt.i18n.json` base + `en.i18n.json`); slang generates `lib/gen/i18n/strings.g.dart`. This mirrors financo.
 
 Each feature follows:
 
@@ -85,7 +91,7 @@ Each feature follows:
 | **Charts**           | fl_chart (allocation + portfolio evolution)                             |
 | **Error handling**   | dartz `Either<Failure, T>` pattern                                       |
 | **Linting**          | very_good_analysis (strict)                                             |
-| **i18n**             | slang (generated in `lib/gen/`)                                          |
+| **i18n**             | slang (sources in `lib/app/assets/i18n/`, generated in `lib/gen/i18n/`)  |
 | **Theme**            | Light + Dark Material 3, custom `AppColors` / `AppTheme`                 |
 | **Currency**         | BRL base (Real) via `intl`; multi-currency holdings converted via FX     |
 

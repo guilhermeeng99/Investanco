@@ -5,7 +5,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/app_theme.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Root widget: wires theme, routing and localization.
 class InvestancoApp extends StatelessWidget {

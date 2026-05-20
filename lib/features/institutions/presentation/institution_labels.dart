@@ -1,5 +1,5 @@
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Localized label for an [InstitutionKind].
 String institutionKindLabel(InstitutionKind kind) => switch (kind) {

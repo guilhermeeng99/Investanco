@@ -5,7 +5,7 @@ name: Deploy to GitHub Pages
 #
 # Firebase App Distribution and Android release signing are intentionally omitted
 # until Phase 6/7 (they require repository secrets). The APK below is debug-signed
-# and suitable for sideloading/testing only. See ROADMAP.md.
+# and suitable for sideloading/testing only. See docs/ROADMAP.md.
 
 on:
   push:

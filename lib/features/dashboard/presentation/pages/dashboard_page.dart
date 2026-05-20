@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:investanco/app/di/injection_container.dart';
+import 'package:investanco/app/widgets/widgets.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/allocation_chart.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/evolution_chart.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/holdings_list.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/portfolio_summary_card.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Portfolio home: consolidated value, allocation and positions. See
 /// `docs/specs/dashboard.md`.
@@ -36,22 +40,37 @@ class _DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t.dashboard.title),
+      appBar: InvestancoAppBar(
+        title: t.dashboard.title,
         actions: [
-          IconButton(
-            tooltip: t.dashboard.refresh,
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<DashboardCubit>().refresh(),
+          BlocBuilder<DashboardCubit, DashboardState>(
+            builder: (context, state) {
+              final refreshing = state is DashboardLoaded && state.isRefreshing;
+              return IconButton(
+                tooltip: t.dashboard.refresh,
+                onPressed: refreshing
+                    ? null
+                    : () => context.read<DashboardCubit>().refresh(),
+                icon: refreshing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
+              );
+            },
           ),
         ],
       ),
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
           return switch (state) {
-            DashboardLoading() =>
-              const Center(child: CircularProgressIndicator()),
-            DashboardError() => Center(child: Text(t.dashboard.empty)),
+            DashboardLoading() => const LoadingShimmerList(itemHeight: 120),
+            DashboardError() => ErrorView(
+                message: t.dashboard.loadError,
+                onRetry: () => context.read<DashboardCubit>().refresh(),
+              ),
             DashboardLoaded(hasHoldings: false) => const _EmptyState(),
             DashboardLoaded() => _LoadedView(state: state),
           };
@@ -68,32 +87,41 @@ class _LoadedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.appColors;
     final anyStale = state.portfolio.holdings.any((h) => h.priceStale);
 
     return RefreshIndicator(
       onRefresh: () => context.read<DashboardCubit>().refresh(),
       child: ListView(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
         children: [
-          if (state.isRefreshing) const LinearProgressIndicator(),
           PortfolioSummaryCard(portfolio: state.portfolio),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           AllocationChart(byClass: state.portfolio.byClass),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           EvolutionChart(snapshots: state.snapshots),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(t.dashboard.holdings, style: theme.textTheme.titleMedium),
-          ),
+          InvestancoSectionHeader(title: t.dashboard.holdings),
           HoldingsList(state: state),
           if (anyStale)
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                t.dashboard.pricesStale,
-                style: theme.textTheme.bodySmall,
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.clock,
+                    size: 12,
+                    color: colors.onBackgroundLight,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      t.dashboard.pricesStale,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -107,27 +135,12 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 64,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              t.dashboard.empty,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
+    return EmptyState(
+      icon: FontAwesomeIcons.seedling,
+      title: t.dashboard.emptyTitle,
+      message: t.dashboard.empty,
+      actionLabel: t.dashboard.addFirst,
+      onAction: () => context.go('/institutions'),
     );
   }
 }

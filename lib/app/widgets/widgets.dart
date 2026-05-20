@@ -1,0 +1,21 @@
+/// Shared design-system widgets. Import this barrel from feature pages:
+/// `import 'package:investanco/app/widgets/widgets.dart';`
+library;
+
+export 'amount_text.dart';
+export 'brand_avatar.dart';
+export 'empty_state.dart';
+export 'error_view.dart';
+export 'investanco_app_bar.dart';
+export 'investanco_button.dart';
+export 'investanco_card.dart';
+export 'investanco_form_section.dart';
+export 'investanco_picker_field.dart';
+export 'investanco_pill_toggle.dart';
+export 'investanco_section_header.dart';
+export 'investanco_submit_bar.dart';
+export 'investanco_text_field.dart';
+export 'loading_shimmer.dart';
+export 'metric_tile.dart';
+export 'option_picker.dart';
+export 'sheet_handle.dart';

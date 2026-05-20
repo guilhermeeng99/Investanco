@@ -37,7 +37,7 @@ final GetIt sl = GetIt.instance;
 /// Initializes all dependencies. Called once from `main()` before `runApp`.
 ///
 /// Registrations are grouped by layer; feature modules add their own block as
-/// they are implemented (see ROADMAP.md).
+/// they are implemented (see docs/ROADMAP.md).
 Future<void> init() async {
   _initCore();
   _initAppShell();

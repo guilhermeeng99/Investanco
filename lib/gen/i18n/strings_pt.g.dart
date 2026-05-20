@@ -82,6 +82,9 @@ class TranslationsCommonPt {
 
 	/// pt: 'Campo obrigatório'
 	String get required => 'Campo obrigatório';
+
+	/// pt: 'Tentar novamente'
+	String get retry => 'Tentar novamente';
 }
 
 // Path: currencies
@@ -136,6 +139,15 @@ class TranslationsDashboardPt {
 
 	/// pt: 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.'
 	String get empty => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.';
+
+	/// pt: 'Comece sua carteira'
+	String get emptyTitle => 'Comece sua carteira';
+
+	/// pt: 'Adicionar instituição'
+	String get addFirst => 'Adicionar instituição';
+
+	/// pt: 'Não foi possível carregar sua carteira.'
+	String get loadError => 'Não foi possível carregar sua carteira.';
 
 	/// pt: 'Patrimônio total'
 	String get total => 'Patrimônio total';
@@ -330,6 +342,24 @@ class TranslationsSettingsPt {
 	/// pt: 'Configurações'
 	String get title => 'Configurações';
 
+	/// pt: 'Aparência'
+	String get appearance => 'Aparência';
+
+	/// pt: 'Cotações e dados'
+	String get quotes => 'Cotações e dados';
+
+	/// pt: 'Geral'
+	String get general => 'Geral';
+
+	/// pt: 'Idioma'
+	String get language => 'Idioma';
+
+	/// pt: 'Português'
+	String get languagePt => 'Português';
+
+	/// pt: 'Inglês'
+	String get languageEn => 'Inglês';
+
 	/// pt: 'Tema'
 	String get theme => 'Tema';
 
@@ -476,6 +506,7 @@ extension on Translations {
 			'common.add' => 'Adicionar',
 			'common.confirm' => 'Confirmar',
 			'common.required' => 'Campo obrigatório',
+			'common.retry' => 'Tentar novamente',
 			'currencies.brl' => 'Real (BRL)',
 			'currencies.usd' => 'Dólar (USD)',
 			'nav.dashboard' => 'Carteira',
@@ -485,6 +516,9 @@ extension on Translations {
 			'nav.settings' => 'Configurações',
 			'dashboard.title' => 'Carteira',
 			'dashboard.empty' => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.',
+			'dashboard.emptyTitle' => 'Comece sua carteira',
+			'dashboard.addFirst' => 'Adicionar instituição',
+			'dashboard.loadError' => 'Não foi possível carregar sua carteira.',
 			'dashboard.total' => 'Patrimônio total',
 			'dashboard.invested' => 'Investido',
 			'dashboard.profit' => 'Lucro/Prejuízo',
@@ -557,6 +591,12 @@ extension on Translations {
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
 			'settings.title' => 'Configurações',
+			'settings.appearance' => 'Aparência',
+			'settings.quotes' => 'Cotações e dados',
+			'settings.general' => 'Geral',
+			'settings.language' => 'Idioma',
+			'settings.languagePt' => 'Português',
+			'settings.languageEn' => 'Inglês',
 			'settings.theme' => 'Tema',
 			'settings.themeSystem' => 'Sistema',
 			'settings.themeLight' => 'Claro',

@@ -1,5 +1,5 @@
 import 'package:investanco/features/assets/domain/entities/asset.dart';
-import 'package:investanco/gen/strings.g.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Localized label for an [AssetKind].
 String assetKindLabel(AssetKind kind) => switch (kind) {

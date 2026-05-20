@@ -1,0 +1,134 @@
+{
+  "appName": "Investanco",
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "required": "Required field",
+    "retry": "Try again"
+  },
+  "currencies": {
+    "brl": "Real (BRL)",
+    "usd": "Dollar (USD)"
+  },
+  "nav": {
+    "dashboard": "Portfolio",
+    "institutions": "Institutions",
+    "assets": "Assets",
+    "transactions": "Transactions",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Portfolio",
+    "empty": "Add an institution, an asset and a transaction to start tracking your investments.",
+    "emptyTitle": "Start your portfolio",
+    "addFirst": "Add institution",
+    "loadError": "We could not load your portfolio.",
+    "total": "Total net worth",
+    "invested": "Invested",
+    "profit": "Profit/Loss",
+    "dayChange": "Day change",
+    "allocation": "Allocation by class",
+    "evolution": "Net worth evolution",
+    "holdings": "Positions",
+    "lastSync": "Updated",
+    "never": "never",
+    "refresh": "Refresh",
+    "pricesStale": "Quotes may be outdated"
+  },
+  "institutions": {
+    "title": "Institutions",
+    "empty": "No institutions yet. Add Nubank, Avenue, etc.",
+    "add": "New institution",
+    "edit": "Edit institution",
+    "name": "Name",
+    "kind": "Type",
+    "currency": "Currency",
+    "deleteConfirm": "Delete this institution?",
+    "inUseError": "Cannot delete: there are linked transactions.",
+    "saveError": "Error while saving.",
+    "kinds": {
+      "bank": "Bank",
+      "broker": "Brokerage",
+      "internationalBroker": "International brokerage",
+      "crypto": "Crypto",
+      "other": "Other"
+    }
+  },
+  "assets": {
+    "title": "Assets",
+    "empty": "No assets yet. Add PETR4, AAPL, Treasury bonds, etc.",
+    "add": "New asset",
+    "edit": "Edit asset",
+    "ticker": "Ticker",
+    "name": "Name",
+    "kind": "Type",
+    "market": "Market",
+    "currency": "Currency",
+    "deleteConfirm": "Delete this asset?",
+    "inUseError": "Cannot delete: there are linked transactions.",
+    "saveError": "Error while saving.",
+    "kinds": {
+      "stockBr": "Stock (BR)",
+      "fiiBr": "REIT (FII)",
+      "etfBr": "ETF (BR)",
+      "bdrBr": "BDR",
+      "stockUs": "Stock (US)",
+      "etfUs": "ETF (US)",
+      "crypto": "Crypto",
+      "treasury": "Treasury bonds",
+      "fixedIncome": "Fixed income",
+      "fund": "Fund",
+      "cash": "Cash"
+    },
+    "markets": {
+      "br": "Brazil",
+      "us": "US",
+      "global": "Global"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "empty": "No transactions yet. Record buys, sells and dividends.",
+    "add": "New transaction",
+    "edit": "Edit transaction",
+    "institution": "Institution",
+    "asset": "Asset",
+    "kind": "Type",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "fees": "Fees",
+    "amount": "Total amount",
+    "date": "Date",
+    "notes": "Notes",
+    "deleteConfirm": "Delete this transaction?",
+    "saveError": "Error while saving.",
+    "needPrereqs": "Add an institution and an asset first.",
+    "kinds": {
+      "buy": "Buy",
+      "sell": "Sell",
+      "dividend": "Dividend"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "quotes": "Quotes and data",
+    "general": "General",
+    "language": "Language",
+    "languagePt": "Portuguese",
+    "languageEn": "English",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "brapiToken": "brapi token (optional)",
+    "brapiTokenHelp": "Increases the B3 quote rate limit.",
+    "finnhubToken": "Finnhub token (US assets)",
+    "finnhubTokenHelp": "Free at finnhub.io, required for US stock/ETF quotes.",
+    "baseCurrency": "Base currency"
+  }
+}

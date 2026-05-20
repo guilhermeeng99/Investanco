@@ -7,7 +7,7 @@ can accommodate it without rework.
 ## Goal
 
 Firebase Auth + Google Sign-In, so the local Drift data can be mirrored to the
-authenticated user's Firestore (`Phase 6`, see `ROADMAP.md`).
+authenticated user's Firestore (`Phase 6`, see `../ROADMAP.md`).
 
 ## Planned entity
 
