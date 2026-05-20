@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
 
 /// Declarative route table. Wrapped in a class so it can be injected and tested.
 class AppRouter {
@@ -14,6 +15,11 @@ class AppRouter {
         path: DashboardPage.routePath,
         name: DashboardPage.routeName,
         builder: (context, state) => const DashboardPage(),
+      ),
+      GoRoute(
+        path: InstitutionsPage.routePath,
+        name: InstitutionsPage.routeName,
+        builder: (context, state) => const InstitutionsPage(),
       ),
     ],
   );

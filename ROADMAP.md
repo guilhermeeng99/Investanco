@@ -18,7 +18,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 | 0.5 | `docs/specs/*` — feature specs | ✅ |
 | 0.6 | `.github/workflows/deploy.yml` — CI/CD (web + APK → gh-pages) | ✅ |
 | 0.7 | App shell: theme (M3 light/dark), router, DI container | ✅ |
-| 0.8 | Core: `Money`, failures, formatter (Drift db + dio client → Phase 1/2) | 🔨 |
+| 0.8 | Core: `Money`, failures, formatter, Drift database, IdGenerator (dio client → Phase 2) | ✅ |
 | 0.9 | slang i18n bootstrap (pt-BR base) | ✅ |
 | 0.10 | App compiles, web build OK, `analyze` 0 issues, `test` 6/6 green | ✅ |
 
@@ -28,7 +28,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
-| 1.1 | `Institution` entity + Drift table + repo + cubit + CRUD UI | ⬜ |
+| 1.1 | `Institution` entity + Drift table + repo + cubit + CRUD UI | ✅ |
 | 1.2 | `Asset` entity (ticker, kind, market, currency) + table + repo + cubit | ⬜ |
 | 1.3 | `Transaction` (buy/sell/dividend) + table + repo + cubit + form | ⬜ |
 | 1.4 | `Holding` derivation (qty + avg price from transactions, FIFO/weighted) | ⬜ |

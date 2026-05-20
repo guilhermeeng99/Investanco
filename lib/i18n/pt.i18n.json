@@ -1,7 +1,45 @@
 {
   "appName": "Investanco",
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "confirm": "Confirmar",
+    "required": "Campo obrigatório"
+  },
+  "currencies": {
+    "brl": "Real (BRL)",
+    "usd": "Dólar (USD)"
+  },
+  "nav": {
+    "dashboard": "Carteira",
+    "institutions": "Instituições",
+    "assets": "Ativos",
+    "transactions": "Lançamentos"
+  },
   "dashboard": {
     "title": "Carteira",
     "empty": "Adicione sua primeira instituição para começar a acompanhar seus investimentos."
+  },
+  "institutions": {
+    "title": "Instituições",
+    "empty": "Nenhuma instituição ainda. Adicione Nubank, Avenue, etc.",
+    "add": "Nova instituição",
+    "edit": "Editar instituição",
+    "name": "Nome",
+    "kind": "Tipo",
+    "currency": "Moeda",
+    "deleteConfirm": "Excluir esta instituição?",
+    "inUseError": "Não é possível excluir: há lançamentos vinculados.",
+    "saveError": "Erro ao salvar.",
+    "kinds": {
+      "bank": "Banco",
+      "broker": "Corretora",
+      "internationalBroker": "Corretora internacional",
+      "crypto": "Cripto",
+      "other": "Outro"
+    }
   }
 }

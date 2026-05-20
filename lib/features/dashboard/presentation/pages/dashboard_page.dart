@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:investanco/app/widgets/app_drawer.dart';
 import 'package:investanco/gen/strings.g.dart';
 
 /// Portfolio home. Placeholder shell until Phase 1–3 wire real data.
@@ -19,6 +20,7 @@ class DashboardPage extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(t.dashboard.title)),
+      drawer: const AppDrawer(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
