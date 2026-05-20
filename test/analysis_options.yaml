@@ -1,0 +1,8 @@
+# Analyzer config for tests. Inherits the strict root ruleset but relaxes one
+# rule: tests intentionally pass explicit argument values (even when they match
+# a factory default) to document the scenario under test.
+include: ../analysis_options.yaml
+
+linter:
+  rules:
+    avoid_redundant_argument_values: false

@@ -50,6 +50,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsDashboardPt dashboard = TranslationsDashboardPt._(_root);
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
+	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
 }
 
 // Path: common
@@ -222,6 +223,65 @@ class TranslationsAssetsPt {
 	late final TranslationsAssetsMarketsPt markets = TranslationsAssetsMarketsPt._(_root);
 }
 
+// Path: transactions
+class TranslationsTransactionsPt {
+	TranslationsTransactionsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Lançamentos'
+	String get title => 'Lançamentos';
+
+	/// pt: 'Nenhum lançamento ainda. Registre compras, vendas e dividendos.'
+	String get empty => 'Nenhum lançamento ainda. Registre compras, vendas e dividendos.';
+
+	/// pt: 'Novo lançamento'
+	String get add => 'Novo lançamento';
+
+	/// pt: 'Editar lançamento'
+	String get edit => 'Editar lançamento';
+
+	/// pt: 'Instituição'
+	String get institution => 'Instituição';
+
+	/// pt: 'Ativo'
+	String get asset => 'Ativo';
+
+	/// pt: 'Tipo'
+	String get kind => 'Tipo';
+
+	/// pt: 'Quantidade'
+	String get quantity => 'Quantidade';
+
+	/// pt: 'Preço unitário'
+	String get unitPrice => 'Preço unitário';
+
+	/// pt: 'Taxas'
+	String get fees => 'Taxas';
+
+	/// pt: 'Valor total'
+	String get amount => 'Valor total';
+
+	/// pt: 'Data'
+	String get date => 'Data';
+
+	/// pt: 'Observações'
+	String get notes => 'Observações';
+
+	/// pt: 'Excluir este lançamento?'
+	String get deleteConfirm => 'Excluir este lançamento?';
+
+	/// pt: 'Erro ao salvar.'
+	String get saveError => 'Erro ao salvar.';
+
+	/// pt: 'Cadastre uma instituição e um ativo antes.'
+	String get needPrereqs => 'Cadastre uma instituição e um ativo antes.';
+
+	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
+}
+
 // Path: institutions.kinds
 class TranslationsInstitutionsKindsPt {
 	TranslationsInstitutionsKindsPt._(this._root);
@@ -306,6 +366,24 @@ class TranslationsAssetsMarketsPt {
 	String get global => 'Global';
 }
 
+// Path: transactions.kinds
+class TranslationsTransactionsKindsPt {
+	TranslationsTransactionsKindsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Compra'
+	String get buy => 'Compra';
+
+	/// pt: 'Venda'
+	String get sell => 'Venda';
+
+	/// pt: 'Dividendo'
+	String get dividend => 'Dividendo';
+}
+
 /// The flat map containing all translations for locale <pt>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -371,6 +449,25 @@ extension on Translations {
 			'assets.markets.br' => 'Brasil',
 			'assets.markets.us' => 'EUA',
 			'assets.markets.global' => 'Global',
+			'transactions.title' => 'Lançamentos',
+			'transactions.empty' => 'Nenhum lançamento ainda. Registre compras, vendas e dividendos.',
+			'transactions.add' => 'Novo lançamento',
+			'transactions.edit' => 'Editar lançamento',
+			'transactions.institution' => 'Instituição',
+			'transactions.asset' => 'Ativo',
+			'transactions.kind' => 'Tipo',
+			'transactions.quantity' => 'Quantidade',
+			'transactions.unitPrice' => 'Preço unitário',
+			'transactions.fees' => 'Taxas',
+			'transactions.amount' => 'Valor total',
+			'transactions.date' => 'Data',
+			'transactions.notes' => 'Observações',
+			'transactions.deleteConfirm' => 'Excluir este lançamento?',
+			'transactions.saveError' => 'Erro ao salvar.',
+			'transactions.needPrereqs' => 'Cadastre uma instituição e um ativo antes.',
+			'transactions.kinds.buy' => 'Compra',
+			'transactions.kinds.sell' => 'Venda',
+			'transactions.kinds.dividend' => 'Dividendo',
 			_ => null,
 		};
 	}

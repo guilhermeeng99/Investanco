@@ -73,5 +73,28 @@
       "us": "EUA",
       "global": "Global"
     }
+  },
+  "transactions": {
+    "title": "Lançamentos",
+    "empty": "Nenhum lançamento ainda. Registre compras, vendas e dividendos.",
+    "add": "Novo lançamento",
+    "edit": "Editar lançamento",
+    "institution": "Instituição",
+    "asset": "Ativo",
+    "kind": "Tipo",
+    "quantity": "Quantidade",
+    "unitPrice": "Preço unitário",
+    "fees": "Taxas",
+    "amount": "Valor total",
+    "date": "Data",
+    "notes": "Observações",
+    "deleteConfirm": "Excluir este lançamento?",
+    "saveError": "Erro ao salvar.",
+    "needPrereqs": "Cadastre uma instituição e um ativo antes.",
+    "kinds": {
+      "buy": "Compra",
+      "sell": "Venda",
+      "dividend": "Dividendo"
+    }
   }
 }
