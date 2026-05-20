@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:investanco/app/di/injection_container.dart';
-import 'package:investanco/app/widgets/app_drawer.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/allocation_chart.dart';
@@ -47,7 +46,6 @@ class _DashboardView extends StatelessWidget {
           ),
         ],
       ),
-      drawer: const AppDrawer(),
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
           return switch (state) {
