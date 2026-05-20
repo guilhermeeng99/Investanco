@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Drift web assets — downloaded at build time (CI) / for local web runs
+/web/sqlite3.wasm
+/web/drift_worker.dart.js
+
+# Local commit-message scratch file
+.commitmsg.tmp
