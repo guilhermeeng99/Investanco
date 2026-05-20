@@ -1,9 +1,9 @@
 ((a,b)=>{a[b]=a[b]||{}})(self,"$__dart_deferred_initializers__")
 $__dart_deferred_initializers__.current=function(a,b,c,$){var B,C,A={
-b9w(d,e,f){var w=new B.rY(C.ms,x.c),v=new A.a3T(w)
-w.r=A.bsw(v)
+bh6(d,e,f){var w=new B.uc(C.mx,x.c),v=new A.a7b(w)
+w.r=A.bBl(v)
 return v},
-bsu(d,e){var w,v="Portfolio",u="Institutions",t="Transactions",s="Settings",r="Currency",q=y.g,p="Error while saving."
+bBj(d,e){var w,v="Portfolio",u="Institutions",t="Transactions",s="Settings",r="Currency",q=y.g,p="Error while saving."
 A:{w="Type"
 if("appName"===e){w="Investanco"
 break A}if("common.save"===e){w="Save"
@@ -61,6 +61,15 @@ break A}if("assets.name"===e){w="Name"
 break A}if("assets.kind"===e)break A
 if("assets.market"===e){w="Market"
 break A}if("assets.currency"===e){w=r
+break A}if("assets.tesouroName"===e){w="Tesouro Direto name"
+break A}if("assets.tesouroNameHelp"===e){w=y.u
+break A}if("assets.fixedIncomeBasis"===e){w="Index"
+break A}if("assets.fixedIncomeRate"===e){w="Contracted rate (%)"
+break A}if("assets.fixedIncomeRateHelp"===e){w=y.x
+break A}if("assets.basis.cdi"===e){w="CDI"
+break A}if("assets.basis.selic"===e){w="Selic"
+break A}if("assets.basis.prefixed"===e){w="Prefixed"
+break A}if("assets.basis.ipca"===e){w="IPCA+"
 break A}if("assets.deleteConfirm"===e){w="Delete this asset?"
 break A}if("assets.inUseError"===e){w=q
 break A}if("assets.saveError"===e){w=p
@@ -98,6 +107,11 @@ break A}if("transactions.kinds.buy"===e){w="Buy"
 break A}if("transactions.kinds.sell"===e){w="Sell"
 break A}if("transactions.kinds.dividend"===e){w="Dividend"
 break A}if("settings.title"===e){w=s
+break A}if("settings.account"===e){w="Account"
+break A}if("settings.accountHelp"===e){w=y.D
+break A}if("settings.signInGoogle"===e){w="Sign in with Google"
+break A}if("settings.signOut"===e){w="Sign out"
+break A}if("settings.syncNow"===e){w="Sync now"
 break A}if("settings.appearance"===e){w="Appearance"
 break A}if("settings.quotes"===e){w="Quotes and data"
 break A}if("settings.general"===e){w="General"
@@ -115,199 +129,218 @@ break A}if("settings.finnhubTokenHelp"===e){w=y.r
 break A}if("settings.baseCurrency"===e){w="Base currency"
 break A}w=null
 break A}return w},
-bsw(d){return new A.aWQ(d)},
-a3T:function a3T(d){var _=this
+bBl(d){return new A.b2f(d)},
+a7b:function a7b(d){var _=this
 _.a=d
 _.y=_.x=_.w=_.r=_.f=_.e=_.d=_.c=_.b=$},
-aVw:function aVw(){},
-aVx:function aVx(){},
-aVB:function aVB(){},
-aVy:function aVy(){},
-aVz:function aVz(d){this.a=d
+b0P:function b0P(){},
+b0Q:function b0Q(){},
+b0U:function b0U(){},
+b0R:function b0R(){},
+b0S:function b0S(d){this.a=d
 this.b=$},
-aVt:function aVt(d){this.a=d
-this.c=this.b=$},
-aVD:function aVD(d){this.a=d
+b0M:function b0M(d){var _=this
+_.a=d
+_.d=_.c=_.b=$},
+b0W:function b0W(d){this.a=d
 this.b=$},
-aVC:function aVC(){},
-aVA:function aVA(){},
-aVu:function aVu(){},
-aVv:function aVv(){},
-aVE:function aVE(){},
-aWQ:function aWQ(d){this.a=d},
-afY:function afY(){}}
+b0V:function b0V(){},
+b0T:function b0T(){},
+b0L:function b0L(){},
+b0N:function b0N(){},
+b0O:function b0O(){},
+b0X:function b0X(){},
+b2f:function b2f(d){this.a=d},
+ajo:function ajo(){}}
 B=c[0]
 C=c[2]
 A=a.updateHolder(c[3],A)
-A.a3T.prototype={
-i(d,e){return this.a.SG(e)},
-gpq(){var w=this.b
+A.a7b.prototype={
+i(d,e){return this.a.U_(e)},
+gpU(){var w=this.b
 return w===$?this.b=this:w},
-ghJ(){var w=this,v=w.c
-if(v===$){w.gpq()
-w.c!==$&&B.al()
-v=w.c=new A.aVw()}return v},
-gOF(){var w=this,v=w.d
-if(v===$){w.gpq()
-w.d!==$&&B.al()
-v=w.d=new A.aVx()}return v},
-gvW(){var w=this,v=w.e
-if(v===$){w.gpq()
-w.e!==$&&B.al()
-v=w.e=new A.aVB()}return v},
-ghK(){var w=this,v=w.f
-if(v===$){w.gpq()
-w.f!==$&&B.al()
-v=w.f=new A.aVy()}return v},
-gdL(){var w,v=this,u=v.r
-if(u===$){w=v.gpq()
-v.r!==$&&B.al()
-u=v.r=new A.aVz(w)}return u},
-gcB(){var w,v=this,u=v.w
-if(u===$){w=v.gpq()
-v.w!==$&&B.al()
-u=v.w=new A.aVt(w)}return u},
-gcY(){var w,v=this,u=v.x
-if(u===$){w=v.gpq()
-v.x!==$&&B.al()
-u=v.x=new A.aVD(w)}return u},
-geF(){var w=this,v=w.y
-if(v===$){w.gpq()
-w.y!==$&&B.al()
-v=w.y=new A.aVC()}return v},
-$ii2:1,
-gIj(){return this.a}}
-A.aVw.prototype={
-gBj(){return"Save"},
-gmV(){return"Cancel"},
-gtv(){return"Delete"},
-gwm(){return"Required field"},
-ga9k(){return"Try again"}}
-A.aVx.prototype={
-ga3r(){return"Real (BRL)"},
-gaa5(){return"Dollar (USD)"}}
-A.aVB.prototype={
-ghK(){return"Portfolio"},
-gdL(){return"Institutions"},
-gcB(){return"Assets"},
-gcY(){return"Transactions"},
-geF(){return"Settings"}}
-A.aVy.prototype={
-gdi(){return"Portfolio"},
-gm5(){return y.z},
-ga5m(){return"Start your portfolio"},
-ga2F(){return"Add institution"},
-ga7L(){return"We could not load your portfolio."},
-ga9J(){return"Total net worth"},
-ga7c(){return"Invested"},
-ga8G(){return"Profit/Loss"},
-ga4D(){return"Day change"},
-ga2P(){return"Allocation by class"},
-ga5v(){return"Net worth evolution"},
-ga6Q(){return"Positions"},
-ga8T(){return"Refresh"},
-ga8D(){return"Quotes may be outdated"}}
-A.aVz.prototype={
-gdi(){return"Institutions"},
-gm5(){return y.f},
-ger(d){return"New institution"},
-goh(){return"Edit institution"},
-giU(){return"Name"},
-gc9(){return"Type"},
-gf0(){return"Currency"},
-gpM(){return"Delete this institution?"},
-gzQ(){return y.g},
-glK(){return"Error while saving."},
-gf7(){var w=this.b
-return w===$?this.b=new A.aVA():w}}
-A.aVt.prototype={
-gdi(){return"Assets"},
-gm5(){return y.F},
-ger(d){return"New asset"},
-goh(){return"Edit asset"},
-gwu(){return"Ticker"},
-giU(){return"Name"},
-gc9(){return"Type"},
-gt0(){return"Market"},
-gf0(){return"Currency"},
-gpM(){return"Delete this asset?"},
-gzQ(){return y.g},
-glK(){return"Error while saving."},
-gf7(){var w=this.b
-return w===$?this.b=new A.aVu():w},
-gGA(){var w=this.c
-return w===$?this.c=new A.aVv():w}}
-A.aVD.prototype={
-gdi(){return"Transactions"},
-gm5(){return y.v},
-ger(d){return"New transaction"},
-goh(){return"Edit transaction"},
-gGl(){return"Institution"},
-gEC(){return"Asset"},
-gAz(){return"Quantity"},
-ga9S(){return"Unit price"},
-ga5A(){return"Fees"},
-ga2T(){return"Total amount"},
-gla(){return"Date"},
-gAf(){return"Notes"},
-gpM(){return"Delete this transaction?"},
-glK(){return"Error while saving."},
-ga86(){return"Add an institution and an asset first."},
-gf7(){var w=this.b
-return w===$?this.b=new A.aVE():w}}
-A.aVC.prototype={
-gdi(){return"Settings"},
-ga2Y(){return"Appearance"},
-gta(){return"Quotes and data"},
-gSf(){return"General"},
-ga7E(){return"Language"},
-ga7G(){return"Portuguese"},
-ga7F(){return"English"},
-ga9r(){return"Theme"},
-ga9v(){return"System"},
-ga9t(){return"Light"},
-ga9s(){return"Dark"},
-gyT(){return"brapi token (optional)"},
-ga3q(){return"Increases the B3 quote rate limit."},
-gvA(){return"Finnhub token (US assets)"},
-ga5V(){return y.r},
-gyO(){return"Base currency"}}
-A.aVA.prototype={
-ga3j(){return"Bank"},
-ga3s(){return"Brokerage"},
-ga7a(){return"International brokerage"},
-gz7(){return"Crypto"},
-ga8m(){return"Other"}}
-A.aVu.prototype={
-gTx(){return"Stock (BR)"},
-ga5P(){return"REIT (FII)"},
-ga5t(){return"ETF (BR)"},
-ga3l(){return"BDR"},
-gTy(){return"Stock (US)"},
-ga5u(){return"ETF (US)"},
-gz7(){return"Crypto"},
-ga9P(){return"Treasury bonds"},
-ga5X(){return"Fixed income"},
-ga6f(){return"Fund"},
-ga3K(){return"Cash"}}
-A.aVv.prototype={
-ga3p(){return"Brazil"},
-gaa4(){return"US"},
-gSI(){return"Global"}}
-A.aVE.prototype={
-ga3B(){return"Buy"},
-gT3(){return"Sell"},
-ga55(){return"Dividend"}}
-A.afY.prototype={}
+gi2(){var w=this,v=w.c
+if(v===$){w.gpU()
+w.c!==$&&B.ap()
+v=w.c=new A.b0P()}return v},
+gPS(){var w=this,v=w.d
+if(v===$){w.gpU()
+w.d!==$&&B.ap()
+v=w.d=new A.b0Q()}return v},
+gwC(){var w=this,v=w.e
+if(v===$){w.gpU()
+w.e!==$&&B.ap()
+v=w.e=new A.b0U()}return v},
+gi3(){var w=this,v=w.f
+if(v===$){w.gpU()
+w.f!==$&&B.ap()
+v=w.f=new A.b0R()}return v},
+gdC(){var w,v=this,u=v.r
+if(u===$){w=v.gpU()
+v.r!==$&&B.ap()
+u=v.r=new A.b0S(w)}return u},
+gc4(){var w,v=this,u=v.w
+if(u===$){w=v.gpU()
+v.w!==$&&B.ap()
+u=v.w=new A.b0M(w)}return u},
+gd0(){var w,v=this,u=v.x
+if(u===$){w=v.gpU()
+v.x!==$&&B.ap()
+u=v.x=new A.b0W(w)}return u},
+ge7(){var w=this,v=w.y
+if(v===$){w.gpU()
+w.y!==$&&B.ap()
+v=w.y=new A.b0V()}return v},
+$iix:1,
+gJx(){return this.a}}
+A.b0P.prototype={
+gC4(){return"Save"},
+gjX(){return"Cancel"},
+gu4(){return"Delete"},
+gx0(){return"Required field"},
+gab3(){return"Try again"}}
+A.b0Q.prototype={
+ga50(){return"Real (BRL)"},
+gabQ(){return"Dollar (USD)"}}
+A.b0U.prototype={
+gi3(){return"Portfolio"},
+gdC(){return"Institutions"},
+gc4(){return"Assets"},
+gd0(){return"Transactions"},
+ge7(){return"Settings"}}
+A.b0R.prototype={
+gdr(){return"Portfolio"},
+gms(){return y.z},
+ga7_(){return"Start your portfolio"},
+ga4c(){return"Add institution"},
+ga9r(){return"We could not load your portfolio."},
+gabt(){return"Total net worth"},
+ga8S(){return"Invested"},
+gaao(){return"Profit/Loss"},
+ga6e(){return"Day change"},
+ga4n(){return"Allocation by class"},
+ga78(){return"Net worth evolution"},
+ga8v(){return"Positions"},
+gaaC(){return"Refresh"},
+gaal(){return"Quotes may be outdated"}}
+A.b0S.prototype={
+gdr(){return"Institutions"},
+gms(){return y.f},
+geb(d){return"New institution"},
+goH(){return"Edit institution"},
+gjd(){return"Name"},
+gcf(){return"Type"},
+gff(){return"Currency"},
+gqg(){return"Delete this institution?"},
+gAE(){return y.g},
+gm2(){return"Error while saving."},
+gfl(){var w=this.b
+return w===$?this.b=new A.b0T():w}}
+A.b0M.prototype={
+gdr(){return"Assets"},
+gms(){return y.F},
+geb(d){return"New asset"},
+goH(){return"Edit asset"},
+gxa(){return"Ticker"},
+gjd(){return"Name"},
+gcf(){return"Type"},
+gtD(){return"Market"},
+gff(){return"Currency"},
+gab9(){return"Tesouro Direto name"},
+gaba(){return y.u},
+gGY(){return"Index"},
+ga7A(){return"Contracted rate (%)"},
+ga7B(){return y.x},
+gzD(){var w=this.b
+return w===$?this.b=new A.b0L():w},
+gqg(){return"Delete this asset?"},
+gAE(){return y.g},
+gm2(){return"Error while saving."},
+gfl(){var w=this.c
+return w===$?this.c=new A.b0N():w},
+gHH(){var w=this.d
+return w===$?this.d=new A.b0O():w}}
+A.b0W.prototype={
+gdr(){return"Transactions"},
+gms(){return y.v},
+geb(d){return"New transaction"},
+goH(){return"Edit transaction"},
+gHs(){return"Institution"},
+gFG(){return"Asset"},
+gBj(){return"Quantity"},
+gabD(){return"Unit price"},
+ga7d(){return"Fees"},
+ga4r(){return"Total amount"},
+gls(){return"Date"},
+gB1(){return"Notes"},
+gqg(){return"Delete this transaction?"},
+gm2(){return"Error while saving."},
+ga9N(){return"Add an institution and an asset first."},
+gfl(){var w=this.b
+return w===$?this.b=new A.b0X():w}}
+A.b0V.prototype={
+gdr(){return"Settings"},
+ga47(){return"Account"},
+ga48(){return y.D},
+gUM(){return"Sign in with Google"},
+gCu(){return"Sign out"},
+gVY(){return"Sync now"},
+ga4w(){return"Appearance"},
+gtO(){return"Quotes and data"},
+gTx(){return"General"},
+ga9k(){return"Language"},
+ga9m(){return"Portuguese"},
+ga9l(){return"English"},
+gabb(){return"Theme"},
+gabf(){return"System"},
+gabd(){return"Light"},
+gabc(){return"Dark"},
+gzH(){return"brapi token (optional)"},
+ga5_(){return"Increases the B3 quote rate limit."},
+gwe(){return"Finnhub token (US assets)"},
+ga7x(){return y.r},
+gzC(){return"Base currency"}}
+A.b0T.prototype={
+ga4S(){return"Bank"},
+ga51(){return"Brokerage"},
+ga8Q(){return"International brokerage"},
+gzW(){return"Crypto"},
+gaa1(){return"Other"}}
+A.b0L.prototype={
+ga5k(){return"CDI"},
+gUn(){return"Selic"},
+gaah(){return"Prefixed"},
+ga8X(){return"IPCA+"}}
+A.b0N.prototype={
+gUU(){return"Stock (BR)"},
+ga7r(){return"REIT (FII)"},
+ga76(){return"ETF (BR)"},
+ga4V(){return"BDR"},
+gUV(){return"Stock (US)"},
+ga77(){return"ETF (US)"},
+gzW(){return"Crypto"},
+gabz(){return"Treasury bonds"},
+ga7z(){return"Fixed income"},
+ga7U(){return"Fund"},
+ga5j(){return"Cash"}}
+A.b0O.prototype={
+ga4Z(){return"Brazil"},
+gabP(){return"US"},
+gU1(){return"Global"}}
+A.b0X.prototype={
+ga5a(){return"Buy"},
+gUo(){return"Sell"},
+ga6I(){return"Dividend"}}
+A.ajo.prototype={}
 var z=a.updateTypes([])
-A.aWQ.prototype={
-$1(d){return A.bsu(this.a,d)},
+A.b2f.prototype={
+$1(d){return A.bBj(this.a,d)},
 $S:97};(function inheritance(){var w=a.mixin,v=a.inheritMany,u=a.inherit
-v(B.n,[A.afY,A.aVw,A.aVx,A.aVB,A.aVy,A.aVz,A.aVt,A.aVD,A.aVC,A.aVA,A.aVu,A.aVv,A.aVE])
-u(A.a3T,A.afY)
-u(A.aWQ,B.o2)
-w(A.afY,B.kn)})()
-B.baR(b.typeUniverse,JSON.parse('{"a3T":{"i2":[],"kn":["fg","i2"]}}'))
-var y={z:"Add an institution, an asset and a transaction to start tracking your investments.",g:"Cannot delete: there are linked transactions.",r:"Free at finnhub.io, required for US stock/ETF quotes.",F:"No assets yet. Add PETR4, AAPL, Treasury bonds, etc.",f:"No institutions yet. Add Nubank, Avenue, etc.",v:"No transactions yet. Record buys, sells and dividends."}
-var x={c:B.a2("rY<fg,i2>")}};
-(a=>{a["6RynkuCSVdNkXmTJKwaM7ggF5ho="]=a.current})($__dart_deferred_initializers__);
+v(B.p,[A.ajo,A.b0P,A.b0Q,A.b0U,A.b0R,A.b0S,A.b0M,A.b0W,A.b0V,A.b0T,A.b0L,A.b0N,A.b0O,A.b0X])
+u(A.a7b,A.ajo)
+u(A.b2f,B.oU)
+w(A.ajo,B.kV)})()
+B.biy(b.typeUniverse,JSON.parse('{"a7b":{"ix":[],"kV":["fB","ix"]}}'))
+var y={z:"Add an institution, an asset and a transaction to start tracking your investments.",x:"CDI/Selic: % of the index. Prefixed: % p.a. IPCA+: spread % p.a.",g:"Cannot delete: there are linked transactions.",u:"Exactly as on the site, e.g. Tesouro Selic 2027.",r:"Free at finnhub.io, required for US stock/ETF quotes.",F:"No assets yet. Add PETR4, AAPL, Treasury bonds, etc.",f:"No institutions yet. Add Nubank, Avenue, etc.",v:"No transactions yet. Record buys, sells and dividends.",D:"Sign in with Google to sync your portfolio across devices."}
+var x={c:B.W("uc<fB,ix>")}};
+(a=>{a["2Shq2vniEzQK7j4kd2IaWVXioco="]=a.current})($__dart_deferred_initializers__);
