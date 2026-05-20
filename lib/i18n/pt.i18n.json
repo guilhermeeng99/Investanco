@@ -21,7 +21,17 @@
   },
   "dashboard": {
     "title": "Carteira",
-    "empty": "Adicione sua primeira instituição para começar a acompanhar seus investimentos."
+    "empty": "Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.",
+    "total": "Patrimônio total",
+    "invested": "Investido",
+    "profit": "Lucro/Prejuízo",
+    "dayChange": "Variação do dia",
+    "allocation": "Alocação por classe",
+    "holdings": "Posições",
+    "lastSync": "Atualizado",
+    "never": "nunca",
+    "refresh": "Atualizar",
+    "pricesStale": "Cotações podem estar desatualizadas"
   },
   "institutions": {
     "title": "Instituições",

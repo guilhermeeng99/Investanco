@@ -130,8 +130,38 @@ class TranslationsDashboardPt {
 	/// pt: 'Carteira'
 	String get title => 'Carteira';
 
-	/// pt: 'Adicione sua primeira instituição para começar a acompanhar seus investimentos.'
-	String get empty => 'Adicione sua primeira instituição para começar a acompanhar seus investimentos.';
+	/// pt: 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.'
+	String get empty => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.';
+
+	/// pt: 'Patrimônio total'
+	String get total => 'Patrimônio total';
+
+	/// pt: 'Investido'
+	String get invested => 'Investido';
+
+	/// pt: 'Lucro/Prejuízo'
+	String get profit => 'Lucro/Prejuízo';
+
+	/// pt: 'Variação do dia'
+	String get dayChange => 'Variação do dia';
+
+	/// pt: 'Alocação por classe'
+	String get allocation => 'Alocação por classe';
+
+	/// pt: 'Posições'
+	String get holdings => 'Posições';
+
+	/// pt: 'Atualizado'
+	String get lastSync => 'Atualizado';
+
+	/// pt: 'nunca'
+	String get never => 'nunca';
+
+	/// pt: 'Atualizar'
+	String get refresh => 'Atualizar';
+
+	/// pt: 'Cotações podem estar desatualizadas'
+	String get pricesStale => 'Cotações podem estar desatualizadas';
 }
 
 // Path: institutions
@@ -407,7 +437,17 @@ extension on Translations {
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
 			'dashboard.title' => 'Carteira',
-			'dashboard.empty' => 'Adicione sua primeira instituição para começar a acompanhar seus investimentos.',
+			'dashboard.empty' => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.',
+			'dashboard.total' => 'Patrimônio total',
+			'dashboard.invested' => 'Investido',
+			'dashboard.profit' => 'Lucro/Prejuízo',
+			'dashboard.dayChange' => 'Variação do dia',
+			'dashboard.allocation' => 'Alocação por classe',
+			'dashboard.holdings' => 'Posições',
+			'dashboard.lastSync' => 'Atualizado',
+			'dashboard.never' => 'nunca',
+			'dashboard.refresh' => 'Atualizar',
+			'dashboard.pricesStale' => 'Cotações podem estar desatualizadas',
 			'institutions.title' => 'Instituições',
 			'institutions.empty' => 'Nenhuma instituição ainda. Adicione Nubank, Avenue, etc.',
 			'institutions.add' => 'Nova instituição',

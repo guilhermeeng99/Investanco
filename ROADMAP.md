@@ -55,10 +55,10 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
-| 3.1 | Dashboard: total equity, total profit, day change | ⬜ |
-| 3.2 | Allocation chart (by asset class / by institution) — fl_chart | ⬜ |
-| 3.3 | Per-holding list with live value & P/L | ⬜ |
-| 3.4 | Pull-to-refresh + manual sync button | ⬜ |
+| 3.1 | Dashboard: total equity, total profit, day change | ✅ |
+| 3.2 | Allocation chart (by asset class) — fl_chart | ✅ |
+| 3.3 | Per-holding list with live value & P/L | ✅ |
+| 3.4 | Pull-to-refresh + manual sync button | ✅ |
 
 ---
 

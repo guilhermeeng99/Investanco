@@ -8,6 +8,7 @@ import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
+import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
@@ -37,6 +38,7 @@ Future<void> init() async {
   _initAssets();
   _initTransactions();
   _initQuotes();
+  _initDashboard();
 }
 
 void _initCore() {
@@ -87,4 +89,10 @@ void _initQuotes() {
         YahooQuoteDataSource(sl()),
       ]),
     );
+}
+
+void _initDashboard() {
+  sl.registerFactory<DashboardCubit>(
+    () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl()),
+  );
 }
