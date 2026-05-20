@@ -73,6 +73,33 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     });
   }
 
+  /// Picking a kind pre-fills market and currency to the usual pairing
+  /// (US kinds → EUA/USD, BR kinds → Brasil/BRL); both remain editable.
+  void _onKindChanged(AssetKind? value) {
+    if (value == null) return;
+    final (market, currency) = _defaultsForKind(value);
+    setState(() {
+      _kind = value;
+      _market = market;
+      _currency = currency;
+    });
+  }
+
+  (Market, Currency) _defaultsForKind(AssetKind kind) => switch (kind) {
+        AssetKind.stockBr ||
+        AssetKind.fiiBr ||
+        AssetKind.etfBr ||
+        AssetKind.bdrBr =>
+          (Market.br, Currency.brl),
+        AssetKind.stockUs || AssetKind.etfUs => (Market.us, Currency.usd),
+        AssetKind.crypto => (Market.global, Currency.usd),
+        AssetKind.treasury ||
+        AssetKind.fixedIncome ||
+        AssetKind.fund ||
+        AssetKind.cash =>
+          (Market.br, Currency.brl),
+      };
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
@@ -152,7 +179,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
                       child: Text(assetKindLabel(kind)),
                     ),
                 ],
-                onChanged: (value) => setState(() => _kind = value ?? _kind),
+                onChanged: _onKindChanged,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<Market>(
