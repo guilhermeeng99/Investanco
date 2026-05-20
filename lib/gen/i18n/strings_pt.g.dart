@@ -359,6 +359,18 @@ class TranslationsSettingsPt {
 	/// pt: 'Configurações'
 	String get title => 'Configurações';
 
+	/// pt: 'Conta'
+	String get account => 'Conta';
+
+	/// pt: 'Entre com o Google para sincronizar sua carteira entre dispositivos.'
+	String get accountHelp => 'Entre com o Google para sincronizar sua carteira entre dispositivos.';
+
+	/// pt: 'Entrar com Google'
+	String get signInGoogle => 'Entrar com Google';
+
+	/// pt: 'Sair'
+	String get signOut => 'Sair';
+
 	/// pt: 'Aparência'
 	String get appearance => 'Aparência';
 
@@ -638,6 +650,10 @@ extension on Translations {
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
 			'settings.title' => 'Configurações',
+			'settings.account' => 'Conta',
+			'settings.accountHelp' => 'Entre com o Google para sincronizar sua carteira entre dispositivos.',
+			'settings.signInGoogle' => 'Entrar com Google',
+			'settings.signOut' => 'Sair',
 			'settings.appearance' => 'Aparência',
 			'settings.quotes' => 'Cotações e dados',
 			'settings.general' => 'Geral',

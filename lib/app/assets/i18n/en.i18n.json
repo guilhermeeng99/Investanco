@@ -126,6 +126,10 @@
   },
   "settings": {
     "title": "Settings",
+    "account": "Account",
+    "accountHelp": "Sign in with Google to sync your portfolio across devices.",
+    "signInGoogle": "Sign in with Google",
+    "signOut": "Sign out",
     "appearance": "Appearance",
     "quotes": "Quotes and data",
     "general": "General",

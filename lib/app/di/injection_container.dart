@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get_it/get_it.dart';
 import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
@@ -9,7 +10,7 @@ import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
-import 'package:investanco/features/auth/data/repositories/local_auth_repository.dart';
+import 'package:investanco/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
@@ -72,13 +73,14 @@ void _initAppShell() {
     ..registerLazySingleton<ThemeCubit>(ThemeCubit.new);
 }
 
-/// Auth foundation. `LocalAuthRepository` is a placeholder until Firebase Auth
-/// is configured (Phase 6); `FirebaseAuthRepository` drops in behind the same
-/// port. The bloc is registered but not yet wired into the router.
+/// Auth: Firebase Auth + Google sign-in behind [AuthRepository]. The bloc is an
+/// app-wide singleton (provided at the root, consumed by Settings).
 void _initAuth() {
   sl
-    ..registerLazySingleton<AuthRepository>(LocalAuthRepository.new)
-    ..registerFactory<AuthBloc>(() => AuthBloc(sl()));
+    ..registerLazySingleton<AuthRepository>(
+      () => FirebaseAuthRepository(fb.FirebaseAuth.instance),
+    )
+    ..registerLazySingleton<AuthBloc>(() => AuthBloc(sl()));
 }
 
 void _initInstitutions() {

@@ -5,6 +5,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/app_theme.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
+import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Root widget: wires theme, routing and localization.
@@ -14,8 +15,11 @@ class InvestancoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ThemeCubit>.value(
-      value: sl<ThemeCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ThemeCubit>.value(value: sl<ThemeCubit>()),
+        BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
+      ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(

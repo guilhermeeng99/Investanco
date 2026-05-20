@@ -126,6 +126,10 @@
   },
   "settings": {
     "title": "Configurações",
+    "account": "Conta",
+    "accountHelp": "Entre com o Google para sincronizar sua carteira entre dispositivos.",
+    "signInGoogle": "Entrar com Google",
+    "signOut": "Sair",
     "appearance": "Aparência",
     "quotes": "Cotações e dados",
     "general": "Geral",

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "305852403095",
+    "project_id": "investanco-app-2026",
+    "storage_bucket": "investanco-app-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305852403095:android:e0fcd59c990a5c849008d2",
+        "android_client_info": {
+          "package_name": "com.guiga.investanco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5uagjc5fov3mpZlCGHmgsuAoo6NZ2MOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

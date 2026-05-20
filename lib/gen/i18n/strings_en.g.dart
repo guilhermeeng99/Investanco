@@ -198,6 +198,10 @@ class _TranslationsSettingsEn implements TranslationsSettingsPt {
 
 	// Translations
 	@override String get title => 'Settings';
+	@override String get account => 'Account';
+	@override String get accountHelp => 'Sign in with Google to sync your portfolio across devices.';
+	@override String get signInGoogle => 'Sign in with Google';
+	@override String get signOut => 'Sign out';
 	@override String get appearance => 'Appearance';
 	@override String get quotes => 'Quotes and data';
 	@override String get general => 'General';
@@ -396,6 +400,10 @@ extension on TranslationsEn {
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',
 			'settings.title' => 'Settings',
+			'settings.account' => 'Account',
+			'settings.accountHelp' => 'Sign in with Google to sync your portfolio across devices.',
+			'settings.signInGoogle' => 'Sign in with Google',
+			'settings.signOut' => 'Sign out',
 			'settings.appearance' => 'Appearance',
 			'settings.quotes' => 'Quotes and data',
 			'settings.general' => 'General',

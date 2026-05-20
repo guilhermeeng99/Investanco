@@ -6,6 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/features/auth/domain/entities/auth_user.dart';
+import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/profile/domain/entities/app_settings.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
@@ -48,6 +50,8 @@ class _SettingsView extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
+              const _AccountSection(),
+              const SizedBox(height: 24),
               InvestancoFormSection(
                 label: t.settings.appearance,
                 children: [
@@ -133,6 +137,73 @@ class _SettingsView extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// Cloud account: Google sign-in to enable multi-device sync. Renders the
+/// signed-in user or a sign-in button off the app-wide [AuthBloc].
+class _AccountSection extends StatelessWidget {
+  const _AccountSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return InvestancoFormSection(
+      label: t.settings.account,
+      children: [
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) => switch (state) {
+            AuthAuthenticated(:final user) => _signedIn(context, user),
+            _ => _signedOut(context, state),
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _signedIn(BuildContext context, AuthUser user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          user.name.isEmpty ? user.email : user.name,
+          style: context.textTheme.titleSmall,
+        ),
+        if (user.name.isNotEmpty && user.email.isNotEmpty)
+          Text(user.email, style: context.textTheme.bodySmall),
+        const SizedBox(height: 12),
+        InvestancoButton(
+          label: t.settings.signOut,
+          isOutlined: true,
+          onPressed: () =>
+              context.read<AuthBloc>().add(const AuthSignOutRequested()),
+        ),
+      ],
+    );
+  }
+
+  Widget _signedOut(BuildContext context, AuthState state) {
+    final message = state is AuthUnauthenticated ? state.message : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(t.settings.accountHelp, style: context.textTheme.bodySmall),
+        if (message != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.error,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        InvestancoButton(
+          label: t.settings.signInGoogle,
+          onPressed: () =>
+              context.read<AuthBloc>().add(const AuthSignInRequested()),
+        ),
+      ],
     );
   }
 }
