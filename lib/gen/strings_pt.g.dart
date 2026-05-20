@@ -51,6 +51,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
 	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
+	late final TranslationsSettingsPt settings = TranslationsSettingsPt._(_root);
 }
 
 // Path: common
@@ -117,6 +118,9 @@ class TranslationsNavPt {
 
 	/// pt: 'Lançamentos'
 	String get transactions => 'Lançamentos';
+
+	/// pt: 'Configurações'
+	String get settings => 'Configurações';
 }
 
 // Path: dashboard
@@ -315,6 +319,39 @@ class TranslationsTransactionsPt {
 	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
 }
 
+// Path: settings
+class TranslationsSettingsPt {
+	TranslationsSettingsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Configurações'
+	String get title => 'Configurações';
+
+	/// pt: 'Tema'
+	String get theme => 'Tema';
+
+	/// pt: 'Sistema'
+	String get themeSystem => 'Sistema';
+
+	/// pt: 'Claro'
+	String get themeLight => 'Claro';
+
+	/// pt: 'Escuro'
+	String get themeDark => 'Escuro';
+
+	/// pt: 'Token brapi (opcional)'
+	String get brapiToken => 'Token brapi (opcional)';
+
+	/// pt: 'Aumenta o limite de cotações da B3.'
+	String get brapiTokenHelp => 'Aumenta o limite de cotações da B3.';
+
+	/// pt: 'Moeda base'
+	String get baseCurrency => 'Moeda base';
+}
+
 // Path: institutions.kinds
 class TranslationsInstitutionsKindsPt {
 	TranslationsInstitutionsKindsPt._(this._root);
@@ -439,6 +476,7 @@ extension on Translations {
 			'nav.institutions' => 'Instituições',
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
+			'nav.settings' => 'Configurações',
 			'dashboard.title' => 'Carteira',
 			'dashboard.empty' => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.',
 			'dashboard.total' => 'Patrimônio total',
@@ -512,6 +550,14 @@ extension on Translations {
 			'transactions.kinds.buy' => 'Compra',
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
+			'settings.title' => 'Configurações',
+			'settings.theme' => 'Tema',
+			'settings.themeSystem' => 'Sistema',
+			'settings.themeLight' => 'Claro',
+			'settings.themeDark' => 'Escuro',
+			'settings.brapiToken' => 'Token brapi (opcional)',
+			'settings.brapiTokenHelp' => 'Aumenta o limite de cotações da B3.',
+			'settings.baseCurrency' => 'Moeda base',
 			_ => null,
 		};
 	}

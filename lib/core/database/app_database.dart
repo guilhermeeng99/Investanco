@@ -160,7 +160,29 @@ class Snapshots extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Institutions, Assets, Transactions, Quotes, Snapshots])
+/// Single-row user settings (id is always 0). Row class renamed to avoid
+/// clashing with the `AppSettings` entity.
+@DataClassName('SettingsRow')
+class Settings extends Table {
+  /// Constant primary key (always 0).
+  IntColumn get id => integer()();
+
+  /// `AppThemeMode` name.
+  TextColumn get themeMode => text()();
+
+  /// `Currency` name (base).
+  TextColumn get baseCurrency => text()();
+
+  /// Optional brapi token.
+  TextColumn get brapiToken => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(
+  tables: [Institutions, Assets, Transactions, Quotes, Snapshots, Settings],
+)
 class AppDatabase extends _$AppDatabase {
   /// Opens the on-device database, or uses [executor] (e.g. an in-memory
   /// database in tests).
@@ -168,7 +190,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'investanco'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -176,6 +198,7 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(quotes);
           if (from < 3) await m.createTable(snapshots);
+          if (from < 4) await m.createTable(settings);
         },
       );
 }

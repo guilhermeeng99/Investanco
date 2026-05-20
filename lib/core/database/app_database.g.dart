@@ -2601,6 +2601,322 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
   }
 }
 
+class $SettingsTable extends Settings
+    with TableInfo<$SettingsTable, SettingsRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _themeModeMeta = const VerificationMeta(
+    'themeMode',
+  );
+  @override
+  late final GeneratedColumn<String> themeMode = GeneratedColumn<String>(
+    'theme_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _baseCurrencyMeta = const VerificationMeta(
+    'baseCurrency',
+  );
+  @override
+  late final GeneratedColumn<String> baseCurrency = GeneratedColumn<String>(
+    'base_currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _brapiTokenMeta = const VerificationMeta(
+    'brapiToken',
+  );
+  @override
+  late final GeneratedColumn<String> brapiToken = GeneratedColumn<String>(
+    'brapi_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    themeMode,
+    baseCurrency,
+    brapiToken,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SettingsRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('theme_mode')) {
+      context.handle(
+        _themeModeMeta,
+        themeMode.isAcceptableOrUnknown(data['theme_mode']!, _themeModeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_themeModeMeta);
+    }
+    if (data.containsKey('base_currency')) {
+      context.handle(
+        _baseCurrencyMeta,
+        baseCurrency.isAcceptableOrUnknown(
+          data['base_currency']!,
+          _baseCurrencyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_baseCurrencyMeta);
+    }
+    if (data.containsKey('brapi_token')) {
+      context.handle(
+        _brapiTokenMeta,
+        brapiToken.isAcceptableOrUnknown(data['brapi_token']!, _brapiTokenMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SettingsRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SettingsRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      themeMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}theme_mode'],
+      )!,
+      baseCurrency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}base_currency'],
+      )!,
+      brapiToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brapi_token'],
+      ),
+    );
+  }
+
+  @override
+  $SettingsTable createAlias(String alias) {
+    return $SettingsTable(attachedDatabase, alias);
+  }
+}
+
+class SettingsRow extends DataClass implements Insertable<SettingsRow> {
+  /// Constant primary key (always 0).
+  final int id;
+
+  /// `AppThemeMode` name.
+  final String themeMode;
+
+  /// `Currency` name (base).
+  final String baseCurrency;
+
+  /// Optional brapi token.
+  final String? brapiToken;
+  const SettingsRow({
+    required this.id,
+    required this.themeMode,
+    required this.baseCurrency,
+    this.brapiToken,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['theme_mode'] = Variable<String>(themeMode);
+    map['base_currency'] = Variable<String>(baseCurrency);
+    if (!nullToAbsent || brapiToken != null) {
+      map['brapi_token'] = Variable<String>(brapiToken);
+    }
+    return map;
+  }
+
+  SettingsCompanion toCompanion(bool nullToAbsent) {
+    return SettingsCompanion(
+      id: Value(id),
+      themeMode: Value(themeMode),
+      baseCurrency: Value(baseCurrency),
+      brapiToken: brapiToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brapiToken),
+    );
+  }
+
+  factory SettingsRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SettingsRow(
+      id: serializer.fromJson<int>(json['id']),
+      themeMode: serializer.fromJson<String>(json['themeMode']),
+      baseCurrency: serializer.fromJson<String>(json['baseCurrency']),
+      brapiToken: serializer.fromJson<String?>(json['brapiToken']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'themeMode': serializer.toJson<String>(themeMode),
+      'baseCurrency': serializer.toJson<String>(baseCurrency),
+      'brapiToken': serializer.toJson<String?>(brapiToken),
+    };
+  }
+
+  SettingsRow copyWith({
+    int? id,
+    String? themeMode,
+    String? baseCurrency,
+    Value<String?> brapiToken = const Value.absent(),
+  }) => SettingsRow(
+    id: id ?? this.id,
+    themeMode: themeMode ?? this.themeMode,
+    baseCurrency: baseCurrency ?? this.baseCurrency,
+    brapiToken: brapiToken.present ? brapiToken.value : this.brapiToken,
+  );
+  SettingsRow copyWithCompanion(SettingsCompanion data) {
+    return SettingsRow(
+      id: data.id.present ? data.id.value : this.id,
+      themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
+      baseCurrency: data.baseCurrency.present
+          ? data.baseCurrency.value
+          : this.baseCurrency,
+      brapiToken: data.brapiToken.present
+          ? data.brapiToken.value
+          : this.brapiToken,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsRow(')
+          ..write('id: $id, ')
+          ..write('themeMode: $themeMode, ')
+          ..write('baseCurrency: $baseCurrency, ')
+          ..write('brapiToken: $brapiToken')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, themeMode, baseCurrency, brapiToken);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SettingsRow &&
+          other.id == this.id &&
+          other.themeMode == this.themeMode &&
+          other.baseCurrency == this.baseCurrency &&
+          other.brapiToken == this.brapiToken);
+}
+
+class SettingsCompanion extends UpdateCompanion<SettingsRow> {
+  final Value<int> id;
+  final Value<String> themeMode;
+  final Value<String> baseCurrency;
+  final Value<String?> brapiToken;
+  const SettingsCompanion({
+    this.id = const Value.absent(),
+    this.themeMode = const Value.absent(),
+    this.baseCurrency = const Value.absent(),
+    this.brapiToken = const Value.absent(),
+  });
+  SettingsCompanion.insert({
+    this.id = const Value.absent(),
+    required String themeMode,
+    required String baseCurrency,
+    this.brapiToken = const Value.absent(),
+  }) : themeMode = Value(themeMode),
+       baseCurrency = Value(baseCurrency);
+  static Insertable<SettingsRow> custom({
+    Expression<int>? id,
+    Expression<String>? themeMode,
+    Expression<String>? baseCurrency,
+    Expression<String>? brapiToken,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (themeMode != null) 'theme_mode': themeMode,
+      if (baseCurrency != null) 'base_currency': baseCurrency,
+      if (brapiToken != null) 'brapi_token': brapiToken,
+    });
+  }
+
+  SettingsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? themeMode,
+    Value<String>? baseCurrency,
+    Value<String?>? brapiToken,
+  }) {
+    return SettingsCompanion(
+      id: id ?? this.id,
+      themeMode: themeMode ?? this.themeMode,
+      baseCurrency: baseCurrency ?? this.baseCurrency,
+      brapiToken: brapiToken ?? this.brapiToken,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (themeMode.present) {
+      map['theme_mode'] = Variable<String>(themeMode.value);
+    }
+    if (baseCurrency.present) {
+      map['base_currency'] = Variable<String>(baseCurrency.value);
+    }
+    if (brapiToken.present) {
+      map['brapi_token'] = Variable<String>(brapiToken.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('themeMode: $themeMode, ')
+          ..write('baseCurrency: $baseCurrency, ')
+          ..write('brapiToken: $brapiToken')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2609,6 +2925,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $QuotesTable quotes = $QuotesTable(this);
   late final $SnapshotsTable snapshots = $SnapshotsTable(this);
+  late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2619,6 +2936,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transactions,
     quotes,
     snapshots,
+    settings,
   ];
 }
 
@@ -3892,6 +4210,182 @@ typedef $$SnapshotsTableProcessedTableManager =
       SnapshotRow,
       PrefetchHooks Function()
     >;
+typedef $$SettingsTableCreateCompanionBuilder =
+    SettingsCompanion Function({
+      Value<int> id,
+      required String themeMode,
+      required String baseCurrency,
+      Value<String?> brapiToken,
+    });
+typedef $$SettingsTableUpdateCompanionBuilder =
+    SettingsCompanion Function({
+      Value<int> id,
+      Value<String> themeMode,
+      Value<String> baseCurrency,
+      Value<String?> brapiToken,
+    });
+
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get themeMode => $composableBuilder(
+    column: $table.themeMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brapiToken => $composableBuilder(
+    column: $table.brapiToken,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get themeMode => $composableBuilder(
+    column: $table.themeMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brapiToken => $composableBuilder(
+    column: $table.brapiToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get themeMode =>
+      $composableBuilder(column: $table.themeMode, builder: (column) => column);
+
+  GeneratedColumn<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brapiToken => $composableBuilder(
+    column: $table.brapiToken,
+    builder: (column) => column,
+  );
+}
+
+class $$SettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTable,
+          SettingsRow,
+          $$SettingsTableFilterComposer,
+          $$SettingsTableOrderingComposer,
+          $$SettingsTableAnnotationComposer,
+          $$SettingsTableCreateCompanionBuilder,
+          $$SettingsTableUpdateCompanionBuilder,
+          (
+            SettingsRow,
+            BaseReferences<_$AppDatabase, $SettingsTable, SettingsRow>,
+          ),
+          SettingsRow,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> themeMode = const Value.absent(),
+                Value<String> baseCurrency = const Value.absent(),
+                Value<String?> brapiToken = const Value.absent(),
+              }) => SettingsCompanion(
+                id: id,
+                themeMode: themeMode,
+                baseCurrency: baseCurrency,
+                brapiToken: brapiToken,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String themeMode,
+                required String baseCurrency,
+                Value<String?> brapiToken = const Value.absent(),
+              }) => SettingsCompanion.insert(
+                id: id,
+                themeMode: themeMode,
+                baseCurrency: baseCurrency,
+                brapiToken: brapiToken,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTable,
+      SettingsRow,
+      $$SettingsTableFilterComposer,
+      $$SettingsTableOrderingComposer,
+      $$SettingsTableAnnotationComposer,
+      $$SettingsTableCreateCompanionBuilder,
+      $$SettingsTableUpdateCompanionBuilder,
+      (SettingsRow, BaseReferences<_$AppDatabase, $SettingsTable, SettingsRow>),
+      SettingsRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3906,4 +4400,6 @@ class $AppDatabaseManager {
       $$QuotesTableTableManager(_db, _db.quotes);
   $$SnapshotsTableTableManager get snapshots =>
       $$SnapshotsTableTableManager(_db, _db.snapshots);
+  $$SettingsTableTableManager get settings =>
+      $$SettingsTableTableManager(_db, _db.settings);
 }

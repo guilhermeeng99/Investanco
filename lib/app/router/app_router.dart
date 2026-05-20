@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:investanco/features/assets/presentation/pages/assets_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
+import 'package:investanco/features/profile/presentation/pages/settings_page.dart';
 import 'package:investanco/features/transactions/presentation/pages/transactions_page.dart';
 
 /// Declarative route table. Wrapped in a class so it can be injected and tested.
@@ -32,6 +33,11 @@ class AppRouter {
         path: TransactionsPage.routePath,
         name: TransactionsPage.routeName,
         builder: (context, state) => const TransactionsPage(),
+      ),
+      GoRoute(
+        path: SettingsPage.routePath,
+        name: SettingsPage.routeName,
+        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );

@@ -76,10 +76,10 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
-| 5.1 | `SyncBloc` — refresh all quotes/FX/indices, retry+backoff, status | ⬜ |
-| 5.2 | Refresh on app open + periodic timer (market hours) | ⬜ |
-| 5.3 | Theming polish, empty states, error states | ⬜ |
-| 5.4 | Full pt-BR i18n pass | ⬜ |
+| 5.1 | Refresh orchestration in DashboardCubit (cache-served, partial-failure tolerant; retry/backoff deferred) | ✅ |
+| 5.2 | Refresh on app open + manual + pull-to-refresh (periodic timer deferred) | ✅ |
+| 5.3 | Settings (theme light/dark/system, persisted) + empty/error states | ✅ |
+| 5.4 | pt-BR i18n — all user-facing strings via slang | ✅ |
 
 ---
 

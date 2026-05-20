@@ -17,7 +17,8 @@
     "dashboard": "Carteira",
     "institutions": "Instituições",
     "assets": "Ativos",
-    "transactions": "Lançamentos"
+    "transactions": "Lançamentos",
+    "settings": "Configurações"
   },
   "dashboard": {
     "title": "Carteira",
@@ -107,5 +108,15 @@
       "sell": "Venda",
       "dividend": "Dividendo"
     }
+  },
+  "settings": {
+    "title": "Configurações",
+    "theme": "Tema",
+    "themeSystem": "Sistema",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "brapiToken": "Token brapi (opcional)",
+    "brapiTokenHelp": "Aumenta o limite de cotações da B3.",
+    "baseCurrency": "Moeda base"
   }
 }

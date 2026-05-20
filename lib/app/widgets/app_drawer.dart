@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:investanco/features/assets/presentation/pages/assets_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
+import 'package:investanco/features/profile/presentation/pages/settings_page.dart';
 import 'package:investanco/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:investanco/gen/strings.g.dart';
 
@@ -55,6 +56,12 @@ class AppDrawer extends StatelessWidget {
               leading: const Icon(Icons.receipt_long_outlined),
               title: Text(t.nav.transactions),
               onTap: () => _go(context, TransactionsPage.routePath),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: Text(t.nav.settings),
+              onTap: () => _go(context, SettingsPage.routePath),
             ),
           ],
         ),
