@@ -13,6 +13,7 @@ import 'package:investanco/features/institutions/presentation/cubit/institutions
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
+import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
 /// Global service locator.
 final GetIt sl = GetIt.instance;
@@ -33,7 +34,8 @@ void _initCore() {
   sl
     ..registerLazySingleton<AppDatabase>(AppDatabase.new)
     ..registerLazySingleton<IdGenerator>(UuidGenerator.new)
-    ..registerLazySingleton<HoldingCalculator>(HoldingCalculator.new);
+    ..registerLazySingleton<HoldingCalculator>(HoldingCalculator.new)
+    ..registerLazySingleton<ValuationService>(ValuationService.new);
 }
 
 void _initAppShell() {

@@ -1,0 +1,70 @@
+import 'package:equatable/equatable.dart';
+import 'package:investanco/core/money/money.dart';
+import 'package:investanco/features/assets/domain/entities/asset.dart';
+
+/// A priced holding: money figures consolidated to the base currency. See
+/// `docs/specs/valuation.md`.
+class HoldingValuation extends Equatable {
+  /// Creates a holding valuation.
+  const HoldingValuation({
+    required this.assetId,
+    required this.institutionId,
+    required this.assetKind,
+    required this.quantity,
+    required this.marketValueBase,
+    required this.investedBase,
+    required this.unrealizedPL,
+    required this.totalPL,
+    required this.returnPct,
+    required this.dayChangeBase,
+    required this.priceStale,
+  });
+
+  /// Asset id.
+  final String assetId;
+
+  /// Institution id.
+  final String institutionId;
+
+  /// Asset class (for allocation).
+  final AssetKind assetKind;
+
+  /// Net quantity held.
+  final double quantity;
+
+  /// Current market value (base currency).
+  final Money marketValueBase;
+
+  /// Cost basis (base currency).
+  final Money investedBase;
+
+  /// Unrealized profit/loss (base currency).
+  final Money unrealizedPL;
+
+  /// Unrealized + realized + dividends (base currency).
+  final Money totalPL;
+
+  /// Unrealized return as a ratio (0.12 = +12%).
+  final double returnPct;
+
+  /// Change since previous close (base currency).
+  final Money dayChangeBase;
+
+  /// Whether the price is missing or stale.
+  final bool priceStale;
+
+  @override
+  List<Object?> get props => [
+        assetId,
+        institutionId,
+        assetKind,
+        quantity,
+        marketValueBase,
+        investedBase,
+        unrealizedPL,
+        totalPL,
+        returnPct,
+        dayChangeBase,
+        priceStale,
+      ];
+}
