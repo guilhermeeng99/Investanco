@@ -9,9 +9,9 @@ returns, all consolidated to the base currency (BRL). Pure, deterministic, teste
 class ValuationInput {
   final Holding holding;
   final Asset asset;
-  final Quote? quote;          // null when price unavailable
-  final double? fxToBase;      // null when same currency
-  final List<IndexPoint>? index; // for fixed income
+  final Quote? quote;                  // null when price unavailable
+  final double fxToBase;               // 1.0 when same currency
+  final FixedIncomeTerms? fixedIncome; // basis + rate + purchaseDate + index series
 }
 
 class HoldingValuation {
@@ -30,11 +30,16 @@ class HoldingValuation {
 
 1. **Market value (native)** = `quantity * quote.unitPrice`.
 2. **Fixed income** (no market quote): `currentValue = principal * accrualFactor`,
-   where `accrualFactor` is built from the index series and the contracted rate:
-   - CDI: `∏(1 + dailyCdi_d * ratePercent)` over business days since purchase.
-   - Selic: same shape with Selic daily.
-   - Prefixed: `(1 + annualRate)^(daysHeld/252)`.
-   - IPCA+: `(1 + ipcaAccum) * (1 + spread)^(daysHeld/252)`.
+   where `principal = holding.investedCost` and `accrualFactor` follows `basis`.
+   `ratePercent` meaning: CDI/Selic → percent **of** the index (110 = 110% of CDI);
+   prefixed → annual rate; IPCA+ → annual spread.
+   - CDI: `∏(1 + (dailyCdi_d/100) * (ratePercent/100))` over each series day ≥ purchase.
+   - Selic: same shape with the Selic daily series.
+   - Prefixed: `(1 + ratePercent/100)^(businessDays/252)`.
+   - IPCA+: `(∏(1 + ipca_m/100)) * (1 + ratePercent/100)^(businessDays/252)`.
+   `businessDays` counts weekdays since purchase (bank holidays ignored — the BCB
+   series already excludes them for index bonds; only prefixed/IPCA+ are slightly
+   affected). Falls back to cost + `priceStale` only when `fixedIncome` is absent.
 3. **Base conversion**: `valueBase = marketValueNative * fxToBase` (fxToBase = 1 when
    currency == base).
 4. **Unrealized P/L** = `marketValueBase - investedBase`.
