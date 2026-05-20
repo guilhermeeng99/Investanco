@@ -9,6 +9,9 @@ import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
+import 'package:investanco/features/auth/data/repositories/local_auth_repository.dart';
+import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
+import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
@@ -44,6 +47,7 @@ final GetIt sl = GetIt.instance;
 Future<void> init() async {
   _initCore();
   _initAppShell();
+  _initAuth();
   _initInstitutions();
   _initAssets();
   _initTransactions();
@@ -66,6 +70,15 @@ void _initAppShell() {
   sl
     ..registerLazySingleton<AppRouter>(AppRouter.new)
     ..registerLazySingleton<ThemeCubit>(ThemeCubit.new);
+}
+
+/// Auth foundation. `LocalAuthRepository` is a placeholder until Firebase Auth
+/// is configured (Phase 6); `FirebaseAuthRepository` drops in behind the same
+/// port. The bloc is registered but not yet wired into the router.
+void _initAuth() {
+  sl
+    ..registerLazySingleton<AuthRepository>(LocalAuthRepository.new)
+    ..registerFactory<AuthBloc>(() => AuthBloc(sl()));
 }
 
 void _initInstitutions() {

@@ -1,15 +1,17 @@
-# Spec: Auth *(deferred — Phase 6)*
+# Spec: Auth *(foundation built — Firebase impl deferred, Phase 6)*
 
 Authentication is **not** required for v1 (offline-first, single local profile).
-This spec defines the contract for when cloud sync is added, so the architecture
-can accommodate it without rework.
+The Firebase-agnostic **foundation** (entity, repository port, `AuthBloc`) is now
+implemented and unit-tested so cloud sync can be added without rework. Only the
+concrete `FirebaseAuthRepository` + `firebase_options.dart` remain (need the
+user's Firebase project).
 
 ## Goal
 
 Firebase Auth + Google Sign-In, so the local Drift data can be mirrored to the
 authenticated user's Firestore (`Phase 6`, see `../ROADMAP.md`).
 
-## Planned entity
+## Entity (`AuthUser`)
 
 | Field | Type |
 |-------|------|
@@ -18,12 +20,33 @@ authenticated user's Firestore (`Phase 6`, see `../ROADMAP.md`).
 | `email` | String |
 | `photoUrl` | String? |
 
-## Planned state machine (`AuthBloc`)
+## Repository port (`AuthRepository`)
+
+```dart
+abstract class AuthRepository {
+  Stream<AuthUser?> watchAuthState(); // null = signed out
+  AuthUser? get currentUser;
+  Future<Either<Failure, AuthUser>> signInWithGoogle();
+  Future<void> signOut();
+}
+```
+
+Implementations:
+- `LocalAuthRepository` *(now)* — placeholder: reports signed-out, refuses sign-in
+  with a clear message. Lets the bloc/UI be exercised with no Firebase project.
+- `FirebaseAuthRepository` *(deferred)* — drops in behind the same port once
+  `firebase_options.dart` is provided.
+
+## State machine (`AuthBloc`)
 
 ```
-AuthUnknown → AuthAuthenticated(user) | AuthUnauthenticated
+AuthUnknown → AuthAuthenticated(user) | AuthUnauthenticated(message?)
 events: AuthStarted, AuthSignInRequested, AuthSignOutRequested
 ```
+
+`AuthStarted` subscribes to `watchAuthState`; a sign-in failure re-emits
+`AuthUnauthenticated` carrying the message. The bloc is not yet wired into the
+router (constraint 3 below) — no login screen until the Firebase impl lands.
 
 ## Design constraints (so v1 stays compatible)
 

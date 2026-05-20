@@ -87,8 +87,9 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
+| 6.0 | Auth foundation: `AuthUser` + `AuthRepository` port + `AuthBloc` (Firebase-agnostic, tested); local placeholder impl | ✅ |
 | 6.1 | Firebase project + `firebase_options.dart` (user-provided config) | 🧊 |
-| 6.2 | Firebase Auth + Google Sign-In | 🧊 |
+| 6.2 | Firebase Auth + Google Sign-In (`FirebaseAuthRepository` behind the existing port) | 🧊 |
 | 6.3 | Firestore mirror of Drift + offline reconciliation | 🧊 |
 
 ---
