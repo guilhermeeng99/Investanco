@@ -47,9 +47,8 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - Real-time tick streaming (we use delayed/EOD-ish quotes; refresh on demand).
 - Multi-user / social features.
 
-### Deferred (see ROADMAP Phase 6–8)
+### Deferred (see ROADMAP Phase 6–7)
 - Firebase cloud sync (multi-device).
-- Auto-import via Pluggy (Nubank) / Avenue CSV / B3 scraper.
 
 ---
 
@@ -164,8 +163,7 @@ converted to BRL.
 
 Clean Architecture, feature-first (see `CLAUDE.md`). Offline-first: Drift is the
 source of truth; network only fills the **quote cache**. UI always renders cached
-data immediately, then refreshes. Position sources (manual entry today; Pluggy /
-CSV / scraper later) all sit behind a `PositionSource` port so they are additive.
+data immediately, then refreshes.
 
 ---
 

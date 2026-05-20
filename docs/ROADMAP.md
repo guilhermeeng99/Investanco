@@ -103,20 +103,6 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 ---
 
-## Phase 8 — Auto-import adapters (reduce manual entry) 🧊
-
-| # | Item | Status |
-|---|------|--------|
-| 8.1 | `Pluggy` adapter behind `PositionSource` (auto-import Nubank holdings) | 🧊 |
-| 8.2 | Avenue CSV import (statement upload → parse → transactions) | 🧊 |
-| 8.3 | Avenue email/IMAP statement ingestion | 🧊 |
-| 8.4 | B3 Área do Investidor scraper adapter (fragile — evaluate) | 🧊 |
-
-> Architecture keeps all position sources behind a `PositionSource` port, so these
-> are additive — manual entry (Phase 1) remains the robust default.
-
----
-
 ## Decisions log
 
 - **Flutter over Python backend** — mirrors the author's existing stack (financo),
@@ -124,5 +110,6 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 - **Offline-first (Drift) before Firebase** — app runs and is testable with no
   cloud credentials; cloud sync is additive (Phase 6).
 - **Manual holdings + automatic pricing** — most robust model; no broker auth,
-  scraping or aggregator dependency. Aggregators are optional (Phase 8).
+  scraping or aggregator dependency. Auto-import adapters (Pluggy / CSV / scraper)
+  were considered and dropped: manual entry is low-frequency and fully sufficient.
 - **Money as integer minor units** — avoid floating-point drift in financial math.
