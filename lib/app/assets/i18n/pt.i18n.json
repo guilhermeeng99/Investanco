@@ -68,6 +68,8 @@
     "kind": "Tipo",
     "market": "Mercado",
     "currency": "Moeda",
+    "tesouroName": "Nome no Tesouro Direto",
+    "tesouroNameHelp": "Exato como no site, ex.: Tesouro Selic 2027.",
     "deleteConfirm": "Excluir este ativo?",
     "inUseError": "Não é possível excluir: há lançamentos vinculados.",
     "saveError": "Erro ao salvar.",

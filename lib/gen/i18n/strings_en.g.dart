@@ -151,6 +151,8 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get kind => 'Type';
 	@override String get market => 'Market';
 	@override String get currency => 'Currency';
+	@override String get tesouroName => 'Tesouro Direto name';
+	@override String get tesouroNameHelp => 'Exactly as on the site, e.g. Tesouro Selic 2027.';
 	@override String get deleteConfirm => 'Delete this asset?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
@@ -331,6 +333,8 @@ extension on TranslationsEn {
 			'assets.kind' => 'Type',
 			'assets.market' => 'Market',
 			'assets.currency' => 'Currency',
+			'assets.tesouroName' => 'Tesouro Direto name',
+			'assets.tesouroNameHelp' => 'Exactly as on the site, e.g. Tesouro Selic 2027.',
 			'assets.deleteConfirm' => 'Delete this asset?',
 			'assets.inUseError' => 'Cannot delete: there are linked transactions.',
 			'assets.saveError' => 'Error while saving.',

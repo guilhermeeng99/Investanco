@@ -42,7 +42,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 |---|------|--------|
 | 2.1 | `QuoteDataSource` interface + brapi adapter (BR equities/FII/ETF/crypto) | ✅ |
 | 2.2 | Yahoo Finance adapter (US equities/ETF — Avenue) | ✅ |
-| 2.3 | Tesouro Direto adapter (bond prices) | 🧊 |
+| 2.3 | Tesouro Direto adapter (bond prices) | ✅ |
 | 2.4 | BCB SGS adapter (CDI/Selic/IPCA) + fixed-income accrual valuation | 🧊 |
 | 2.5 | `FxDataSource` (AwesomeAPI USD→BRL) | ✅ |
 | 2.6 | Quote cache (Drift) + repository (cached-first, refresh) | ✅ |

@@ -47,8 +47,13 @@ abstract class IndexDataSource {
 
 ### Tesouro Direto (bonds)
 - `GET https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasury/getMarket`.
-- Match `asset.metadata['tesouroName']` to `TrsrBd.nm`; price = `untrRedVal` (sell)
-  or `untrInvstmtVal` (buy); use redemption value for current valuation.
+- One request returns every bond under `response.TrsrBdTradgList[].TrsrBd`.
+- Match key: `asset.metadata['tesouroName']` when present, else `asset.name`,
+  compared to `TrsrBd.nm` after normalization (trim, lowercase, collapse
+  whitespace) so an asset named exactly like the bond prices with no extra setup.
+- Price = `untrRedVal` (redemption unit value) — what the holder gets today, so
+  it is the right figure for current valuation (`untrInvstmtVal` is the buy side).
+- No reliable previous close → `previousClose = null` (no day-change for bonds).
 
 ### BCB SGS (indices for fixed income)
 - `GET https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados?formato=json&dataInicial=dd/mm/yyyy`.

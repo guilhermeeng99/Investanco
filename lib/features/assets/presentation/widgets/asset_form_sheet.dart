@@ -41,6 +41,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _tickerController;
   late final TextEditingController _nameController;
+  late final TextEditingController _tesouroNameController;
   late AssetKind _kind;
   late Market _market;
   late Currency _currency;
@@ -52,6 +53,9 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     final existing = widget.existing;
     _tickerController = TextEditingController(text: existing?.ticker ?? '');
     _nameController = TextEditingController(text: existing?.name ?? '');
+    _tesouroNameController = TextEditingController(
+      text: existing?.metadata['tesouroName'] ?? '',
+    );
     _kind = existing?.kind ?? AssetKind.stockBr;
     _market = existing?.market ?? Market.br;
     _currency = existing?.currency ?? Currency.brl;
@@ -61,6 +65,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   void dispose() {
     _tickerController.dispose();
     _nameController.dispose();
+    _tesouroNameController.dispose();
     super.dispose();
   }
 
@@ -142,6 +147,20 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           (Market.br, Currency.brl),
       };
 
+  /// Carries kind-specific metadata. Only Tesouro Direto needs the bond name
+  /// today; it is dropped when the kind is not treasury so stale keys don't
+  /// linger after a kind change.
+  Map<String, String> _buildMetadata() {
+    final metadata = Map<String, String>.from(widget.existing?.metadata ?? {});
+    final tesouroName = _tesouroNameController.text.trim();
+    if (_kind == AssetKind.treasury && tesouroName.isNotEmpty) {
+      metadata['tesouroName'] = tesouroName;
+    } else {
+      metadata.remove('tesouroName');
+    }
+    return metadata;
+  }
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
@@ -154,6 +173,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
             kind: _kind,
             market: _market,
             currency: _currency,
+            metadata: _buildMetadata(),
           )
         : await widget.cubit.edit(
             existing.copyWith(
@@ -162,6 +182,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
               kind: _kind,
               market: _market,
               currency: _currency,
+              metadata: _buildMetadata(),
             ),
           );
 
@@ -247,6 +268,15 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
                   ),
                 ],
               ),
+              if (_kind == AssetKind.treasury) ...[
+                const SizedBox(height: 12),
+                InvestancoTextField(
+                  label: t.assets.tesouroName,
+                  controller: _tesouroNameController,
+                  textCapitalization: TextCapitalization.words,
+                  helperText: t.assets.tesouroNameHelp,
+                ),
+              ],
               const SizedBox(height: 24),
               InvestancoButton(
                 label: t.common.save,

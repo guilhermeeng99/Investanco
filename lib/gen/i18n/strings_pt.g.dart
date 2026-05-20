@@ -259,6 +259,12 @@ class TranslationsAssetsPt {
 	/// pt: 'Moeda'
 	String get currency => 'Moeda';
 
+	/// pt: 'Nome no Tesouro Direto'
+	String get tesouroName => 'Nome no Tesouro Direto';
+
+	/// pt: 'Exato como no site, ex.: Tesouro Selic 2027.'
+	String get tesouroNameHelp => 'Exato como no site, ex.: Tesouro Selic 2027.';
+
 	/// pt: 'Excluir este ativo?'
 	String get deleteConfirm => 'Excluir este ativo?';
 
@@ -554,6 +560,8 @@ extension on Translations {
 			'assets.kind' => 'Tipo',
 			'assets.market' => 'Mercado',
 			'assets.currency' => 'Moeda',
+			'assets.tesouroName' => 'Nome no Tesouro Direto',
+			'assets.tesouroNameHelp' => 'Exato como no site, ex.: Tesouro Selic 2027.',
 			'assets.deleteConfirm' => 'Excluir este ativo?',
 			'assets.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
 			'assets.saveError' => 'Erro ao salvar.',

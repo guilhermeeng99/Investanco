@@ -21,6 +21,7 @@ import 'package:investanco/features/profile/presentation/theme_mode_mapper.dart'
 import 'package:investanco/features/quotes/data/datasources/awesomeapi_fx_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/brapi_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/tesouro_direto_data_source.dart';
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
@@ -97,6 +98,7 @@ void _initQuotes() {
       () => QuoteRepositoryImpl(sl(), [
         BrapiQuoteDataSource(sl()),
         FinnhubQuoteDataSource(sl(), sl()),
+        TesouroDiretoDataSource(sl()),
       ]),
     );
 }

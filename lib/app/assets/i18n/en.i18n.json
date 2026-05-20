@@ -68,6 +68,8 @@
     "kind": "Type",
     "market": "Market",
     "currency": "Currency",
+    "tesouroName": "Tesouro Direto name",
+    "tesouroNameHelp": "Exactly as on the site, e.g. Tesouro Selic 2027.",
     "deleteConfirm": "Delete this asset?",
     "inUseError": "Cannot delete: there are linked transactions.",
     "saveError": "Error while saving.",
