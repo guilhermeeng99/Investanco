@@ -79,6 +79,18 @@ class _SettingsView extends StatelessWidget {
                       unawaited(cubit.setBrapiToken(value)),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: TextFormField(
+                  initialValue: settings.finnhubToken ?? '',
+                  decoration: InputDecoration(
+                    labelText: t.settings.finnhubToken,
+                    helperText: t.settings.finnhubTokenHelp,
+                  ),
+                  onFieldSubmitted: (value) =>
+                      unawaited(cubit.setFinnhubToken(value)),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.attach_money),
                 title: Text(t.settings.baseCurrency),

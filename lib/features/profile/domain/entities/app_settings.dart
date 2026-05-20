@@ -6,11 +6,12 @@ enum AppThemeMode { system, light, dark }
 
 /// User preferences. See `docs/specs/profile.md`.
 class AppSettings extends Equatable {
-  /// Creates settings (defaults: system theme, BRL base, no brapi token).
+  /// Creates settings (defaults: system theme, BRL base, no tokens).
   const AppSettings({
     this.themeMode = AppThemeMode.system,
     this.baseCurrency = Currency.brl,
     this.brapiToken,
+    this.finnhubToken,
   });
 
   /// Active theme preference.
@@ -19,23 +20,31 @@ class AppSettings extends Equatable {
   /// Base currency for consolidation.
   final Currency baseCurrency;
 
-  /// Optional brapi API token (more quota/tickers).
+  /// Optional brapi API token (more quota/tickers for BR assets).
   final String? brapiToken;
+
+  /// Optional Finnhub API token (required to price US assets on web).
+  final String? finnhubToken;
 
   /// Returns a copy with the given fields replaced.
   AppSettings copyWith({
     AppThemeMode? themeMode,
     Currency? baseCurrency,
     String? brapiToken,
-    bool clearToken = false,
+    String? finnhubToken,
+    bool clearBrapiToken = false,
+    bool clearFinnhubToken = false,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
       baseCurrency: baseCurrency ?? this.baseCurrency,
-      brapiToken: clearToken ? null : (brapiToken ?? this.brapiToken),
+      brapiToken: clearBrapiToken ? null : (brapiToken ?? this.brapiToken),
+      finnhubToken:
+          clearFinnhubToken ? null : (finnhubToken ?? this.finnhubToken),
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, baseCurrency, brapiToken];
+  List<Object?> get props =>
+      [themeMode, baseCurrency, brapiToken, finnhubToken];
 }

@@ -176,6 +176,9 @@ class Settings extends Table {
   /// Optional brapi token.
   TextColumn get brapiToken => text().nullable()();
 
+  /// Optional Finnhub token.
+  TextColumn get finnhubToken => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -199,7 +202,7 @@ class AppDatabase extends _$AppDatabase {
         );
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -208,6 +211,7 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) await m.createTable(quotes);
           if (from < 3) await m.createTable(snapshots);
           if (from < 4) await m.createTable(settings);
+          if (from < 5) await m.addColumn(settings, settings.finnhubToken);
         },
       );
 }

@@ -23,6 +23,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       themeMode: AppThemeMode.values.byName(row.themeMode),
       baseCurrency: Currency.values.byName(row.baseCurrency),
       brapiToken: row.brapiToken,
+      finnhubToken: row.finnhubToken,
     );
   }
 
@@ -34,6 +35,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
             themeMode: Value(settings.themeMode.name),
             baseCurrency: Value(settings.baseCurrency.name),
             brapiToken: Value(settings.brapiToken),
+            finnhubToken: Value(settings.finnhubToken),
           ),
         );
   }

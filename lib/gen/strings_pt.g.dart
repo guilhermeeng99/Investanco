@@ -348,6 +348,12 @@ class TranslationsSettingsPt {
 	/// pt: 'Aumenta o limite de cotações da B3.'
 	String get brapiTokenHelp => 'Aumenta o limite de cotações da B3.';
 
+	/// pt: 'Token Finnhub (ativos EUA)'
+	String get finnhubToken => 'Token Finnhub (ativos EUA)';
+
+	/// pt: 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.'
+	String get finnhubTokenHelp => 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.';
+
 	/// pt: 'Moeda base'
 	String get baseCurrency => 'Moeda base';
 }
@@ -557,6 +563,8 @@ extension on Translations {
 			'settings.themeDark' => 'Escuro',
 			'settings.brapiToken' => 'Token brapi (opcional)',
 			'settings.brapiTokenHelp' => 'Aumenta o limite de cotações da B3.',
+			'settings.finnhubToken' => 'Token Finnhub (ativos EUA)',
+			'settings.finnhubTokenHelp' => 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.',
 			'settings.baseCurrency' => 'Moeda base',
 			_ => null,
 		};

@@ -117,6 +117,8 @@
     "themeDark": "Escuro",
     "brapiToken": "Token brapi (opcional)",
     "brapiTokenHelp": "Aumenta o limite de cotações da B3.",
+    "finnhubToken": "Token Finnhub (ativos EUA)",
+    "finnhubTokenHelp": "Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.",
     "baseCurrency": "Moeda base"
   }
 }

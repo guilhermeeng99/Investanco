@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:investanco/core/money/money.dart';
 
 /// Where a quote came from.
-enum QuoteSource { brapi, yahoo, tesouro, bcb, manual }
+enum QuoteSource { brapi, yahoo, finnhub, tesouro, bcb, manual }
 
 /// Latest known unit price of an asset in its native currency. See
 /// `docs/specs/quotes.md`.

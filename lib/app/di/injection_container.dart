@@ -4,6 +4,7 @@ import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/network/dio_client.dart';
+import 'package:investanco/core/network/quote_api_keys.dart';
 import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
@@ -19,7 +20,7 @@ import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dar
 import 'package:investanco/features/profile/presentation/theme_mode_mapper.dart';
 import 'package:investanco/features/quotes/data/datasources/awesomeapi_fx_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/brapi_quote_data_source.dart';
-import 'package:investanco/features/quotes/data/datasources/yahoo_quote_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
@@ -54,7 +55,8 @@ void _initCore() {
     ..registerLazySingleton<AppDatabase>(AppDatabase.new)
     ..registerLazySingleton<IdGenerator>(UuidGenerator.new)
     ..registerLazySingleton<HoldingCalculator>(HoldingCalculator.new)
-    ..registerLazySingleton<ValuationService>(ValuationService.new);
+    ..registerLazySingleton<ValuationService>(ValuationService.new)
+    ..registerLazySingleton<QuoteApiKeys>(QuoteApiKeys.new);
 }
 
 void _initAppShell() {
@@ -94,7 +96,7 @@ void _initQuotes() {
     ..registerLazySingleton<QuoteRepository>(
       () => QuoteRepositoryImpl(sl(), [
         BrapiQuoteDataSource(sl()),
-        YahooQuoteDataSource(sl()),
+        FinnhubQuoteDataSource(sl(), sl()),
       ]),
     );
 }
@@ -114,11 +116,12 @@ void _initProfile() {
     ..registerLazySingleton<SettingsRepository>(
       () => SettingsRepositoryImpl(sl()),
     )
-    ..registerFactory<ProfileCubit>(() => ProfileCubit(sl(), sl()));
+    ..registerFactory<ProfileCubit>(() => ProfileCubit(sl(), sl(), sl()));
 }
 
-/// Applies the persisted theme before the first frame.
+/// Applies persisted settings (theme + API tokens) before the first frame.
 Future<void> _loadTheme() async {
   final settings = await sl<SettingsRepository>().get();
   sl<ThemeCubit>().setMode(toFlutterThemeMode(settings.themeMode));
+  sl<QuoteApiKeys>().finnhubToken = settings.finnhubToken;
 }

@@ -2649,12 +2649,24 @@ class $SettingsTable extends Settings
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _finnhubTokenMeta = const VerificationMeta(
+    'finnhubToken',
+  );
+  @override
+  late final GeneratedColumn<String> finnhubToken = GeneratedColumn<String>(
+    'finnhub_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     themeMode,
     baseCurrency,
     brapiToken,
+    finnhubToken,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2696,6 +2708,15 @@ class $SettingsTable extends Settings
         brapiToken.isAcceptableOrUnknown(data['brapi_token']!, _brapiTokenMeta),
       );
     }
+    if (data.containsKey('finnhub_token')) {
+      context.handle(
+        _finnhubTokenMeta,
+        finnhubToken.isAcceptableOrUnknown(
+          data['finnhub_token']!,
+          _finnhubTokenMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2721,6 +2742,10 @@ class $SettingsTable extends Settings
         DriftSqlType.string,
         data['${effectivePrefix}brapi_token'],
       ),
+      finnhubToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}finnhub_token'],
+      ),
     );
   }
 
@@ -2742,11 +2767,15 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
 
   /// Optional brapi token.
   final String? brapiToken;
+
+  /// Optional Finnhub token.
+  final String? finnhubToken;
   const SettingsRow({
     required this.id,
     required this.themeMode,
     required this.baseCurrency,
     this.brapiToken,
+    this.finnhubToken,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2756,6 +2785,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     map['base_currency'] = Variable<String>(baseCurrency);
     if (!nullToAbsent || brapiToken != null) {
       map['brapi_token'] = Variable<String>(brapiToken);
+    }
+    if (!nullToAbsent || finnhubToken != null) {
+      map['finnhub_token'] = Variable<String>(finnhubToken);
     }
     return map;
   }
@@ -2768,6 +2800,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       brapiToken: brapiToken == null && nullToAbsent
           ? const Value.absent()
           : Value(brapiToken),
+      finnhubToken: finnhubToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finnhubToken),
     );
   }
 
@@ -2781,6 +2816,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       themeMode: serializer.fromJson<String>(json['themeMode']),
       baseCurrency: serializer.fromJson<String>(json['baseCurrency']),
       brapiToken: serializer.fromJson<String?>(json['brapiToken']),
+      finnhubToken: serializer.fromJson<String?>(json['finnhubToken']),
     );
   }
   @override
@@ -2791,6 +2827,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       'themeMode': serializer.toJson<String>(themeMode),
       'baseCurrency': serializer.toJson<String>(baseCurrency),
       'brapiToken': serializer.toJson<String?>(brapiToken),
+      'finnhubToken': serializer.toJson<String?>(finnhubToken),
     };
   }
 
@@ -2799,11 +2836,13 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     String? themeMode,
     String? baseCurrency,
     Value<String?> brapiToken = const Value.absent(),
+    Value<String?> finnhubToken = const Value.absent(),
   }) => SettingsRow(
     id: id ?? this.id,
     themeMode: themeMode ?? this.themeMode,
     baseCurrency: baseCurrency ?? this.baseCurrency,
     brapiToken: brapiToken.present ? brapiToken.value : this.brapiToken,
+    finnhubToken: finnhubToken.present ? finnhubToken.value : this.finnhubToken,
   );
   SettingsRow copyWithCompanion(SettingsCompanion data) {
     return SettingsRow(
@@ -2815,6 +2854,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       brapiToken: data.brapiToken.present
           ? data.brapiToken.value
           : this.brapiToken,
+      finnhubToken: data.finnhubToken.present
+          ? data.finnhubToken.value
+          : this.finnhubToken,
     );
   }
 
@@ -2824,13 +2866,15 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ..write('id: $id, ')
           ..write('themeMode: $themeMode, ')
           ..write('baseCurrency: $baseCurrency, ')
-          ..write('brapiToken: $brapiToken')
+          ..write('brapiToken: $brapiToken, ')
+          ..write('finnhubToken: $finnhubToken')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, themeMode, baseCurrency, brapiToken);
+  int get hashCode =>
+      Object.hash(id, themeMode, baseCurrency, brapiToken, finnhubToken);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2838,7 +2882,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           other.id == this.id &&
           other.themeMode == this.themeMode &&
           other.baseCurrency == this.baseCurrency &&
-          other.brapiToken == this.brapiToken);
+          other.brapiToken == this.brapiToken &&
+          other.finnhubToken == this.finnhubToken);
 }
 
 class SettingsCompanion extends UpdateCompanion<SettingsRow> {
@@ -2846,17 +2891,20 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
   final Value<String> themeMode;
   final Value<String> baseCurrency;
   final Value<String?> brapiToken;
+  final Value<String?> finnhubToken;
   const SettingsCompanion({
     this.id = const Value.absent(),
     this.themeMode = const Value.absent(),
     this.baseCurrency = const Value.absent(),
     this.brapiToken = const Value.absent(),
+    this.finnhubToken = const Value.absent(),
   });
   SettingsCompanion.insert({
     this.id = const Value.absent(),
     required String themeMode,
     required String baseCurrency,
     this.brapiToken = const Value.absent(),
+    this.finnhubToken = const Value.absent(),
   }) : themeMode = Value(themeMode),
        baseCurrency = Value(baseCurrency);
   static Insertable<SettingsRow> custom({
@@ -2864,12 +2912,14 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     Expression<String>? themeMode,
     Expression<String>? baseCurrency,
     Expression<String>? brapiToken,
+    Expression<String>? finnhubToken,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (themeMode != null) 'theme_mode': themeMode,
       if (baseCurrency != null) 'base_currency': baseCurrency,
       if (brapiToken != null) 'brapi_token': brapiToken,
+      if (finnhubToken != null) 'finnhub_token': finnhubToken,
     });
   }
 
@@ -2878,12 +2928,14 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     Value<String>? themeMode,
     Value<String>? baseCurrency,
     Value<String?>? brapiToken,
+    Value<String?>? finnhubToken,
   }) {
     return SettingsCompanion(
       id: id ?? this.id,
       themeMode: themeMode ?? this.themeMode,
       baseCurrency: baseCurrency ?? this.baseCurrency,
       brapiToken: brapiToken ?? this.brapiToken,
+      finnhubToken: finnhubToken ?? this.finnhubToken,
     );
   }
 
@@ -2902,6 +2954,9 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     if (brapiToken.present) {
       map['brapi_token'] = Variable<String>(brapiToken.value);
     }
+    if (finnhubToken.present) {
+      map['finnhub_token'] = Variable<String>(finnhubToken.value);
+    }
     return map;
   }
 
@@ -2911,7 +2966,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
           ..write('id: $id, ')
           ..write('themeMode: $themeMode, ')
           ..write('baseCurrency: $baseCurrency, ')
-          ..write('brapiToken: $brapiToken')
+          ..write('brapiToken: $brapiToken, ')
+          ..write('finnhubToken: $finnhubToken')
           ..write(')'))
         .toString();
   }
@@ -4216,6 +4272,7 @@ typedef $$SettingsTableCreateCompanionBuilder =
       required String themeMode,
       required String baseCurrency,
       Value<String?> brapiToken,
+      Value<String?> finnhubToken,
     });
 typedef $$SettingsTableUpdateCompanionBuilder =
     SettingsCompanion Function({
@@ -4223,6 +4280,7 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<String> themeMode,
       Value<String> baseCurrency,
       Value<String?> brapiToken,
+      Value<String?> finnhubToken,
     });
 
 class $$SettingsTableFilterComposer
@@ -4251,6 +4309,11 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<String> get brapiToken => $composableBuilder(
     column: $table.brapiToken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get finnhubToken => $composableBuilder(
+    column: $table.finnhubToken,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4283,6 +4346,11 @@ class $$SettingsTableOrderingComposer
     column: $table.brapiToken,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get finnhubToken => $composableBuilder(
+    column: $table.finnhubToken,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableAnnotationComposer
@@ -4307,6 +4375,11 @@ class $$SettingsTableAnnotationComposer
 
   GeneratedColumn<String> get brapiToken => $composableBuilder(
     column: $table.brapiToken,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get finnhubToken => $composableBuilder(
+    column: $table.finnhubToken,
     builder: (column) => column,
   );
 }
@@ -4346,11 +4419,13 @@ class $$SettingsTableTableManager
                 Value<String> themeMode = const Value.absent(),
                 Value<String> baseCurrency = const Value.absent(),
                 Value<String?> brapiToken = const Value.absent(),
+                Value<String?> finnhubToken = const Value.absent(),
               }) => SettingsCompanion(
                 id: id,
                 themeMode: themeMode,
                 baseCurrency: baseCurrency,
                 brapiToken: brapiToken,
+                finnhubToken: finnhubToken,
               ),
           createCompanionCallback:
               ({
@@ -4358,11 +4433,13 @@ class $$SettingsTableTableManager
                 required String themeMode,
                 required String baseCurrency,
                 Value<String?> brapiToken = const Value.absent(),
+                Value<String?> finnhubToken = const Value.absent(),
               }) => SettingsCompanion.insert(
                 id: id,
                 themeMode: themeMode,
                 baseCurrency: baseCurrency,
                 brapiToken: brapiToken,
+                finnhubToken: finnhubToken,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
