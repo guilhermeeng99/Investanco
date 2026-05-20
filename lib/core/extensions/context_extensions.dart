@@ -13,4 +13,7 @@ extension ContextThemeX on BuildContext {
 
   /// Shorthand for `Theme.of(context).colorScheme`.
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
+
+  /// Whether the active theme is dark — used by gradient/elevation tweaks.
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 }

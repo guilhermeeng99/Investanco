@@ -83,8 +83,9 @@ abstract final class AppColors {
   /// Seed colour for the Material 3 scheme (growth green).
   static const Color seed = Color(0xFF00A868);
 
-  /// Light palette.
-  static const AppColorsData light = AppColorsData(
+  /// Active light palette. Mutable so the palette picker can swap it; the next
+  /// theme rebuild (driven by `LightPaletteCubit`) picks up the new colours.
+  static AppColorsData light = const AppColorsData(
     primary: Color(0xFF00A868),
     primaryLight: Color(0xFF2ECC8F),
     primaryDark: Color(0xFF007A4D),
@@ -102,8 +103,8 @@ abstract final class AppColors {
     error: Color(0xFFD32F2F),
   );
 
-  /// Dark palette.
-  static const AppColorsData dark = AppColorsData(
+  /// Active dark palette. Mutable so the palette picker can swap it.
+  static AppColorsData dark = const AppColorsData(
     primary: Color(0xFF2ECC8F),
     primaryLight: Color(0xFF5BE0AC),
     primaryDark: Color(0xFF00A868),

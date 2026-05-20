@@ -29,6 +29,11 @@ is the row id. Security rules restrict every path to its owner (`request.auth.ui
 abstract class SyncService {
   /// Pull remote → local, then push local → remote, for [userId].
   Future<Either<Failure, Unit>> sync(String userId);
+
+  /// Permanently delete the user's mirrored data — both the Firestore
+  /// collections and the local Drift rows (settings kept). No undo. Backs the
+  /// profile "clear my data" action.
+  Future<Either<Failure, Unit>> clear(String userId);
 }
 ```
 
@@ -36,14 +41,30 @@ abstract class SyncService {
 Firestore writes. Pull upserts each remote doc into Drift via
 `insertOnConflictUpdate`; push batches every local row up.
 
-## State machine (`SyncCubit`)
+## When sync runs
 
-```
-SyncIdle → SyncInProgress → SyncSuccess(at) | SyncFailure(message)
+- **Live, per change**: every repository write (`save`/`delete` of an institution,
+  asset, transaction or snapshot) mirrors that single document to Firestore via
+  `RemoteMirror` — cloud tracks local edits immediately. Best-effort: offline /
+  transient failures are swallowed (Drift stays the source of truth) and the
+  startup sync reconciles them next launch.
+- **Bulk, at sign-in**: `StartupCubit` blocks on `SyncService.sync(userId)` on the
+  splash (pull then push) before the user enters, catching up anything the live
+  mirror missed (e.g. offline edits). A failure surfaces as `StartupError` with a
+  retry. There is no manual re-sync UI (mirrors financo).
+
+## Port (`RemoteMirror`)
+
+```dart
+abstract class RemoteMirror {
+  Future<void> upsert(String collection, String id, Map<String, dynamic> json);
+  Future<void> delete(String collection, String id);
+}
 ```
 
-Subscribes to `AuthRepository.watchAuthState`: on a signed-in user it syncs once;
-`syncNow()` re-runs on demand (Settings button). No user → stays `SyncIdle`.
+`FirestoreRemoteMirror` writes `users/{uid}/{collection}/{id}` for the current
+user (no-op when signed out), swallowing errors. Repositories take it as an
+optional dependency defaulting to `NoopRemoteMirror`, so tests skip remote writes.
 
 ## Reconciliation (v1)
 
@@ -52,14 +73,15 @@ the merged local set is pushed. Convergent for a single user across devices.
 
 ### Known v1 limitations (follow-ups)
 
-- **No deletion propagation**: a row deleted on one device reappears from remote.
+- **Offline deletes**: an online delete propagates immediately via `RemoteMirror`;
+  a delete made **offline** isn't pushed, so the next startup pull can resurrect it
+  (the bulk push only upserts). Edge case, acceptable for v1.
 - **No field-level LWW**: last full-document write wins; `transactions.updatedAt`
   is not yet used to resolve per-record conflicts.
-- **Manual/at-sign-in only**: no continuous push on every local edit.
 
 ## Edge cases
 
 - Signed out → no sync; local data untouched.
-- Offline / permission error → `SyncFailure`, local data intact, retried next sign-in
-  or via the button.
+- Offline / permission error → `StartupError` on the splash with a retry; local
+  data intact, retried on the next sign-in.
 - First sign-in on a fresh device → pull populates an empty local DB.

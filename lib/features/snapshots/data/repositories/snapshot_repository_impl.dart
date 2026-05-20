@@ -2,15 +2,23 @@ import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/snapshots/domain/entities/snapshot.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 
 /// Drift-backed [SnapshotRepository]. Keyed by `yyyy-MM-dd` for one row per day.
+/// Each write is mirrored to the cloud via [RemoteMirror] (see `cloud_sync.md`).
 class SnapshotRepositoryImpl implements SnapshotRepository {
-  /// Creates the repository over [_db].
-  const SnapshotRepositoryImpl(this._db);
+  /// Creates the repository over [_db], mirroring writes via [_mirror].
+  const SnapshotRepositoryImpl(
+    this._db, [
+    this._mirror = const NoopRemoteMirror(),
+  ]);
 
   final AppDatabase _db;
+  final RemoteMirror _mirror;
+
+  static const _collection = 'snapshots';
 
   @override
   Future<void> upsertToday({
@@ -20,16 +28,16 @@ class SnapshotRepositoryImpl implements SnapshotRepository {
   }) async {
     final now = DateTime.now();
     final day = DateTime(now.year, now.month, now.day);
-    await _db.into(_db.snapshots).insertOnConflictUpdate(
-          SnapshotsCompanion(
-            id: Value(_key(day)),
-            date: Value(day),
-            totalValueMinor: Value(totalValue.minorUnits),
-            totalInvestedMinor: Value(totalInvested.minorUnits),
-            totalPlMinor: Value(totalPL.minorUnits),
-            currency: Value(totalValue.currency.name),
-          ),
-        );
+    final row = SnapshotRow(
+      id: _key(day),
+      date: day,
+      totalValueMinor: totalValue.minorUnits,
+      totalInvestedMinor: totalInvested.minorUnits,
+      totalPlMinor: totalPL.minorUnits,
+      currency: totalValue.currency.name,
+    );
+    await _db.into(_db.snapshots).insertOnConflictUpdate(row);
+    await _mirror.upsert(_collection, row.id, row.toJson());
   }
 
   @override

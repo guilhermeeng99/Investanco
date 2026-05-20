@@ -51,7 +51,8 @@ jobs:
           flutter build web --release \
             --base-href /Investanco/ \
             --build-number=$GITHUB_RUN_NUMBER \
-            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
+            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }} \
+            --dart-define=BRAPI_TOKEN=${{ secrets.BRAPI_TOKEN }}
 
       - name: Restore Android keystore
         env:
@@ -71,7 +72,8 @@ jobs:
         run: |
           flutter build apk --release \
             --build-number=$GITHUB_RUN_NUMBER \
-            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
+            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }} \
+            --dart-define=BRAPI_TOKEN=${{ secrets.BRAPI_TOKEN }}
 
       - name: Distribute APK to testers (Firebase App Distribution)
         uses: wzieba/Firebase-Distribution-Github-Action@v1

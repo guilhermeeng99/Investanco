@@ -1,15 +1,14 @@
-# Spec: Auth *(foundation built — Firebase impl deferred, Phase 6)*
+# Spec: Auth *(Phase 7 — login gate wired)*
 
-Authentication is **not** required for v1 (offline-first, single local profile).
-The Firebase-agnostic **foundation** (entity, repository port, `AuthBloc`) is now
-implemented and unit-tested so cloud sync can be added without rework. Only the
-concrete `FirebaseAuthRepository` + `firebase_options.dart` remain (need the
-user's Firebase project).
+Authentication is **required**: the app is gated behind Google sign-in. The whole
+UI sits below an auth guard — an unauthenticated user only ever sees the startup
+splash and the login carousel. Drift stays the local source of truth; signing in
+mirrors it to the user's Firestore (`cloud_sync.md`).
 
 ## Goal
 
-Firebase Auth + Google Sign-In, so the local Drift data can be mirrored to the
-authenticated user's Firestore (`Phase 6`, see `../ROADMAP.md`).
+Firebase Auth + Google Sign-In as the entry gate, mirroring financo's flow:
+splash → (signed out) login carousel → (signed in) sync → dashboard.
 
 ## Entity (`AuthUser`)
 
@@ -31,32 +30,50 @@ abstract class AuthRepository {
 }
 ```
 
-Implementations:
-- `LocalAuthRepository` *(now)* — placeholder: reports signed-out, refuses sign-in
-  with a clear message. Lets the bloc/UI be exercised with no Firebase project.
-- `FirebaseAuthRepository` *(deferred)* — drops in behind the same port once
-  `firebase_options.dart` is provided.
+- `FirebaseAuthRepository` — Google sign-in via the firebase_auth provider flow
+  (popup on web, native provider on mobile; no extra `google_sign_in` dep).
+- `LocalAuthRepository` — placeholder for tests/no-Firebase; reports signed-out.
 
 ## State machine (`AuthBloc`)
 
 ```
-AuthUnknown → AuthAuthenticated(user) | AuthUnauthenticated(message?)
+AuthUnknown
+  → AuthInProgress              (sign-in tapped, provider flow open)
+  → AuthAuthenticated(user)
+  | AuthUnauthenticated(message?)
+
 events: AuthStarted, AuthSignInRequested, AuthSignOutRequested
 ```
 
-`AuthStarted` subscribes to `watchAuthState`; a sign-in failure re-emits
-`AuthUnauthenticated` carrying the message. The bloc is not yet wired into the
-router (constraint 3 below) — no login screen until the Firebase impl lands.
+- `AuthStarted` (dispatched once in `main`) subscribes to `watchAuthState`.
+- `AuthSignInRequested` emits `AuthInProgress`, then `AuthAuthenticated` on
+  success or `AuthUnauthenticated(message)` on failure. `AuthInProgress` drives
+  the Google button spinner.
+- The bloc is an app-wide singleton, provided at the root, consumed by the gate,
+  the login page and Settings.
 
-## Design constraints (so v1 stays compatible)
+## Router gate (`resolveAuthRedirect`)
 
-1. v1 writes everything against a local profile id constant. When auth lands, that
-   id becomes the `userId`; a one-time local→cloud migration uploads existing data.
-2. All repositories already scope by an owner id (today a constant) → no schema
-   change needed when `userId` becomes real.
-3. Until Phase 6, `AuthBloc` is absent; the router goes straight to `/dashboard`.
+Pure function (testable) consumed by `GoRouter.redirect`, with
+`refreshListenable` bound to `AuthBloc.stream`:
+
+| `AuthBloc.state` | location | → redirect |
+|------------------|----------|-----------|
+| any | `/startup` | none (splash always allowed) |
+| `AuthInProgress` | any | none (provider flow in flight) |
+| `AuthUnknown` | off-startup | `/startup` (still resolving) |
+| `AuthUnauthenticated` | not `/login` | `/login` |
+| `AuthAuthenticated` | `/login` | `/startup` (sync before entering) |
+| otherwise | — | none |
+
+## Design constraints
+
+1. All repositories scope by an owner id; on sign-in that id is the `userId`, so
+   no schema change is needed (see `cloud_sync.md`).
+2. Sign-out (`AuthSignOutRequested`) → `AuthUnauthenticated` → the gate routes
+   back to `/login`.
 
 ## Open questions
 
 - Sign-in providers beyond Google? (Apple for iOS later.)
-- Conflict resolution strategy for multi-device edits (last-write-wins vs merge).
+- Conflict resolution for multi-device edits (last-write-wins vs merge).

@@ -48,7 +48,7 @@ void main() {
       return AuthBloc(repository);
     },
     act: (bloc) => bloc.add(const AuthSignInRequested()),
-    expect: () => [AuthAuthenticated(user)],
+    expect: () => [const AuthInProgress(), AuthAuthenticated(user)],
   );
 
   blocTest<AuthBloc, AuthState>(
@@ -60,7 +60,10 @@ void main() {
       return AuthBloc(repository);
     },
     act: (bloc) => bloc.add(const AuthSignInRequested()),
-    expect: () => [const AuthUnauthenticated(message: 'nope')],
+    expect: () => [
+      const AuthInProgress(),
+      const AuthUnauthenticated(message: 'nope'),
+    ],
   );
 
   blocTest<AuthBloc, AuthState>(

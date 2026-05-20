@@ -11,6 +11,5 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await di.init();
   di.sl<AuthBloc>().add(const AuthStarted());
-  await LocaleSettings.useDeviceLocale();
   runApp(TranslationProvider(child: const InvestancoApp()));
 }

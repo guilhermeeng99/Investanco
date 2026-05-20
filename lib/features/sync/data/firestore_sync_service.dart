@@ -14,6 +14,13 @@ class FirestoreSyncService implements SyncService {
   final AppDatabase _db;
   final FirebaseFirestore _firestore;
 
+  static const _mirroredCollections = [
+    'institutions',
+    'assets',
+    'transactions',
+    'snapshots',
+  ];
+
   @override
   Future<Either<Failure, Unit>> sync(String userId) async {
     try {
@@ -23,6 +30,31 @@ class FirestoreSyncService implements SyncService {
     } on Object {
       return const Left(ServerFailure('Cloud sync failed'));
     }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> clear(String userId) async {
+    try {
+      for (final name in _mirroredCollections) {
+        await _deleteCollection(_collection(userId, name));
+      }
+      await _db.clearUserData();
+      return const Right(unit);
+    } on Object {
+      return const Left(ServerFailure('Clear failed'));
+    }
+  }
+
+  Future<void> _deleteCollection(
+    CollectionReference<Map<String, dynamic>> collection,
+  ) async {
+    final snapshot = await collection.get();
+    if (snapshot.docs.isEmpty) return;
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   }
 
   CollectionReference<Map<String, dynamic>> _collection(

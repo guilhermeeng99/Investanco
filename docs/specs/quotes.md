@@ -38,7 +38,8 @@ abstract class IndexDataSource {
 ### brapi (BR equities, FII, ETF, BDR, crypto)
 - `GET https://brapi.dev/api/quote/{TICKERS}?token={TOKEN}` (comma-separated, batched).
 - Map: `regularMarketPrice → unitPrice`, `regularMarketPreviousClose → previousClose`.
-- Token from `--dart-define=BRAPI_TOKEN=...` (free tier). Empty token → limited tickers.
+- Token baked in at build time via `--dart-define=BRAPI_TOKEN=...`; never entered
+  in-app. Empty token → free tier (limited tickers).
 
 ### Yahoo Finance (US equities/ETF — Avenue)
 - `GET https://query1.finance.yahoo.com/v8/finance/chart/{SYMBOL}`.
@@ -61,6 +62,14 @@ abstract class IndexDataSource {
 
 ### AwesomeAPI (FX)
 - `GET https://economia.awesomeapi.com.br/json/last/USD-BRL` → `USDBRL.bid`.
+
+### API tokens (build-time)
+`BRAPI_TOKEN` (brapi) and `FINNHUB_TOKEN` (US equities/ETFs) are baked in at build
+time via `--dart-define` — CI passes them from GitHub secrets; local dev uses
+`--dart-define-from-file=env.json`. They are **universal** (same for every user),
+**not** entered in-app and **not** stored in the database. Caveat: dart-define
+values are embedded in the build artifact (readable in the web JS bundle), so only
+low-value free-tier keys belong here; true secrecy would need a backend proxy.
 
 ## Caching & repository
 

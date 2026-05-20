@@ -107,4 +107,25 @@ void main() {
 
     expect(await db.select(db.institutions).get(), isEmpty);
   });
+
+  test('clear wipes both Firestore and local data', () async {
+    await seedAll();
+    await service.sync('u1'); // mirror up
+
+    final result = await service.clear('u1');
+
+    expect(result.isRight(), isTrue);
+    expect(
+      (await firestore.collection('users/u1/institutions').get()).docs,
+      isEmpty,
+    );
+    expect(
+      (await firestore.collection('users/u1/transactions').get()).docs,
+      isEmpty,
+    );
+    expect(await db.select(db.institutions).get(), isEmpty);
+    expect(await db.select(db.assets).get(), isEmpty);
+    expect(await db.select(db.transactions).get(), isEmpty);
+    expect(await db.select(db.snapshots).get(), isEmpty);
+  });
 }

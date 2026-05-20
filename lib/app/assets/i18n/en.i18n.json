@@ -19,7 +19,7 @@
     "institutions": "Institutions",
     "assets": "Assets",
     "transactions": "Transactions",
-    "settings": "Settings"
+    "profile": "Profile"
   },
   "dashboard": {
     "title": "Portfolio",
@@ -124,27 +124,54 @@
       "dividend": "Dividend"
     }
   },
-  "settings": {
-    "title": "Settings",
-    "account": "Account",
-    "accountHelp": "Sign in with Google to sync your portfolio across devices.",
-    "signInGoogle": "Sign in with Google",
-    "signOut": "Sign out",
-    "syncNow": "Sync now",
-    "appearance": "Appearance",
-    "quotes": "Quotes and data",
-    "general": "General",
-    "language": "Language",
-    "languagePt": "Portuguese",
-    "languageEn": "English",
+  "profile": {
+    "title": "Profile",
+    "sectionPreferences": "Preferences",
+    "sectionAccount": "Account",
+    "sectionGetTheApp": "Get the app",
+    "sectionDangerZone": "Danger zone",
     "theme": "Theme",
     "themeSystem": "System",
     "themeLight": "Light",
     "themeDark": "Dark",
-    "brapiToken": "brapi token (optional)",
-    "brapiTokenHelp": "Increases the B3 quote rate limit.",
-    "finnhubToken": "Finnhub token (US assets)",
-    "finnhubTokenHelp": "Free at finnhub.io, required for US stock/ETF quotes.",
-    "baseCurrency": "Base currency"
+    "lightPalette": "Light palette",
+    "darkPalette": "Dark palette",
+    "language": "Language",
+    "languageSystem": "System",
+    "languagePt": "Portuguese",
+    "languageEn": "English",
+    "baseCurrency": "Base currency",
+    "downloadApk": "Download for Android",
+    "downloadApkDescription": "Install the APK on your Android phone.",
+    "signOut": "Sign out",
+    "signOutConfirm": "Are you sure you want to sign out?",
+    "clearData": "Clear my data",
+    "clearDataDescription": "Removes all your data, in the cloud and on this device.",
+    "clearDataConfirm": "This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?",
+    "clearDataSuccess": "Your data has been cleared.",
+    "version": "Version"
+  },
+  "startup": {
+    "tagline": "Your portfolio, always up to date",
+    "stepCheckingAuth": "Checking your account...",
+    "stepSyncingData": "Syncing your data...",
+    "stepReady": "All set",
+    "errorTitle": "Something went wrong",
+    "errorRetry": "Try again"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "step1Title": "Your whole portfolio in one place",
+    "step1Body": "Consolidate your holdings from Nubank, Avenue and other institutions — you only register what you own.",
+    "step2Title": "Automatic quotes",
+    "step2Body": "Prices, FX and indices update on their own from public APIs. No broker login, no spreadsheet.",
+    "step3Title": "Track your performance",
+    "step3Body": "See net worth, profit/loss and allocation by class, in real time and in your currency."
+  },
+  "auth": {
+    "continueWithGoogle": "Continue with Google",
+    "signInSubtitle": "Sign in to start tracking your investments.",
+    "signInError": "Could not sign in. Please try again."
   }
 }

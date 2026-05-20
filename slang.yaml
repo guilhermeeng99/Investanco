@@ -7,3 +7,8 @@ input_file_pattern: .i18n.json
 output_directory: lib/gen/i18n
 output_file_name: strings.g.dart
 translate_var: t
+# Bundle every locale into the main chunk. Deferred (lazy) loading turns
+# non-base locales into deferred imports, which makes setLocaleSync throw on
+# web ("l_en was not loaded") — used by AppLocaleCubit to apply the locale on
+# boot. Bundling keeps the sync path working.
+lazy: false

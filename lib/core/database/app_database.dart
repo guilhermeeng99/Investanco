@@ -173,12 +173,6 @@ class Settings extends Table {
   /// `Currency` name (base).
   TextColumn get baseCurrency => text()();
 
-  /// Optional brapi token.
-  TextColumn get brapiToken => text().nullable()();
-
-  /// Optional Finnhub token.
-  TextColumn get finnhubToken => text().nullable()();
-
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -202,7 +196,7 @@ class AppDatabase extends _$AppDatabase {
         );
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -211,7 +205,21 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) await m.createTable(quotes);
           if (from < 3) await m.createTable(snapshots);
           if (from < 4) await m.createTable(settings);
-          if (from < 5) await m.addColumn(settings, settings.finnhubToken);
+          // v5 added a Finnhub token column; v6 dropped both token columns
+          // (tokens are now build-time dart-define). Recreate the settings
+          // table to the new shape, preserving theme + base currency.
+          if (from < 6) await m.alterTable(TableMigration(settings));
         },
       );
+
+  /// Wipes all user-owned data, keeping device-local [settings]. Children are
+  /// deleted before parents to respect references. Drift watch streams emit
+  /// afterwards, so every screen clears reactively. Used by "clear my data".
+  Future<void> clearUserData() => transaction(() async {
+        await delete(transactions).go();
+        await delete(quotes).go();
+        await delete(snapshots).go();
+        await delete(assets).go();
+        await delete(institutions).go();
+      });
 }

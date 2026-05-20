@@ -3,16 +3,24 @@ import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 
-/// Drift-backed [InstitutionRepository]. The [AppDatabase] is the local data
-/// source; rows are mapped to/from the domain [Institution].
+/// Drift-backed [InstitutionRepository]. [AppDatabase] is the local source of
+/// truth; each write is also mirrored to the cloud via [RemoteMirror] so edits
+/// sync immediately (see `docs/specs/cloud_sync.md`).
 class InstitutionRepositoryImpl implements InstitutionRepository {
-  /// Creates the repository over [_db].
-  const InstitutionRepositoryImpl(this._db);
+  /// Creates the repository over [_db], mirroring writes via [_mirror].
+  const InstitutionRepositoryImpl(
+    this._db, [
+    this._mirror = const NoopRemoteMirror(),
+  ]);
 
   final AppDatabase _db;
+  final RemoteMirror _mirror;
+
+  static const _collection = 'institutions';
 
   @override
   Stream<List<Institution>> watchAll() {
@@ -24,9 +32,9 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
   @override
   Future<Either<Failure, Unit>> save(Institution institution) async {
     try {
-      await _db
-          .into(_db.institutions)
-          .insertOnConflictUpdate(_toCompanion(institution));
+      final row = _toRow(institution);
+      await _db.into(_db.institutions).insertOnConflictUpdate(row);
+      await _mirror.upsert(_collection, row.id, row.toJson());
       return const Right(unit);
     } on Object {
       return const Left(CacheFailure());
@@ -43,6 +51,7 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
       if (referencing.isNotEmpty) return const Left(InUseFailure());
 
       await (_db.delete(_db.institutions)..where((t) => t.id.equals(id))).go();
+      await _mirror.delete(_collection, id);
       return const Right(unit);
     } on Object {
       return const Left(CacheFailure());
@@ -59,13 +68,13 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
     );
   }
 
-  InstitutionsCompanion _toCompanion(Institution i) {
-    return InstitutionsCompanion(
-      id: Value(i.id),
-      name: Value(i.name),
-      kind: Value(i.kind.name),
-      currency: Value(i.currency.name),
-      createdAt: Value(i.createdAt),
+  InstitutionRow _toRow(Institution i) {
+    return InstitutionRow(
+      id: i.id,
+      name: i.name,
+      kind: i.kind.name,
+      currency: i.currency.name,
+      createdAt: i.createdAt,
     );
   }
 }

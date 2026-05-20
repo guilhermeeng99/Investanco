@@ -51,7 +51,10 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
 	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
-	late final TranslationsSettingsPt settings = TranslationsSettingsPt._(_root);
+	late final TranslationsProfilePt profile = TranslationsProfilePt._(_root);
+	late final TranslationsStartupPt startup = TranslationsStartupPt._(_root);
+	late final TranslationsOnboardingPt onboarding = TranslationsOnboardingPt._(_root);
+	late final TranslationsAuthPt auth = TranslationsAuthPt._(_root);
 }
 
 // Path: common
@@ -122,8 +125,8 @@ class TranslationsNavPt {
 	/// pt: 'Lançamentos'
 	String get transactions => 'Lançamentos';
 
-	/// pt: 'Configurações'
-	String get settings => 'Configurações';
+	/// pt: 'Perfil'
+	String get profile => 'Perfil';
 }
 
 // Path: dashboard
@@ -348,49 +351,28 @@ class TranslationsTransactionsPt {
 	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
 }
 
-// Path: settings
-class TranslationsSettingsPt {
-	TranslationsSettingsPt._(this._root);
+// Path: profile
+class TranslationsProfilePt {
+	TranslationsProfilePt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// pt: 'Configurações'
-	String get title => 'Configurações';
+	/// pt: 'Perfil'
+	String get title => 'Perfil';
+
+	/// pt: 'Preferências'
+	String get sectionPreferences => 'Preferências';
 
 	/// pt: 'Conta'
-	String get account => 'Conta';
+	String get sectionAccount => 'Conta';
 
-	/// pt: 'Entre com o Google para sincronizar sua carteira entre dispositivos.'
-	String get accountHelp => 'Entre com o Google para sincronizar sua carteira entre dispositivos.';
+	/// pt: 'Baixar o app'
+	String get sectionGetTheApp => 'Baixar o app';
 
-	/// pt: 'Entrar com Google'
-	String get signInGoogle => 'Entrar com Google';
-
-	/// pt: 'Sair'
-	String get signOut => 'Sair';
-
-	/// pt: 'Sincronizar agora'
-	String get syncNow => 'Sincronizar agora';
-
-	/// pt: 'Aparência'
-	String get appearance => 'Aparência';
-
-	/// pt: 'Cotações e dados'
-	String get quotes => 'Cotações e dados';
-
-	/// pt: 'Geral'
-	String get general => 'Geral';
-
-	/// pt: 'Idioma'
-	String get language => 'Idioma';
-
-	/// pt: 'Português'
-	String get languagePt => 'Português';
-
-	/// pt: 'Inglês'
-	String get languageEn => 'Inglês';
+	/// pt: 'Zona de perigo'
+	String get sectionDangerZone => 'Zona de perigo';
 
 	/// pt: 'Tema'
 	String get theme => 'Tema';
@@ -404,20 +386,131 @@ class TranslationsSettingsPt {
 	/// pt: 'Escuro'
 	String get themeDark => 'Escuro';
 
-	/// pt: 'Token brapi (opcional)'
-	String get brapiToken => 'Token brapi (opcional)';
+	/// pt: 'Paleta clara'
+	String get lightPalette => 'Paleta clara';
 
-	/// pt: 'Aumenta o limite de cotações da B3.'
-	String get brapiTokenHelp => 'Aumenta o limite de cotações da B3.';
+	/// pt: 'Paleta escura'
+	String get darkPalette => 'Paleta escura';
 
-	/// pt: 'Token Finnhub (ativos EUA)'
-	String get finnhubToken => 'Token Finnhub (ativos EUA)';
+	/// pt: 'Idioma'
+	String get language => 'Idioma';
 
-	/// pt: 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.'
-	String get finnhubTokenHelp => 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.';
+	/// pt: 'Sistema'
+	String get languageSystem => 'Sistema';
+
+	/// pt: 'Português'
+	String get languagePt => 'Português';
+
+	/// pt: 'Inglês'
+	String get languageEn => 'Inglês';
 
 	/// pt: 'Moeda base'
 	String get baseCurrency => 'Moeda base';
+
+	/// pt: 'Baixar para Android'
+	String get downloadApk => 'Baixar para Android';
+
+	/// pt: 'Instale o APK no seu celular Android.'
+	String get downloadApkDescription => 'Instale o APK no seu celular Android.';
+
+	/// pt: 'Sair'
+	String get signOut => 'Sair';
+
+	/// pt: 'Tem certeza que deseja sair?'
+	String get signOutConfirm => 'Tem certeza que deseja sair?';
+
+	/// pt: 'Apagar meus dados'
+	String get clearData => 'Apagar meus dados';
+
+	/// pt: 'Remove todos os seus dados, na nuvem e neste dispositivo.'
+	String get clearDataDescription => 'Remove todos os seus dados, na nuvem e neste dispositivo.';
+
+	/// pt: 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?'
+	String get clearDataConfirm => 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?';
+
+	/// pt: 'Seus dados foram apagados.'
+	String get clearDataSuccess => 'Seus dados foram apagados.';
+
+	/// pt: 'Versão'
+	String get version => 'Versão';
+}
+
+// Path: startup
+class TranslationsStartupPt {
+	TranslationsStartupPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Sua carteira, sempre atualizada'
+	String get tagline => 'Sua carteira, sempre atualizada';
+
+	/// pt: 'Verificando sua conta...'
+	String get stepCheckingAuth => 'Verificando sua conta...';
+
+	/// pt: 'Sincronizando seus dados...'
+	String get stepSyncingData => 'Sincronizando seus dados...';
+
+	/// pt: 'Tudo pronto'
+	String get stepReady => 'Tudo pronto';
+
+	/// pt: 'Algo deu errado'
+	String get errorTitle => 'Algo deu errado';
+
+	/// pt: 'Tentar novamente'
+	String get errorRetry => 'Tentar novamente';
+}
+
+// Path: onboarding
+class TranslationsOnboardingPt {
+	TranslationsOnboardingPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Pular'
+	String get skip => 'Pular';
+
+	/// pt: 'Próximo'
+	String get next => 'Próximo';
+
+	/// pt: 'Toda a sua carteira num só lugar'
+	String get step1Title => 'Toda a sua carteira num só lugar';
+
+	/// pt: 'Consolide seus investimentos do Nubank, Avenue e outras instituições — você só cadastra o que possui.'
+	String get step1Body => 'Consolide seus investimentos do Nubank, Avenue e outras instituições — você só cadastra o que possui.';
+
+	/// pt: 'Cotações automáticas'
+	String get step2Title => 'Cotações automáticas';
+
+	/// pt: 'Preços, câmbio e índices se atualizam sozinhos por APIs públicas. Sem login de corretora, sem planilha.'
+	String get step2Body => 'Preços, câmbio e índices se atualizam sozinhos por APIs públicas. Sem login de corretora, sem planilha.';
+
+	/// pt: 'Acompanhe seu desempenho'
+	String get step3Title => 'Acompanhe seu desempenho';
+
+	/// pt: 'Veja patrimônio, lucro/prejuízo e alocação por classe, em tempo real e na sua moeda.'
+	String get step3Body => 'Veja patrimônio, lucro/prejuízo e alocação por classe, em tempo real e na sua moeda.';
+}
+
+// Path: auth
+class TranslationsAuthPt {
+	TranslationsAuthPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Continuar com Google'
+	String get continueWithGoogle => 'Continuar com Google';
+
+	/// pt: 'Entre para começar a acompanhar seus investimentos.'
+	String get signInSubtitle => 'Entre para começar a acompanhar seus investimentos.';
+
+	/// pt: 'Não foi possível entrar. Tente novamente.'
+	String get signInError => 'Não foi possível entrar. Tente novamente.';
 }
 
 // Path: institutions.kinds
@@ -566,7 +659,7 @@ extension on Translations {
 			'nav.institutions' => 'Instituições',
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
-			'nav.settings' => 'Configurações',
+			'nav.profile' => 'Perfil',
 			'dashboard.title' => 'Carteira',
 			'dashboard.empty' => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.',
 			'dashboard.emptyTitle' => 'Comece sua carteira',
@@ -652,27 +745,48 @@ extension on Translations {
 			'transactions.kinds.buy' => 'Compra',
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
-			'settings.title' => 'Configurações',
-			'settings.account' => 'Conta',
-			'settings.accountHelp' => 'Entre com o Google para sincronizar sua carteira entre dispositivos.',
-			'settings.signInGoogle' => 'Entrar com Google',
-			'settings.signOut' => 'Sair',
-			'settings.syncNow' => 'Sincronizar agora',
-			'settings.appearance' => 'Aparência',
-			'settings.quotes' => 'Cotações e dados',
-			'settings.general' => 'Geral',
-			'settings.language' => 'Idioma',
-			'settings.languagePt' => 'Português',
-			'settings.languageEn' => 'Inglês',
-			'settings.theme' => 'Tema',
-			'settings.themeSystem' => 'Sistema',
-			'settings.themeLight' => 'Claro',
-			'settings.themeDark' => 'Escuro',
-			'settings.brapiToken' => 'Token brapi (opcional)',
-			'settings.brapiTokenHelp' => 'Aumenta o limite de cotações da B3.',
-			'settings.finnhubToken' => 'Token Finnhub (ativos EUA)',
-			'settings.finnhubTokenHelp' => 'Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.',
-			'settings.baseCurrency' => 'Moeda base',
+			'profile.title' => 'Perfil',
+			'profile.sectionPreferences' => 'Preferências',
+			'profile.sectionAccount' => 'Conta',
+			'profile.sectionGetTheApp' => 'Baixar o app',
+			'profile.sectionDangerZone' => 'Zona de perigo',
+			'profile.theme' => 'Tema',
+			'profile.themeSystem' => 'Sistema',
+			'profile.themeLight' => 'Claro',
+			'profile.themeDark' => 'Escuro',
+			'profile.lightPalette' => 'Paleta clara',
+			'profile.darkPalette' => 'Paleta escura',
+			'profile.language' => 'Idioma',
+			'profile.languageSystem' => 'Sistema',
+			'profile.languagePt' => 'Português',
+			'profile.languageEn' => 'Inglês',
+			'profile.baseCurrency' => 'Moeda base',
+			'profile.downloadApk' => 'Baixar para Android',
+			'profile.downloadApkDescription' => 'Instale o APK no seu celular Android.',
+			'profile.signOut' => 'Sair',
+			'profile.signOutConfirm' => 'Tem certeza que deseja sair?',
+			'profile.clearData' => 'Apagar meus dados',
+			'profile.clearDataDescription' => 'Remove todos os seus dados, na nuvem e neste dispositivo.',
+			'profile.clearDataConfirm' => 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?',
+			'profile.clearDataSuccess' => 'Seus dados foram apagados.',
+			'profile.version' => 'Versão',
+			'startup.tagline' => 'Sua carteira, sempre atualizada',
+			'startup.stepCheckingAuth' => 'Verificando sua conta...',
+			'startup.stepSyncingData' => 'Sincronizando seus dados...',
+			'startup.stepReady' => 'Tudo pronto',
+			'startup.errorTitle' => 'Algo deu errado',
+			'startup.errorRetry' => 'Tentar novamente',
+			'onboarding.skip' => 'Pular',
+			'onboarding.next' => 'Próximo',
+			'onboarding.step1Title' => 'Toda a sua carteira num só lugar',
+			'onboarding.step1Body' => 'Consolide seus investimentos do Nubank, Avenue e outras instituições — você só cadastra o que possui.',
+			'onboarding.step2Title' => 'Cotações automáticas',
+			'onboarding.step2Body' => 'Preços, câmbio e índices se atualizam sozinhos por APIs públicas. Sem login de corretora, sem planilha.',
+			'onboarding.step3Title' => 'Acompanhe seu desempenho',
+			'onboarding.step3Body' => 'Veja patrimônio, lucro/prejuízo e alocação por classe, em tempo real e na sua moeda.',
+			'auth.continueWithGoogle' => 'Continuar com Google',
+			'auth.signInSubtitle' => 'Entre para começar a acompanhar seus investimentos.',
+			'auth.signInError' => 'Não foi possível entrar. Tente novamente.',
 			_ => null,
 		};
 	}

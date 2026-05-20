@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
-import 'package:investanco/core/network/quote_api_keys.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
@@ -20,7 +19,7 @@ void main() {
   });
 
   test('parses a Finnhub quote (c / pc) into a Quote', () async {
-    final source = FinnhubQuoteDataSource(dio, QuoteApiKeys(finnhubToken: 'k'));
+    final source = FinnhubQuoteDataSource(dio, token: 'k');
     when(
       () => dio.get<Map<String, dynamic>>(
         any(),
@@ -50,7 +49,7 @@ void main() {
   });
 
   test('without a token, returns no quotes and makes no request', () async {
-    final source = FinnhubQuoteDataSource(dio, QuoteApiKeys());
+    final source = FinnhubQuoteDataSource(dio, token: '');
 
     final result = await source.fetch([
       assetFactory(kind: AssetKind.stockUs, currency: Currency.usd),
@@ -66,7 +65,7 @@ void main() {
   });
 
   test('supports US assets only', () {
-    final source = FinnhubQuoteDataSource(dio, QuoteApiKeys(finnhubToken: 'k'));
+    final source = FinnhubQuoteDataSource(dio, token: 'k');
 
     expect(source.supports(assetFactory(kind: AssetKind.stockUs)), isTrue);
     expect(source.supports(assetFactory(kind: AssetKind.etfUs)), isTrue);

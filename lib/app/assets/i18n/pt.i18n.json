@@ -19,7 +19,7 @@
     "institutions": "Instituições",
     "assets": "Ativos",
     "transactions": "Lançamentos",
-    "settings": "Configurações"
+    "profile": "Perfil"
   },
   "dashboard": {
     "title": "Carteira",
@@ -124,27 +124,54 @@
       "dividend": "Dividendo"
     }
   },
-  "settings": {
-    "title": "Configurações",
-    "account": "Conta",
-    "accountHelp": "Entre com o Google para sincronizar sua carteira entre dispositivos.",
-    "signInGoogle": "Entrar com Google",
-    "signOut": "Sair",
-    "syncNow": "Sincronizar agora",
-    "appearance": "Aparência",
-    "quotes": "Cotações e dados",
-    "general": "Geral",
-    "language": "Idioma",
-    "languagePt": "Português",
-    "languageEn": "Inglês",
+  "profile": {
+    "title": "Perfil",
+    "sectionPreferences": "Preferências",
+    "sectionAccount": "Conta",
+    "sectionGetTheApp": "Baixar o app",
+    "sectionDangerZone": "Zona de perigo",
     "theme": "Tema",
     "themeSystem": "Sistema",
     "themeLight": "Claro",
     "themeDark": "Escuro",
-    "brapiToken": "Token brapi (opcional)",
-    "brapiTokenHelp": "Aumenta o limite de cotações da B3.",
-    "finnhubToken": "Token Finnhub (ativos EUA)",
-    "finnhubTokenHelp": "Grátis em finnhub.io — necessário p/ cotação de ações/ETFs dos EUA.",
-    "baseCurrency": "Moeda base"
+    "lightPalette": "Paleta clara",
+    "darkPalette": "Paleta escura",
+    "language": "Idioma",
+    "languageSystem": "Sistema",
+    "languagePt": "Português",
+    "languageEn": "Inglês",
+    "baseCurrency": "Moeda base",
+    "downloadApk": "Baixar para Android",
+    "downloadApkDescription": "Instale o APK no seu celular Android.",
+    "signOut": "Sair",
+    "signOutConfirm": "Tem certeza que deseja sair?",
+    "clearData": "Apagar meus dados",
+    "clearDataDescription": "Remove todos os seus dados, na nuvem e neste dispositivo.",
+    "clearDataConfirm": "Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?",
+    "clearDataSuccess": "Seus dados foram apagados.",
+    "version": "Versão"
+  },
+  "startup": {
+    "tagline": "Sua carteira, sempre atualizada",
+    "stepCheckingAuth": "Verificando sua conta...",
+    "stepSyncingData": "Sincronizando seus dados...",
+    "stepReady": "Tudo pronto",
+    "errorTitle": "Algo deu errado",
+    "errorRetry": "Tentar novamente"
+  },
+  "onboarding": {
+    "skip": "Pular",
+    "next": "Próximo",
+    "step1Title": "Toda a sua carteira num só lugar",
+    "step1Body": "Consolide seus investimentos do Nubank, Avenue e outras instituições — você só cadastra o que possui.",
+    "step2Title": "Cotações automáticas",
+    "step2Body": "Preços, câmbio e índices se atualizam sozinhos por APIs públicas. Sem login de corretora, sem planilha.",
+    "step3Title": "Acompanhe seu desempenho",
+    "step3Body": "Veja patrimônio, lucro/prejuízo e alocação por classe, em tempo real e na sua moeda."
+  },
+  "auth": {
+    "continueWithGoogle": "Continuar com Google",
+    "signInSubtitle": "Entre para começar a acompanhar seus investimentos.",
+    "signInError": "Não foi possível entrar. Tente novamente."
   }
 }

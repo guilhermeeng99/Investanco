@@ -45,7 +45,10 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 	@override late final _TranslationsInstitutionsEn institutions = _TranslationsInstitutionsEn._(_root);
 	@override late final _TranslationsAssetsEn assets = _TranslationsAssetsEn._(_root);
 	@override late final _TranslationsTransactionsEn transactions = _TranslationsTransactionsEn._(_root);
-	@override late final _TranslationsSettingsEn settings = _TranslationsSettingsEn._(_root);
+	@override late final _TranslationsProfileEn profile = _TranslationsProfileEn._(_root);
+	@override late final _TranslationsStartupEn startup = _TranslationsStartupEn._(_root);
+	@override late final _TranslationsOnboardingEn onboarding = _TranslationsOnboardingEn._(_root);
+	@override late final _TranslationsAuthEn auth = _TranslationsAuthEn._(_root);
 }
 
 // Path: common
@@ -87,7 +90,7 @@ class _TranslationsNavEn implements TranslationsNavPt {
 	@override String get institutions => 'Institutions';
 	@override String get assets => 'Assets';
 	@override String get transactions => 'Transactions';
-	@override String get settings => 'Settings';
+	@override String get profile => 'Profile';
 }
 
 // Path: dashboard
@@ -190,34 +193,82 @@ class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
 	@override late final _TranslationsTransactionsKindsEn kinds = _TranslationsTransactionsKindsEn._(_root);
 }
 
-// Path: settings
-class _TranslationsSettingsEn implements TranslationsSettingsPt {
-	_TranslationsSettingsEn._(this._root);
+// Path: profile
+class _TranslationsProfileEn implements TranslationsProfilePt {
+	_TranslationsProfileEn._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Settings';
-	@override String get account => 'Account';
-	@override String get accountHelp => 'Sign in with Google to sync your portfolio across devices.';
-	@override String get signInGoogle => 'Sign in with Google';
-	@override String get signOut => 'Sign out';
-	@override String get syncNow => 'Sync now';
-	@override String get appearance => 'Appearance';
-	@override String get quotes => 'Quotes and data';
-	@override String get general => 'General';
-	@override String get language => 'Language';
-	@override String get languagePt => 'Portuguese';
-	@override String get languageEn => 'English';
+	@override String get title => 'Profile';
+	@override String get sectionPreferences => 'Preferences';
+	@override String get sectionAccount => 'Account';
+	@override String get sectionGetTheApp => 'Get the app';
+	@override String get sectionDangerZone => 'Danger zone';
 	@override String get theme => 'Theme';
 	@override String get themeSystem => 'System';
 	@override String get themeLight => 'Light';
 	@override String get themeDark => 'Dark';
-	@override String get brapiToken => 'brapi token (optional)';
-	@override String get brapiTokenHelp => 'Increases the B3 quote rate limit.';
-	@override String get finnhubToken => 'Finnhub token (US assets)';
-	@override String get finnhubTokenHelp => 'Free at finnhub.io, required for US stock/ETF quotes.';
+	@override String get lightPalette => 'Light palette';
+	@override String get darkPalette => 'Dark palette';
+	@override String get language => 'Language';
+	@override String get languageSystem => 'System';
+	@override String get languagePt => 'Portuguese';
+	@override String get languageEn => 'English';
 	@override String get baseCurrency => 'Base currency';
+	@override String get downloadApk => 'Download for Android';
+	@override String get downloadApkDescription => 'Install the APK on your Android phone.';
+	@override String get signOut => 'Sign out';
+	@override String get signOutConfirm => 'Are you sure you want to sign out?';
+	@override String get clearData => 'Clear my data';
+	@override String get clearDataDescription => 'Removes all your data, in the cloud and on this device.';
+	@override String get clearDataConfirm => 'This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?';
+	@override String get clearDataSuccess => 'Your data has been cleared.';
+	@override String get version => 'Version';
+}
+
+// Path: startup
+class _TranslationsStartupEn implements TranslationsStartupPt {
+	_TranslationsStartupEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get tagline => 'Your portfolio, always up to date';
+	@override String get stepCheckingAuth => 'Checking your account...';
+	@override String get stepSyncingData => 'Syncing your data...';
+	@override String get stepReady => 'All set';
+	@override String get errorTitle => 'Something went wrong';
+	@override String get errorRetry => 'Try again';
+}
+
+// Path: onboarding
+class _TranslationsOnboardingEn implements TranslationsOnboardingPt {
+	_TranslationsOnboardingEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get skip => 'Skip';
+	@override String get next => 'Next';
+	@override String get step1Title => 'Your whole portfolio in one place';
+	@override String get step1Body => 'Consolidate your holdings from Nubank, Avenue and other institutions — you only register what you own.';
+	@override String get step2Title => 'Automatic quotes';
+	@override String get step2Body => 'Prices, FX and indices update on their own from public APIs. No broker login, no spreadsheet.';
+	@override String get step3Title => 'Track your performance';
+	@override String get step3Body => 'See net worth, profit/loss and allocation by class, in real time and in your currency.';
+}
+
+// Path: auth
+class _TranslationsAuthEn implements TranslationsAuthPt {
+	_TranslationsAuthEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get continueWithGoogle => 'Continue with Google';
+	@override String get signInSubtitle => 'Sign in to start tracking your investments.';
+	@override String get signInError => 'Could not sign in. Please try again.';
 }
 
 // Path: institutions.kinds
@@ -314,7 +365,7 @@ extension on TranslationsEn {
 			'nav.institutions' => 'Institutions',
 			'nav.assets' => 'Assets',
 			'nav.transactions' => 'Transactions',
-			'nav.settings' => 'Settings',
+			'nav.profile' => 'Profile',
 			'dashboard.title' => 'Portfolio',
 			'dashboard.empty' => 'Add an institution, an asset and a transaction to start tracking your investments.',
 			'dashboard.emptyTitle' => 'Start your portfolio',
@@ -400,27 +451,48 @@ extension on TranslationsEn {
 			'transactions.kinds.buy' => 'Buy',
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',
-			'settings.title' => 'Settings',
-			'settings.account' => 'Account',
-			'settings.accountHelp' => 'Sign in with Google to sync your portfolio across devices.',
-			'settings.signInGoogle' => 'Sign in with Google',
-			'settings.signOut' => 'Sign out',
-			'settings.syncNow' => 'Sync now',
-			'settings.appearance' => 'Appearance',
-			'settings.quotes' => 'Quotes and data',
-			'settings.general' => 'General',
-			'settings.language' => 'Language',
-			'settings.languagePt' => 'Portuguese',
-			'settings.languageEn' => 'English',
-			'settings.theme' => 'Theme',
-			'settings.themeSystem' => 'System',
-			'settings.themeLight' => 'Light',
-			'settings.themeDark' => 'Dark',
-			'settings.brapiToken' => 'brapi token (optional)',
-			'settings.brapiTokenHelp' => 'Increases the B3 quote rate limit.',
-			'settings.finnhubToken' => 'Finnhub token (US assets)',
-			'settings.finnhubTokenHelp' => 'Free at finnhub.io, required for US stock/ETF quotes.',
-			'settings.baseCurrency' => 'Base currency',
+			'profile.title' => 'Profile',
+			'profile.sectionPreferences' => 'Preferences',
+			'profile.sectionAccount' => 'Account',
+			'profile.sectionGetTheApp' => 'Get the app',
+			'profile.sectionDangerZone' => 'Danger zone',
+			'profile.theme' => 'Theme',
+			'profile.themeSystem' => 'System',
+			'profile.themeLight' => 'Light',
+			'profile.themeDark' => 'Dark',
+			'profile.lightPalette' => 'Light palette',
+			'profile.darkPalette' => 'Dark palette',
+			'profile.language' => 'Language',
+			'profile.languageSystem' => 'System',
+			'profile.languagePt' => 'Portuguese',
+			'profile.languageEn' => 'English',
+			'profile.baseCurrency' => 'Base currency',
+			'profile.downloadApk' => 'Download for Android',
+			'profile.downloadApkDescription' => 'Install the APK on your Android phone.',
+			'profile.signOut' => 'Sign out',
+			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
+			'profile.clearData' => 'Clear my data',
+			'profile.clearDataDescription' => 'Removes all your data, in the cloud and on this device.',
+			'profile.clearDataConfirm' => 'This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?',
+			'profile.clearDataSuccess' => 'Your data has been cleared.',
+			'profile.version' => 'Version',
+			'startup.tagline' => 'Your portfolio, always up to date',
+			'startup.stepCheckingAuth' => 'Checking your account...',
+			'startup.stepSyncingData' => 'Syncing your data...',
+			'startup.stepReady' => 'All set',
+			'startup.errorTitle' => 'Something went wrong',
+			'startup.errorRetry' => 'Try again',
+			'onboarding.skip' => 'Skip',
+			'onboarding.next' => 'Next',
+			'onboarding.step1Title' => 'Your whole portfolio in one place',
+			'onboarding.step1Body' => 'Consolidate your holdings from Nubank, Avenue and other institutions — you only register what you own.',
+			'onboarding.step2Title' => 'Automatic quotes',
+			'onboarding.step2Body' => 'Prices, FX and indices update on their own from public APIs. No broker login, no spreadsheet.',
+			'onboarding.step3Title' => 'Track your performance',
+			'onboarding.step3Body' => 'See net worth, profit/loss and allocation by class, in real time and in your currency.',
+			'auth.continueWithGoogle' => 'Continue with Google',
+			'auth.signInSubtitle' => 'Sign in to start tracking your investments.',
+			'auth.signInError' => 'Could not sign in. Please try again.',
 			_ => null,
 		};
 	}

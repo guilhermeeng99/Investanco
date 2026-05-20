@@ -23,17 +23,19 @@ void main() {
 
     expect(settings.themeMode, AppThemeMode.system);
     expect(settings.baseCurrency, Currency.brl);
-    expect(settings.brapiToken, isNull);
   });
 
   test('persists changes and reads them back', () async {
     await repository.save(
-      const AppSettings(themeMode: AppThemeMode.dark, brapiToken: 'tok'),
+      const AppSettings(
+        themeMode: AppThemeMode.dark,
+        baseCurrency: Currency.usd,
+      ),
     );
 
     final settings = await repository.get();
     expect(settings.themeMode, AppThemeMode.dark);
-    expect(settings.brapiToken, 'tok');
+    expect(settings.baseCurrency, Currency.usd);
   });
 
   test('save overwrites the single settings row', () async {

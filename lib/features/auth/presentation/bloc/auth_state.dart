@@ -14,6 +14,13 @@ class AuthUnknown extends AuthState {
   const AuthUnknown();
 }
 
+/// A sign-in is in flight (Google provider flow open). Drives the button spinner
+/// and tells the router gate to hold the user in place. See `docs/specs/auth.md`.
+class AuthInProgress extends AuthState {
+  /// Creates the in-progress state.
+  const AuthInProgress();
+}
+
 /// A user is signed in.
 class AuthAuthenticated extends AuthState {
   /// Creates the authenticated state for [user].
