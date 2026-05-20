@@ -1671,12 +1671,503 @@ class TransactionsCompanion extends UpdateCompanion<TransactionRow> {
   }
 }
 
+class $QuotesTable extends Quotes with TableInfo<$QuotesTable, QuoteRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QuotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _assetIdMeta = const VerificationMeta(
+    'assetId',
+  );
+  @override
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+    'asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitPriceMinorMeta = const VerificationMeta(
+    'unitPriceMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unitPriceMinor = GeneratedColumn<int>(
+    'unit_price_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _previousCloseMinorMeta =
+      const VerificationMeta('previousCloseMinor');
+  @override
+  late final GeneratedColumn<int> previousCloseMinor = GeneratedColumn<int>(
+    'previous_close_minor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _asOfMeta = const VerificationMeta('asOf');
+  @override
+  late final GeneratedColumn<DateTime> asOf = GeneratedColumn<DateTime>(
+    'as_of',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    unitPriceMinor,
+    previousCloseMinor,
+    currency,
+    asOf,
+    fetchedAt,
+    source,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'quotes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<QuoteRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('asset_id')) {
+      context.handle(
+        _assetIdMeta,
+        assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assetIdMeta);
+    }
+    if (data.containsKey('unit_price_minor')) {
+      context.handle(
+        _unitPriceMinorMeta,
+        unitPriceMinor.isAcceptableOrUnknown(
+          data['unit_price_minor']!,
+          _unitPriceMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitPriceMinorMeta);
+    }
+    if (data.containsKey('previous_close_minor')) {
+      context.handle(
+        _previousCloseMinorMeta,
+        previousCloseMinor.isAcceptableOrUnknown(
+          data['previous_close_minor']!,
+          _previousCloseMinorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    if (data.containsKey('as_of')) {
+      context.handle(
+        _asOfMeta,
+        asOf.isAcceptableOrUnknown(data['as_of']!, _asOfMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_asOfMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {assetId};
+  @override
+  QuoteRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QuoteRow(
+      assetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      unitPriceMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_price_minor'],
+      )!,
+      previousCloseMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}previous_close_minor'],
+      ),
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      asOf: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}as_of'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+    );
+  }
+
+  @override
+  $QuotesTable createAlias(String alias) {
+    return $QuotesTable(attachedDatabase, alias);
+  }
+}
+
+class QuoteRow extends DataClass implements Insertable<QuoteRow> {
+  /// Asset id (one cached quote per asset).
+  final String assetId;
+
+  /// Latest unit price in minor units (native currency).
+  final int unitPriceMinor;
+
+  /// Previous close in minor units (nullable).
+  final int? previousCloseMinor;
+
+  /// `Currency` name of the price.
+  final String currency;
+
+  /// When the source reported the price.
+  final DateTime asOf;
+
+  /// When we cached it.
+  final DateTime fetchedAt;
+
+  /// `QuoteSource` name.
+  final String source;
+  const QuoteRow({
+    required this.assetId,
+    required this.unitPriceMinor,
+    this.previousCloseMinor,
+    required this.currency,
+    required this.asOf,
+    required this.fetchedAt,
+    required this.source,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['asset_id'] = Variable<String>(assetId);
+    map['unit_price_minor'] = Variable<int>(unitPriceMinor);
+    if (!nullToAbsent || previousCloseMinor != null) {
+      map['previous_close_minor'] = Variable<int>(previousCloseMinor);
+    }
+    map['currency'] = Variable<String>(currency);
+    map['as_of'] = Variable<DateTime>(asOf);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    map['source'] = Variable<String>(source);
+    return map;
+  }
+
+  QuotesCompanion toCompanion(bool nullToAbsent) {
+    return QuotesCompanion(
+      assetId: Value(assetId),
+      unitPriceMinor: Value(unitPriceMinor),
+      previousCloseMinor: previousCloseMinor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previousCloseMinor),
+      currency: Value(currency),
+      asOf: Value(asOf),
+      fetchedAt: Value(fetchedAt),
+      source: Value(source),
+    );
+  }
+
+  factory QuoteRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QuoteRow(
+      assetId: serializer.fromJson<String>(json['assetId']),
+      unitPriceMinor: serializer.fromJson<int>(json['unitPriceMinor']),
+      previousCloseMinor: serializer.fromJson<int?>(json['previousCloseMinor']),
+      currency: serializer.fromJson<String>(json['currency']),
+      asOf: serializer.fromJson<DateTime>(json['asOf']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+      source: serializer.fromJson<String>(json['source']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'assetId': serializer.toJson<String>(assetId),
+      'unitPriceMinor': serializer.toJson<int>(unitPriceMinor),
+      'previousCloseMinor': serializer.toJson<int?>(previousCloseMinor),
+      'currency': serializer.toJson<String>(currency),
+      'asOf': serializer.toJson<DateTime>(asOf),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+      'source': serializer.toJson<String>(source),
+    };
+  }
+
+  QuoteRow copyWith({
+    String? assetId,
+    int? unitPriceMinor,
+    Value<int?> previousCloseMinor = const Value.absent(),
+    String? currency,
+    DateTime? asOf,
+    DateTime? fetchedAt,
+    String? source,
+  }) => QuoteRow(
+    assetId: assetId ?? this.assetId,
+    unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+    previousCloseMinor: previousCloseMinor.present
+        ? previousCloseMinor.value
+        : this.previousCloseMinor,
+    currency: currency ?? this.currency,
+    asOf: asOf ?? this.asOf,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+    source: source ?? this.source,
+  );
+  QuoteRow copyWithCompanion(QuotesCompanion data) {
+    return QuoteRow(
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      unitPriceMinor: data.unitPriceMinor.present
+          ? data.unitPriceMinor.value
+          : this.unitPriceMinor,
+      previousCloseMinor: data.previousCloseMinor.present
+          ? data.previousCloseMinor.value
+          : this.previousCloseMinor,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      asOf: data.asOf.present ? data.asOf.value : this.asOf,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+      source: data.source.present ? data.source.value : this.source,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuoteRow(')
+          ..write('assetId: $assetId, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('previousCloseMinor: $previousCloseMinor, ')
+          ..write('currency: $currency, ')
+          ..write('asOf: $asOf, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    assetId,
+    unitPriceMinor,
+    previousCloseMinor,
+    currency,
+    asOf,
+    fetchedAt,
+    source,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QuoteRow &&
+          other.assetId == this.assetId &&
+          other.unitPriceMinor == this.unitPriceMinor &&
+          other.previousCloseMinor == this.previousCloseMinor &&
+          other.currency == this.currency &&
+          other.asOf == this.asOf &&
+          other.fetchedAt == this.fetchedAt &&
+          other.source == this.source);
+}
+
+class QuotesCompanion extends UpdateCompanion<QuoteRow> {
+  final Value<String> assetId;
+  final Value<int> unitPriceMinor;
+  final Value<int?> previousCloseMinor;
+  final Value<String> currency;
+  final Value<DateTime> asOf;
+  final Value<DateTime> fetchedAt;
+  final Value<String> source;
+  final Value<int> rowid;
+  const QuotesCompanion({
+    this.assetId = const Value.absent(),
+    this.unitPriceMinor = const Value.absent(),
+    this.previousCloseMinor = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.asOf = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  QuotesCompanion.insert({
+    required String assetId,
+    required int unitPriceMinor,
+    this.previousCloseMinor = const Value.absent(),
+    required String currency,
+    required DateTime asOf,
+    required DateTime fetchedAt,
+    required String source,
+    this.rowid = const Value.absent(),
+  }) : assetId = Value(assetId),
+       unitPriceMinor = Value(unitPriceMinor),
+       currency = Value(currency),
+       asOf = Value(asOf),
+       fetchedAt = Value(fetchedAt),
+       source = Value(source);
+  static Insertable<QuoteRow> custom({
+    Expression<String>? assetId,
+    Expression<int>? unitPriceMinor,
+    Expression<int>? previousCloseMinor,
+    Expression<String>? currency,
+    Expression<DateTime>? asOf,
+    Expression<DateTime>? fetchedAt,
+    Expression<String>? source,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (assetId != null) 'asset_id': assetId,
+      if (unitPriceMinor != null) 'unit_price_minor': unitPriceMinor,
+      if (previousCloseMinor != null)
+        'previous_close_minor': previousCloseMinor,
+      if (currency != null) 'currency': currency,
+      if (asOf != null) 'as_of': asOf,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (source != null) 'source': source,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  QuotesCompanion copyWith({
+    Value<String>? assetId,
+    Value<int>? unitPriceMinor,
+    Value<int?>? previousCloseMinor,
+    Value<String>? currency,
+    Value<DateTime>? asOf,
+    Value<DateTime>? fetchedAt,
+    Value<String>? source,
+    Value<int>? rowid,
+  }) {
+    return QuotesCompanion(
+      assetId: assetId ?? this.assetId,
+      unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+      previousCloseMinor: previousCloseMinor ?? this.previousCloseMinor,
+      currency: currency ?? this.currency,
+      asOf: asOf ?? this.asOf,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      source: source ?? this.source,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (unitPriceMinor.present) {
+      map['unit_price_minor'] = Variable<int>(unitPriceMinor.value);
+    }
+    if (previousCloseMinor.present) {
+      map['previous_close_minor'] = Variable<int>(previousCloseMinor.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (asOf.present) {
+      map['as_of'] = Variable<DateTime>(asOf.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuotesCompanion(')
+          ..write('assetId: $assetId, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('previousCloseMinor: $previousCloseMinor, ')
+          ..write('currency: $currency, ')
+          ..write('asOf: $asOf, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('source: $source, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $InstitutionsTable institutions = $InstitutionsTable(this);
   late final $AssetsTable assets = $AssetsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $QuotesTable quotes = $QuotesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1685,6 +2176,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     institutions,
     assets,
     transactions,
+    quotes,
   ];
 }
 
@@ -2497,6 +2989,242 @@ typedef $$TransactionsTableProcessedTableManager =
       TransactionRow,
       PrefetchHooks Function()
     >;
+typedef $$QuotesTableCreateCompanionBuilder =
+    QuotesCompanion Function({
+      required String assetId,
+      required int unitPriceMinor,
+      Value<int?> previousCloseMinor,
+      required String currency,
+      required DateTime asOf,
+      required DateTime fetchedAt,
+      required String source,
+      Value<int> rowid,
+    });
+typedef $$QuotesTableUpdateCompanionBuilder =
+    QuotesCompanion Function({
+      Value<String> assetId,
+      Value<int> unitPriceMinor,
+      Value<int?> previousCloseMinor,
+      Value<String> currency,
+      Value<DateTime> asOf,
+      Value<DateTime> fetchedAt,
+      Value<String> source,
+      Value<int> rowid,
+    });
+
+class $$QuotesTableFilterComposer
+    extends Composer<_$AppDatabase, $QuotesTable> {
+  $$QuotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get asOf => $composableBuilder(
+    column: $table.asOf,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$QuotesTableOrderingComposer
+    extends Composer<_$AppDatabase, $QuotesTable> {
+  $$QuotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get asOf => $composableBuilder(
+    column: $table.asOf,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$QuotesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $QuotesTable> {
+  $$QuotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get assetId =>
+      $composableBuilder(column: $table.assetId, builder: (column) => column);
+
+  GeneratedColumn<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get asOf =>
+      $composableBuilder(column: $table.asOf, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+}
+
+class $$QuotesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $QuotesTable,
+          QuoteRow,
+          $$QuotesTableFilterComposer,
+          $$QuotesTableOrderingComposer,
+          $$QuotesTableAnnotationComposer,
+          $$QuotesTableCreateCompanionBuilder,
+          $$QuotesTableUpdateCompanionBuilder,
+          (QuoteRow, BaseReferences<_$AppDatabase, $QuotesTable, QuoteRow>),
+          QuoteRow,
+          PrefetchHooks Function()
+        > {
+  $$QuotesTableTableManager(_$AppDatabase db, $QuotesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$QuotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$QuotesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$QuotesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> assetId = const Value.absent(),
+                Value<int> unitPriceMinor = const Value.absent(),
+                Value<int?> previousCloseMinor = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<DateTime> asOf = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QuotesCompanion(
+                assetId: assetId,
+                unitPriceMinor: unitPriceMinor,
+                previousCloseMinor: previousCloseMinor,
+                currency: currency,
+                asOf: asOf,
+                fetchedAt: fetchedAt,
+                source: source,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String assetId,
+                required int unitPriceMinor,
+                Value<int?> previousCloseMinor = const Value.absent(),
+                required String currency,
+                required DateTime asOf,
+                required DateTime fetchedAt,
+                required String source,
+                Value<int> rowid = const Value.absent(),
+              }) => QuotesCompanion.insert(
+                assetId: assetId,
+                unitPriceMinor: unitPriceMinor,
+                previousCloseMinor: previousCloseMinor,
+                currency: currency,
+                asOf: asOf,
+                fetchedAt: fetchedAt,
+                source: source,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$QuotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $QuotesTable,
+      QuoteRow,
+      $$QuotesTableFilterComposer,
+      $$QuotesTableOrderingComposer,
+      $$QuotesTableAnnotationComposer,
+      $$QuotesTableCreateCompanionBuilder,
+      $$QuotesTableUpdateCompanionBuilder,
+      (QuoteRow, BaseReferences<_$AppDatabase, $QuotesTable, QuoteRow>),
+      QuoteRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2507,4 +3235,6 @@ class $AppDatabaseManager {
       $$AssetsTableTableManager(_db, _db.assets);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
+  $$QuotesTableTableManager get quotes =>
+      $$QuotesTableTableManager(_db, _db.quotes);
 }

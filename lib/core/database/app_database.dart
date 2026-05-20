@@ -106,7 +106,35 @@ class Transactions extends Table {
 
 /// Local SQLite database (offline-first source of truth). On web it runs via the
 /// Drift worker + sqlite3 WASM assets (downloaded in CI / shipped with the app).
-@DriftDatabase(tables: [Institutions, Assets, Transactions])
+/// Cached unit prices. Row class renamed to avoid clashing with `Quote`.
+@DataClassName('QuoteRow')
+class Quotes extends Table {
+  /// Asset id (one cached quote per asset).
+  TextColumn get assetId => text()();
+
+  /// Latest unit price in minor units (native currency).
+  IntColumn get unitPriceMinor => integer()();
+
+  /// Previous close in minor units (nullable).
+  IntColumn get previousCloseMinor => integer().nullable()();
+
+  /// `Currency` name of the price.
+  TextColumn get currency => text()();
+
+  /// When the source reported the price.
+  DateTimeColumn get asOf => dateTime()();
+
+  /// When we cached it.
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  /// `QuoteSource` name.
+  TextColumn get source => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {assetId};
+}
+
+@DriftDatabase(tables: [Institutions, Assets, Transactions, Quotes])
 class AppDatabase extends _$AppDatabase {
   /// Opens the on-device database, or uses [executor] (e.g. an in-memory
   /// database in tests).
@@ -114,5 +142,13 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'investanco'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) await m.createTable(quotes);
+        },
+      );
 }

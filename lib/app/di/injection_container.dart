@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
 import 'package:investanco/core/database/app_database.dart';
+import 'package:investanco/core/network/dio_client.dart';
 import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
@@ -10,6 +12,12 @@ import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/institutions/presentation/cubit/institutions_cubit.dart';
+import 'package:investanco/features/quotes/data/datasources/awesomeapi_fx_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/brapi_quote_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/yahoo_quote_data_source.dart';
+import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
+import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
+import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
@@ -28,6 +36,7 @@ Future<void> init() async {
   _initInstitutions();
   _initAssets();
   _initTransactions();
+  _initQuotes();
 }
 
 void _initCore() {
@@ -65,5 +74,17 @@ void _initTransactions() {
     )
     ..registerFactory<TransactionsCubit>(
       () => TransactionsCubit(sl(), sl(), sl(), sl()),
+    );
+}
+
+void _initQuotes() {
+  sl
+    ..registerLazySingleton<Dio>(createDio)
+    ..registerLazySingleton<FxDataSource>(() => AwesomeApiFxDataSource(sl()))
+    ..registerLazySingleton<QuoteRepository>(
+      () => QuoteRepositoryImpl(sl(), [
+        BrapiQuoteDataSource(sl()),
+        YahooQuoteDataSource(sl()),
+      ]),
     );
 }
