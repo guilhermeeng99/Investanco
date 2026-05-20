@@ -1,0 +1,8 @@
+# slang i18n configuration. Base locale is Brazilian Portuguese.
+# Run `dart run slang` after editing any *.i18n.json to regenerate lib/gen.
+base_locale: pt
+input_directory: lib/i18n
+input_file_pattern: .i18n.json
+output_directory: lib/gen
+output_file_name: strings.g.dart
+translate_var: t

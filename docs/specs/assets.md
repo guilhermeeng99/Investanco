@@ -1,0 +1,57 @@
+# Spec: Assets
+
+A tradable instrument the user owns. The asset's `kind` + `market` decide which
+pricing source values it (see `quotes.md`).
+
+## Entity contract
+
+| Field | Type | Invariant |
+|-------|------|-----------|
+| `id` | String (uuid) | immutable |
+| `ticker` | String | non-empty; symbol used to fetch quotes (e.g. `PETR4`, `AAPL`) |
+| `name` | String | human label (e.g. "Petrobras PN") |
+| `kind` | `AssetKind` | see enum below |
+| `market` | `Market` | `br`, `us`, `global` |
+| `currency` | `Currency` | native quote currency (`brl`, `usd`) |
+| `metadata` | `Map<String,String>?` | kind-specific (e.g. fixed-income rate, index) |
+| `createdAt` | DateTime | set on create |
+
+```dart
+enum AssetKind { stockBr, fiiBr, etfBr, bdrBr, stockUs, etfUs, crypto,
+                 treasury, fixedIncome, fund, cash }
+```
+
+## Business rules
+
+1. `ticker` is required and uppercased. For `treasury`/`fixedIncome`/`fund`,
+   `ticker` may be a synthetic id (no market symbol).
+2. `(ticker, market)` is unique per user.
+3. `kind` determines `pricingStrategy` (resolved in `quotes.md`); `currency`
+   defaults from `market` (`br→brl`, `us→usd`).
+4. `metadata` for `fixedIncome` MUST contain: `index` (`cdi|ipca|prefixed`),
+   `rate` (e.g. `1.10` for 110% CDI, or absolute % for prefixed), `maturity`.
+5. `metadata` for `treasury` contains the Tesouro bond canonical name used to match
+   the Tesouro Direto API.
+
+## Repository contract
+
+```dart
+abstract class AssetRepository {
+  Future<Either<Failure, List<Asset>>> watchAll();
+  Future<Either<Failure, Asset>> getById(String id);
+  Future<Either<Failure, Unit>> create(Asset asset);
+  Future<Either<Failure, Unit>> update(Asset asset);
+  Future<Either<Failure, Unit>> delete(String id);   // InUseFailure if has transactions
+}
+```
+
+## State machine (`AssetsCubit`)
+
+`AssetsInitial → AssetsLoading → AssetsLoaded(list) | AssetsError(failure)`.
+
+## Edge cases
+
+- Unknown ticker (quote not found) → asset still valid; UI flags "price unavailable".
+- Duplicate `(ticker, market)` → `ValidationFailure`.
+- Changing `kind`/`currency` after transactions exist → allowed but warns (pricing
+  reinterpreted).

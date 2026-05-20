@@ -1,0 +1,29 @@
+# Static analysis configuration.
+#
+# Uses the strict `very_good_analysis` ruleset. Generated code (Drift, slang) is
+# excluded because it does not — and should not — follow our hand-written style.
+#
+# Target: `flutter analyze` returns ZERO issues (errors, warnings AND info).
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.drift.dart"
+    - "lib/gen/**"
+    - "lib/i18n/**"
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # TODOs are tracked in ROADMAP.md, not enforced by the analyzer.
+    todo: ignore
+    flutter_style_todos: ignore
+
+linter:
+  rules:
+    # This is an application package, not a published library.
+    public_member_api_docs: false
+    # Long lines are acceptable for spec-derived constants and UI trees.
+    lines_longer_than_80_chars: false

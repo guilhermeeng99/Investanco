@@ -1,0 +1,7 @@
+{
+  "appName": "Investanco",
+  "dashboard": {
+    "title": "Carteira",
+    "empty": "Adicione sua primeira instituição para começar a acompanhar seus investimentos."
+  }
+}
