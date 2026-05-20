@@ -29,7 +29,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 | # | Item | Status |
 |---|------|--------|
 | 1.1 | `Institution` entity + Drift table + repo + cubit + CRUD UI | ✅ |
-| 1.2 | `Asset` entity (ticker, kind, market, currency) + table + repo + cubit | ⬜ |
+| 1.2 | `Asset` entity (ticker, kind, market, currency) + table + repo + cubit + UI | ✅ |
 | 1.3 | `Transaction` (buy/sell/dividend) + table + repo + cubit + form | ⬜ |
 | 1.4 | `Holding` derivation (qty + avg price from transactions, FIFO/weighted) | ⬜ |
 | 1.5 | Use cases + unit tests (avg price, sells, edge cases) | ⬜ |

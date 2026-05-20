@@ -49,6 +49,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsNavPt nav = TranslationsNavPt._(_root);
 	late final TranslationsDashboardPt dashboard = TranslationsDashboardPt._(_root);
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
+	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
 }
 
 // Path: common
@@ -173,6 +174,54 @@ class TranslationsInstitutionsPt {
 	late final TranslationsInstitutionsKindsPt kinds = TranslationsInstitutionsKindsPt._(_root);
 }
 
+// Path: assets
+class TranslationsAssetsPt {
+	TranslationsAssetsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Ativos'
+	String get title => 'Ativos';
+
+	/// pt: 'Nenhum ativo ainda. Cadastre PETR4, AAPL, Tesouro, etc.'
+	String get empty => 'Nenhum ativo ainda. Cadastre PETR4, AAPL, Tesouro, etc.';
+
+	/// pt: 'Novo ativo'
+	String get add => 'Novo ativo';
+
+	/// pt: 'Editar ativo'
+	String get edit => 'Editar ativo';
+
+	/// pt: 'Ticker'
+	String get ticker => 'Ticker';
+
+	/// pt: 'Nome'
+	String get name => 'Nome';
+
+	/// pt: 'Tipo'
+	String get kind => 'Tipo';
+
+	/// pt: 'Mercado'
+	String get market => 'Mercado';
+
+	/// pt: 'Moeda'
+	String get currency => 'Moeda';
+
+	/// pt: 'Excluir este ativo?'
+	String get deleteConfirm => 'Excluir este ativo?';
+
+	/// pt: 'Não é possível excluir: há lançamentos vinculados.'
+	String get inUseError => 'Não é possível excluir: há lançamentos vinculados.';
+
+	/// pt: 'Erro ao salvar.'
+	String get saveError => 'Erro ao salvar.';
+
+	late final TranslationsAssetsKindsPt kinds = TranslationsAssetsKindsPt._(_root);
+	late final TranslationsAssetsMarketsPt markets = TranslationsAssetsMarketsPt._(_root);
+}
+
 // Path: institutions.kinds
 class TranslationsInstitutionsKindsPt {
 	TranslationsInstitutionsKindsPt._(this._root);
@@ -195,6 +244,66 @@ class TranslationsInstitutionsKindsPt {
 
 	/// pt: 'Outro'
 	String get other => 'Outro';
+}
+
+// Path: assets.kinds
+class TranslationsAssetsKindsPt {
+	TranslationsAssetsKindsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Ação (BR)'
+	String get stockBr => 'Ação (BR)';
+
+	/// pt: 'FII'
+	String get fiiBr => 'FII';
+
+	/// pt: 'ETF (BR)'
+	String get etfBr => 'ETF (BR)';
+
+	/// pt: 'BDR'
+	String get bdrBr => 'BDR';
+
+	/// pt: 'Ação (EUA)'
+	String get stockUs => 'Ação (EUA)';
+
+	/// pt: 'ETF (EUA)'
+	String get etfUs => 'ETF (EUA)';
+
+	/// pt: 'Cripto'
+	String get crypto => 'Cripto';
+
+	/// pt: 'Tesouro Direto'
+	String get treasury => 'Tesouro Direto';
+
+	/// pt: 'Renda fixa'
+	String get fixedIncome => 'Renda fixa';
+
+	/// pt: 'Fundo'
+	String get fund => 'Fundo';
+
+	/// pt: 'Caixa'
+	String get cash => 'Caixa';
+}
+
+// Path: assets.markets
+class TranslationsAssetsMarketsPt {
+	TranslationsAssetsMarketsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Brasil'
+	String get br => 'Brasil';
+
+	/// pt: 'EUA'
+	String get us => 'EUA';
+
+	/// pt: 'Global'
+	String get global => 'Global';
 }
 
 /// The flat map containing all translations for locale <pt>.
@@ -236,6 +345,32 @@ extension on Translations {
 			'institutions.kinds.internationalBroker' => 'Corretora internacional',
 			'institutions.kinds.crypto' => 'Cripto',
 			'institutions.kinds.other' => 'Outro',
+			'assets.title' => 'Ativos',
+			'assets.empty' => 'Nenhum ativo ainda. Cadastre PETR4, AAPL, Tesouro, etc.',
+			'assets.add' => 'Novo ativo',
+			'assets.edit' => 'Editar ativo',
+			'assets.ticker' => 'Ticker',
+			'assets.name' => 'Nome',
+			'assets.kind' => 'Tipo',
+			'assets.market' => 'Mercado',
+			'assets.currency' => 'Moeda',
+			'assets.deleteConfirm' => 'Excluir este ativo?',
+			'assets.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
+			'assets.saveError' => 'Erro ao salvar.',
+			'assets.kinds.stockBr' => 'Ação (BR)',
+			'assets.kinds.fiiBr' => 'FII',
+			'assets.kinds.etfBr' => 'ETF (BR)',
+			'assets.kinds.bdrBr' => 'BDR',
+			'assets.kinds.stockUs' => 'Ação (EUA)',
+			'assets.kinds.etfUs' => 'ETF (EUA)',
+			'assets.kinds.crypto' => 'Cripto',
+			'assets.kinds.treasury' => 'Tesouro Direto',
+			'assets.kinds.fixedIncome' => 'Renda fixa',
+			'assets.kinds.fund' => 'Fundo',
+			'assets.kinds.cash' => 'Caixa',
+			'assets.markets.br' => 'Brasil',
+			'assets.markets.us' => 'EUA',
+			'assets.markets.global' => 'Global',
 			_ => null,
 		};
 	}

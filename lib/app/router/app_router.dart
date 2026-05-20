@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:investanco/features/assets/presentation/pages/assets_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
 
@@ -20,6 +21,11 @@ class AppRouter {
         path: InstitutionsPage.routePath,
         name: InstitutionsPage.routeName,
         builder: (context, state) => const InstitutionsPage(),
+      ),
+      GoRoute(
+        path: AssetsPage.routePath,
+        name: AssetsPage.routeName,
+        builder: (context, state) => const AssetsPage(),
       ),
     ],
   );
