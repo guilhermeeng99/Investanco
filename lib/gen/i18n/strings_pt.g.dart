@@ -371,6 +371,9 @@ class TranslationsSettingsPt {
 	/// pt: 'Sair'
 	String get signOut => 'Sair';
 
+	/// pt: 'Sincronizar agora'
+	String get syncNow => 'Sincronizar agora';
+
 	/// pt: 'Aparência'
 	String get appearance => 'Aparência';
 
@@ -654,6 +657,7 @@ extension on Translations {
 			'settings.accountHelp' => 'Entre com o Google para sincronizar sua carteira entre dispositivos.',
 			'settings.signInGoogle' => 'Entrar com Google',
 			'settings.signOut' => 'Sair',
+			'settings.syncNow' => 'Sincronizar agora',
 			'settings.appearance' => 'Aparência',
 			'settings.quotes' => 'Cotações e dados',
 			'settings.general' => 'Geral',

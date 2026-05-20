@@ -39,6 +39,7 @@ dev_dependencies:
   bloc_test: ^10.0.0
   build_runner: ^2.15.0
   drift_dev: ^2.33.0
+  fake_cloud_firestore: ^4.1.1
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5

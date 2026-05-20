@@ -6,6 +6,7 @@ import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/app_theme.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:investanco/features/sync/presentation/cubit/sync_cubit.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Root widget: wires theme, routing and localization.
@@ -19,6 +20,7 @@ class InvestancoApp extends StatelessWidget {
       providers: [
         BlocProvider<ThemeCubit>.value(value: sl<ThemeCubit>()),
         BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
+        BlocProvider<SyncCubit>.value(value: sl<SyncCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

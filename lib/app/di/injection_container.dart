@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get_it/get_it.dart';
@@ -33,6 +34,9 @@ import 'package:investanco/features/quotes/domain/datasources/quote_data_source.
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
+import 'package:investanco/features/sync/data/firestore_sync_service.dart';
+import 'package:investanco/features/sync/domain/sync_service.dart';
+import 'package:investanco/features/sync/presentation/cubit/sync_cubit.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
@@ -49,6 +53,7 @@ Future<void> init() async {
   _initCore();
   _initAppShell();
   _initAuth();
+  _initSync();
   _initInstitutions();
   _initAssets();
   _initTransactions();
@@ -81,6 +86,16 @@ void _initAuth() {
       () => FirebaseAuthRepository(fb.FirebaseAuth.instance),
     )
     ..registerLazySingleton<AuthBloc>(() => AuthBloc(sl()));
+}
+
+/// Cloud sync: mirrors Drift to the signed-in user's Firestore. The cubit is an
+/// app-wide singleton (provided at the root) so it syncs on sign-in.
+void _initSync() {
+  sl
+    ..registerLazySingleton<SyncService>(
+      () => FirestoreSyncService(sl(), FirebaseFirestore.instance),
+    )
+    ..registerLazySingleton<SyncCubit>(() => SyncCubit(sl(), sl()));
 }
 
 void _initInstitutions() {

@@ -10,6 +10,7 @@ import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/profile/domain/entities/app_settings.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:investanco/features/sync/presentation/cubit/sync_cubit.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// User preferences: theme, language, market-data tokens, base currency. See
@@ -171,6 +172,27 @@ class _AccountSection extends StatelessWidget {
         ),
         if (user.name.isNotEmpty && user.email.isNotEmpty)
           Text(user.email, style: context.textTheme.bodySmall),
+        const SizedBox(height: 12),
+        BlocBuilder<SyncCubit, SyncState>(
+          builder: (context, state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              InvestancoButton(
+                label: t.settings.syncNow,
+                isLoading: state is SyncInProgress,
+                onPressed: () => context.read<SyncCubit>().syncNow(),
+              ),
+              if (state is SyncFailure) ...[
+                const SizedBox(height: 8),
+                Text(
+                  state.message,
+                  style: context.textTheme.bodySmall
+                      ?.copyWith(color: context.colorScheme.error),
+                ),
+              ],
+            ],
+          ),
+        ),
         const SizedBox(height: 12),
         InvestancoButton(
           label: t.settings.signOut,

@@ -83,14 +83,14 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 ---
 
-## Phase 6 — Cloud sync (multi-device) 🧊
+## Phase 6 — Cloud sync (multi-device)
 
 | # | Item | Status |
 |---|------|--------|
 | 6.0 | Auth foundation: `AuthUser` + `AuthRepository` port + `AuthBloc` (Firebase-agnostic, tested); local placeholder impl | ✅ |
 | 6.1 | Firebase project (`investanco-app-2026`) + `firebase_options.dart` (web + android apps) | ✅ |
-| 6.2 | Firebase Auth + Google Sign-In (`FirebaseAuthRepository` + Settings UI) — code done; needs Google provider enabled in console (one-time) | 🔨 |
-| 6.3 | Firestore mirror of Drift + offline reconciliation | 🧊 |
+| 6.2 | Firebase Auth + Google Sign-In (`FirebaseAuthRepository` + Settings UI; Google provider enabled & verified) | ✅ |
+| 6.3 | Firestore mirror of Drift (push/pull on sign-in + manual) — DB + rules deployed; union upsert (deletion/LWW follow-ups noted) | ✅ |
 
 ---
 

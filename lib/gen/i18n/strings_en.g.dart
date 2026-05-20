@@ -202,6 +202,7 @@ class _TranslationsSettingsEn implements TranslationsSettingsPt {
 	@override String get accountHelp => 'Sign in with Google to sync your portfolio across devices.';
 	@override String get signInGoogle => 'Sign in with Google';
 	@override String get signOut => 'Sign out';
+	@override String get syncNow => 'Sync now';
 	@override String get appearance => 'Appearance';
 	@override String get quotes => 'Quotes and data';
 	@override String get general => 'General';
@@ -404,6 +405,7 @@ extension on TranslationsEn {
 			'settings.accountHelp' => 'Sign in with Google to sync your portfolio across devices.',
 			'settings.signInGoogle' => 'Sign in with Google',
 			'settings.signOut' => 'Sign out',
+			'settings.syncNow' => 'Sync now',
 			'settings.appearance' => 'Appearance',
 			'settings.quotes' => 'Quotes and data',
 			'settings.general' => 'General',
