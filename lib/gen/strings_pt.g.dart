@@ -148,6 +148,9 @@ class TranslationsDashboardPt {
 	/// pt: 'Alocação por classe'
 	String get allocation => 'Alocação por classe';
 
+	/// pt: 'Evolução do patrimônio'
+	String get evolution => 'Evolução do patrimônio';
+
 	/// pt: 'Posições'
 	String get holdings => 'Posições';
 
@@ -443,6 +446,7 @@ extension on Translations {
 			'dashboard.profit' => 'Lucro/Prejuízo',
 			'dashboard.dayChange' => 'Variação do dia',
 			'dashboard.allocation' => 'Alocação por classe',
+			'dashboard.evolution' => 'Evolução do patrimônio',
 			'dashboard.holdings' => 'Posições',
 			'dashboard.lastSync' => 'Atualizado',
 			'dashboard.never' => 'nunca',

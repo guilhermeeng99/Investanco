@@ -5,6 +5,7 @@ import 'package:investanco/app/widgets/app_drawer.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/allocation_chart.dart';
+import 'package:investanco/features/dashboard/presentation/widgets/evolution_chart.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/holdings_list.dart';
 import 'package:investanco/features/dashboard/presentation/widgets/portfolio_summary_card.dart';
 import 'package:investanco/gen/strings.g.dart';
@@ -81,6 +82,8 @@ class _LoadedView extends StatelessWidget {
           PortfolioSummaryCard(portfolio: state.portfolio),
           const SizedBox(height: 8),
           AllocationChart(byClass: state.portfolio.byClass),
+          const SizedBox(height: 8),
+          EvolutionChart(snapshots: state.snapshots),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

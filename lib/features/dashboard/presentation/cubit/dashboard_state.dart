@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
+import 'package:investanco/features/snapshots/domain/entities/snapshot.dart';
 import 'package:investanco/features/valuation/domain/entities/portfolio_valuation.dart';
 
 /// State for the dashboard. See `docs/specs/dashboard.md`.
@@ -25,11 +26,15 @@ class DashboardLoaded extends DashboardState {
     required this.assetsById,
     required this.institutionsById,
     required this.isRefreshing,
+    required this.snapshots,
     this.lastSyncAt,
   });
 
   /// The valued portfolio.
   final PortfolioValuation portfolio;
+
+  /// Historical daily snapshots (oldest first) for the evolution chart.
+  final List<Snapshot> snapshots;
 
   /// Assets keyed by id (for display).
   final Map<String, Asset> assetsById;
@@ -47,8 +52,14 @@ class DashboardLoaded extends DashboardState {
   bool get hasHoldings => portfolio.holdings.any((h) => h.quantity > 0);
 
   @override
-  List<Object?> get props =>
-      [portfolio, assetsById, institutionsById, lastSyncAt, isRefreshing];
+  List<Object?> get props => [
+        portfolio,
+        assetsById,
+        institutionsById,
+        lastSyncAt,
+        isRefreshing,
+        snapshots,
+      ];
 }
 
 /// No data could be loaded at all.

@@ -2161,6 +2161,446 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
   }
 }
 
+class $SnapshotsTable extends Snapshots
+    with TableInfo<$SnapshotsTable, SnapshotRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalValueMinorMeta = const VerificationMeta(
+    'totalValueMinor',
+  );
+  @override
+  late final GeneratedColumn<int> totalValueMinor = GeneratedColumn<int>(
+    'total_value_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalInvestedMinorMeta =
+      const VerificationMeta('totalInvestedMinor');
+  @override
+  late final GeneratedColumn<int> totalInvestedMinor = GeneratedColumn<int>(
+    'total_invested_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalPlMinorMeta = const VerificationMeta(
+    'totalPlMinor',
+  );
+  @override
+  late final GeneratedColumn<int> totalPlMinor = GeneratedColumn<int>(
+    'total_pl_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    date,
+    totalValueMinor,
+    totalInvestedMinor,
+    totalPlMinor,
+    currency,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SnapshotRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('total_value_minor')) {
+      context.handle(
+        _totalValueMinorMeta,
+        totalValueMinor.isAcceptableOrUnknown(
+          data['total_value_minor']!,
+          _totalValueMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalValueMinorMeta);
+    }
+    if (data.containsKey('total_invested_minor')) {
+      context.handle(
+        _totalInvestedMinorMeta,
+        totalInvestedMinor.isAcceptableOrUnknown(
+          data['total_invested_minor']!,
+          _totalInvestedMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalInvestedMinorMeta);
+    }
+    if (data.containsKey('total_pl_minor')) {
+      context.handle(
+        _totalPlMinorMeta,
+        totalPlMinor.isAcceptableOrUnknown(
+          data['total_pl_minor']!,
+          _totalPlMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalPlMinorMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SnapshotRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SnapshotRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      totalValueMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_value_minor'],
+      )!,
+      totalInvestedMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_invested_minor'],
+      )!,
+      totalPlMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_pl_minor'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+    );
+  }
+
+  @override
+  $SnapshotsTable createAlias(String alias) {
+    return $SnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
+  /// `yyyy-MM-dd` key (one snapshot per day).
+  final String id;
+
+  /// Snapshot date (local midnight).
+  final DateTime date;
+
+  /// Total value in minor units (base currency).
+  final int totalValueMinor;
+
+  /// Total invested in minor units (base currency).
+  final int totalInvestedMinor;
+
+  /// Total unrealized P/L in minor units (base currency).
+  final int totalPlMinor;
+
+  /// `Currency` name (base).
+  final String currency;
+  const SnapshotRow({
+    required this.id,
+    required this.date,
+    required this.totalValueMinor,
+    required this.totalInvestedMinor,
+    required this.totalPlMinor,
+    required this.currency,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['date'] = Variable<DateTime>(date);
+    map['total_value_minor'] = Variable<int>(totalValueMinor);
+    map['total_invested_minor'] = Variable<int>(totalInvestedMinor);
+    map['total_pl_minor'] = Variable<int>(totalPlMinor);
+    map['currency'] = Variable<String>(currency);
+    return map;
+  }
+
+  SnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return SnapshotsCompanion(
+      id: Value(id),
+      date: Value(date),
+      totalValueMinor: Value(totalValueMinor),
+      totalInvestedMinor: Value(totalInvestedMinor),
+      totalPlMinor: Value(totalPlMinor),
+      currency: Value(currency),
+    );
+  }
+
+  factory SnapshotRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SnapshotRow(
+      id: serializer.fromJson<String>(json['id']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      totalValueMinor: serializer.fromJson<int>(json['totalValueMinor']),
+      totalInvestedMinor: serializer.fromJson<int>(json['totalInvestedMinor']),
+      totalPlMinor: serializer.fromJson<int>(json['totalPlMinor']),
+      currency: serializer.fromJson<String>(json['currency']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'date': serializer.toJson<DateTime>(date),
+      'totalValueMinor': serializer.toJson<int>(totalValueMinor),
+      'totalInvestedMinor': serializer.toJson<int>(totalInvestedMinor),
+      'totalPlMinor': serializer.toJson<int>(totalPlMinor),
+      'currency': serializer.toJson<String>(currency),
+    };
+  }
+
+  SnapshotRow copyWith({
+    String? id,
+    DateTime? date,
+    int? totalValueMinor,
+    int? totalInvestedMinor,
+    int? totalPlMinor,
+    String? currency,
+  }) => SnapshotRow(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    totalValueMinor: totalValueMinor ?? this.totalValueMinor,
+    totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
+    totalPlMinor: totalPlMinor ?? this.totalPlMinor,
+    currency: currency ?? this.currency,
+  );
+  SnapshotRow copyWithCompanion(SnapshotsCompanion data) {
+    return SnapshotRow(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      totalValueMinor: data.totalValueMinor.present
+          ? data.totalValueMinor.value
+          : this.totalValueMinor,
+      totalInvestedMinor: data.totalInvestedMinor.present
+          ? data.totalInvestedMinor.value
+          : this.totalInvestedMinor,
+      totalPlMinor: data.totalPlMinor.present
+          ? data.totalPlMinor.value
+          : this.totalPlMinor,
+      currency: data.currency.present ? data.currency.value : this.currency,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SnapshotRow(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('totalValueMinor: $totalValueMinor, ')
+          ..write('totalInvestedMinor: $totalInvestedMinor, ')
+          ..write('totalPlMinor: $totalPlMinor, ')
+          ..write('currency: $currency')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    date,
+    totalValueMinor,
+    totalInvestedMinor,
+    totalPlMinor,
+    currency,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SnapshotRow &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.totalValueMinor == this.totalValueMinor &&
+          other.totalInvestedMinor == this.totalInvestedMinor &&
+          other.totalPlMinor == this.totalPlMinor &&
+          other.currency == this.currency);
+}
+
+class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
+  final Value<String> id;
+  final Value<DateTime> date;
+  final Value<int> totalValueMinor;
+  final Value<int> totalInvestedMinor;
+  final Value<int> totalPlMinor;
+  final Value<String> currency;
+  final Value<int> rowid;
+  const SnapshotsCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.totalValueMinor = const Value.absent(),
+    this.totalInvestedMinor = const Value.absent(),
+    this.totalPlMinor = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SnapshotsCompanion.insert({
+    required String id,
+    required DateTime date,
+    required int totalValueMinor,
+    required int totalInvestedMinor,
+    required int totalPlMinor,
+    required String currency,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       date = Value(date),
+       totalValueMinor = Value(totalValueMinor),
+       totalInvestedMinor = Value(totalInvestedMinor),
+       totalPlMinor = Value(totalPlMinor),
+       currency = Value(currency);
+  static Insertable<SnapshotRow> custom({
+    Expression<String>? id,
+    Expression<DateTime>? date,
+    Expression<int>? totalValueMinor,
+    Expression<int>? totalInvestedMinor,
+    Expression<int>? totalPlMinor,
+    Expression<String>? currency,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (totalValueMinor != null) 'total_value_minor': totalValueMinor,
+      if (totalInvestedMinor != null)
+        'total_invested_minor': totalInvestedMinor,
+      if (totalPlMinor != null) 'total_pl_minor': totalPlMinor,
+      if (currency != null) 'currency': currency,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SnapshotsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? date,
+    Value<int>? totalValueMinor,
+    Value<int>? totalInvestedMinor,
+    Value<int>? totalPlMinor,
+    Value<String>? currency,
+    Value<int>? rowid,
+  }) {
+    return SnapshotsCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      totalValueMinor: totalValueMinor ?? this.totalValueMinor,
+      totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
+      totalPlMinor: totalPlMinor ?? this.totalPlMinor,
+      currency: currency ?? this.currency,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (totalValueMinor.present) {
+      map['total_value_minor'] = Variable<int>(totalValueMinor.value);
+    }
+    if (totalInvestedMinor.present) {
+      map['total_invested_minor'] = Variable<int>(totalInvestedMinor.value);
+    }
+    if (totalPlMinor.present) {
+      map['total_pl_minor'] = Variable<int>(totalPlMinor.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SnapshotsCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('totalValueMinor: $totalValueMinor, ')
+          ..write('totalInvestedMinor: $totalInvestedMinor, ')
+          ..write('totalPlMinor: $totalPlMinor, ')
+          ..write('currency: $currency, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2168,6 +2608,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AssetsTable assets = $AssetsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $QuotesTable quotes = $QuotesTable(this);
+  late final $SnapshotsTable snapshots = $SnapshotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2177,6 +2618,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     assets,
     transactions,
     quotes,
+    snapshots,
   ];
 }
 
@@ -3225,6 +3667,231 @@ typedef $$QuotesTableProcessedTableManager =
       QuoteRow,
       PrefetchHooks Function()
     >;
+typedef $$SnapshotsTableCreateCompanionBuilder =
+    SnapshotsCompanion Function({
+      required String id,
+      required DateTime date,
+      required int totalValueMinor,
+      required int totalInvestedMinor,
+      required int totalPlMinor,
+      required String currency,
+      Value<int> rowid,
+    });
+typedef $$SnapshotsTableUpdateCompanionBuilder =
+    SnapshotsCompanion Function({
+      Value<String> id,
+      Value<DateTime> date,
+      Value<int> totalValueMinor,
+      Value<int> totalInvestedMinor,
+      Value<int> totalPlMinor,
+      Value<String> currency,
+      Value<int> rowid,
+    });
+
+class $$SnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $SnapshotsTable> {
+  $$SnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalPlMinor => $composableBuilder(
+    column: $table.totalPlMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SnapshotsTable> {
+  $$SnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalPlMinor => $composableBuilder(
+    column: $table.totalPlMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SnapshotsTable> {
+  $$SnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalPlMinor => $composableBuilder(
+    column: $table.totalPlMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+}
+
+class $$SnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SnapshotsTable,
+          SnapshotRow,
+          $$SnapshotsTableFilterComposer,
+          $$SnapshotsTableOrderingComposer,
+          $$SnapshotsTableAnnotationComposer,
+          $$SnapshotsTableCreateCompanionBuilder,
+          $$SnapshotsTableUpdateCompanionBuilder,
+          (
+            SnapshotRow,
+            BaseReferences<_$AppDatabase, $SnapshotsTable, SnapshotRow>,
+          ),
+          SnapshotRow,
+          PrefetchHooks Function()
+        > {
+  $$SnapshotsTableTableManager(_$AppDatabase db, $SnapshotsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SnapshotsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SnapshotsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SnapshotsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<int> totalValueMinor = const Value.absent(),
+                Value<int> totalInvestedMinor = const Value.absent(),
+                Value<int> totalPlMinor = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SnapshotsCompanion(
+                id: id,
+                date: date,
+                totalValueMinor: totalValueMinor,
+                totalInvestedMinor: totalInvestedMinor,
+                totalPlMinor: totalPlMinor,
+                currency: currency,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required DateTime date,
+                required int totalValueMinor,
+                required int totalInvestedMinor,
+                required int totalPlMinor,
+                required String currency,
+                Value<int> rowid = const Value.absent(),
+              }) => SnapshotsCompanion.insert(
+                id: id,
+                date: date,
+                totalValueMinor: totalValueMinor,
+                totalInvestedMinor: totalInvestedMinor,
+                totalPlMinor: totalPlMinor,
+                currency: currency,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SnapshotsTable,
+      SnapshotRow,
+      $$SnapshotsTableFilterComposer,
+      $$SnapshotsTableOrderingComposer,
+      $$SnapshotsTableAnnotationComposer,
+      $$SnapshotsTableCreateCompanionBuilder,
+      $$SnapshotsTableUpdateCompanionBuilder,
+      (
+        SnapshotRow,
+        BaseReferences<_$AppDatabase, $SnapshotsTable, SnapshotRow>,
+      ),
+      SnapshotRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3237,4 +3904,6 @@ class $AppDatabaseManager {
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$QuotesTableTableManager get quotes =>
       $$QuotesTableTableManager(_db, _db.quotes);
+  $$SnapshotsTableTableManager get snapshots =>
+      $$SnapshotsTableTableManager(_db, _db.snapshots);
 }

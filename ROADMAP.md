@@ -66,9 +66,9 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
-| 4.1 | `Snapshot` table — daily portfolio value persisted locally | ⬜ |
-| 4.2 | Snapshot writer (runs on refresh, one per day, idempotent) | ⬜ |
-| 4.3 | Evolution line chart (portfolio value over time) | ⬜ |
+| 4.1 | `Snapshot` table — daily portfolio value persisted locally | ✅ |
+| 4.2 | Snapshot writer (runs on refresh, one per day, idempotent) | ✅ |
+| 4.3 | Evolution line chart (portfolio value over time) | ✅ |
 
 ---
 

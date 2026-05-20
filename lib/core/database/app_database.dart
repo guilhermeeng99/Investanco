@@ -134,7 +134,33 @@ class Quotes extends Table {
   Set<Column<Object>> get primaryKey => {assetId};
 }
 
-@DriftDatabase(tables: [Institutions, Assets, Transactions, Quotes])
+/// Daily portfolio value snapshots for the evolution chart. Row class renamed
+/// to avoid clashing with `Snapshot`.
+@DataClassName('SnapshotRow')
+class Snapshots extends Table {
+  /// `yyyy-MM-dd` key (one snapshot per day).
+  TextColumn get id => text()();
+
+  /// Snapshot date (local midnight).
+  DateTimeColumn get date => dateTime()();
+
+  /// Total value in minor units (base currency).
+  IntColumn get totalValueMinor => integer()();
+
+  /// Total invested in minor units (base currency).
+  IntColumn get totalInvestedMinor => integer()();
+
+  /// Total unrealized P/L in minor units (base currency).
+  IntColumn get totalPlMinor => integer()();
+
+  /// `Currency` name (base).
+  TextColumn get currency => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Institutions, Assets, Transactions, Quotes, Snapshots])
 class AppDatabase extends _$AppDatabase {
   /// Opens the on-device database, or uses [executor] (e.g. an in-memory
   /// database in tests).
@@ -142,13 +168,14 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'investanco'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(quotes);
+          if (from < 3) await m.createTable(snapshots);
         },
       );
 }

@@ -10,6 +10,7 @@ import 'package:investanco/features/institutions/domain/entities/institution.dar
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
+import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
@@ -27,6 +28,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     this._quoteRepository,
     this._fxDataSource,
     this._valuationService,
+    this._snapshotRepository,
   ) : super(const DashboardLoading()) {
     _transactionSub = _transactionRepository.watchAll().listen(
       (value) {
@@ -58,6 +60,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   final QuoteRepository _quoteRepository;
   final FxDataSource _fxDataSource;
   final ValuationService _valuationService;
+  final SnapshotRepository _snapshotRepository;
 
   late final StreamSubscription<List<AssetTransaction>> _transactionSub;
   late final StreamSubscription<List<Asset>> _assetSub;
@@ -97,6 +100,22 @@ class DashboardCubit extends Cubit<DashboardState> {
     _lastSyncAt = DateTime.now();
     _refreshing = false;
     await _recompute();
+    await _writeSnapshot();
+  }
+
+  Future<void> _writeSnapshot() async {
+    final current = state;
+    if (current is! DashboardLoaded || !current.hasHoldings) return;
+    final fresh = current.portfolio.holdings
+        .any((h) => h.quantity > 0 && !h.priceStale);
+    if (!fresh) return;
+
+    await _snapshotRepository.upsertToday(
+      totalValue: current.portfolio.totalValueBase,
+      totalInvested: current.portfolio.totalInvestedBase,
+      totalPL: current.portfolio.totalUnrealizedPL,
+    );
+    await _recompute();
   }
 
   Future<void> _recompute() async {
@@ -128,6 +147,11 @@ class DashboardCubit extends Cubit<DashboardState> {
       now: DateTime.now(),
     );
 
+    final snapshots = await _snapshotRepository.range(
+      DateTime.now().subtract(const Duration(days: 365)),
+      DateTime.now(),
+    );
+
     emit(
       DashboardLoaded(
         portfolio: portfolio,
@@ -135,6 +159,7 @@ class DashboardCubit extends Cubit<DashboardState> {
         institutionsById: {for (final i in institutions) i.id: i},
         lastSyncAt: _lastSyncAt,
         isRefreshing: _refreshing,
+        snapshots: snapshots,
       ),
     );
 

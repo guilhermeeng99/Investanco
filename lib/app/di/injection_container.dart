@@ -19,6 +19,8 @@ import 'package:investanco/features/quotes/data/datasources/yahoo_quote_data_sou
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
+import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
+import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
@@ -92,7 +94,11 @@ void _initQuotes() {
 }
 
 void _initDashboard() {
-  sl.registerFactory<DashboardCubit>(
-    () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl()),
-  );
+  sl
+    ..registerLazySingleton<SnapshotRepository>(
+      () => SnapshotRepositoryImpl(sl()),
+    )
+    ..registerFactory<DashboardCubit>(
+      () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()),
+    );
 }
