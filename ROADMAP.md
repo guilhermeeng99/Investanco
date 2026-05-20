@@ -99,7 +99,7 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 |---|------|--------|
 | 7.1 | Android keystore + signing config + CI secrets | 🧊 |
 | 7.2 | Firebase App Distribution (testers) | 🧊 |
-| 7.3 | gh-pages live web build | 🧊 |
+| 7.3 | gh-pages live web build — https://guilhermeeng99.github.io/Investanco/ | ✅ |
 
 ---
 
