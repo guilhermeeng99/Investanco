@@ -53,3 +53,8 @@ app.*.map.json
 
 # Local secrets (API tokens) — never commit. Use env.example.json as a template.
 /env.json
+
+# Android release signing — never commit (keystore + passwords). CI rebuilds
+# these from repository secrets.
+/android/key.properties
+*.jks

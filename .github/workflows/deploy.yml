@@ -1,11 +1,12 @@
 name: Deploy to GitHub Pages
 
-# Builds the web app (with Drift's WASM assets) and an Android APK, then publishes
-# the web build to gh-pages and bundles the APK alongside it for download.
+# Builds the web app (with Drift's WASM assets) and a release-signed Android APK,
+# publishes the web build to gh-pages (bundling the APK for download), and
+# distributes the APK to testers via Firebase App Distribution.
 #
-# Firebase App Distribution and Android release signing are intentionally omitted
-# until Phase 6/7 (they require repository secrets). The APK below is debug-signed
-# and suitable for sideloading/testing only. See docs/ROADMAP.md.
+# Signing + distribution use repository secrets: ANDROID_KEYSTORE_BASE64,
+# ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, FIREBASE_SERVICE_ACCOUNT_ANDROID.
+# See docs/ROADMAP.md (7.1/7.2).
 
 on:
   push:
@@ -52,11 +53,34 @@ jobs:
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
 
-      - name: Build Android APK (debug-signed)
+      - name: Restore Android keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          {
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyPassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "storeFile=upload-keystore.jks"
+          } > android/key.properties
+
+      - name: Build Android APK (release-signed)
         run: |
           flutter build apk --release \
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
+
+      - name: Distribute APK to testers (Firebase App Distribution)
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: "1:305852403095:android:e0fcd59c990a5c849008d2"
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDROID }}
+          testers: guigapasocax@gmail.com
+          file: build/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: "Build ${{ github.run_number }} from main"
 
       - name: Bundle APK with web build
         run: cp build/app/outputs/flutter-apk/app-release.apk build/web/investanco.apk
@@ -66,19 +90,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web
-
-      # --- Phase 6/7 (enable once secrets exist) -------------------------------
-      # - name: Build signed APK
-      #   env:
-      #     ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      #     ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-      #     ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      #   run: ...
-      #
-      # - name: Upload APK to Firebase App Distribution
-      #   uses: wzieba/Firebase-Distribution-Github-Action@v1
-      #   with:
-      #     appId: "<firebase-android-app-id>"
-      #     serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDROID }}
-      #     groups: testers
-      #     file: build/app/outputs/flutter-apk/app-release.apk

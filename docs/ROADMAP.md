@@ -98,8 +98,8 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 
 | # | Item | Status |
 |---|------|--------|
-| 7.1 | Android keystore + signing config + CI secrets | 🧊 |
-| 7.2 | Firebase App Distribution (testers) | 🧊 |
+| 7.1 | Android keystore + signing config (`key.properties`, gitignored) + CI secrets | ✅ |
+| 7.2 | Firebase App Distribution (CI uploads signed APK to testers) | ✅ |
 | 7.3 | gh-pages live web build — https://guilhermeeng99.github.io/Investanco/ | ✅ |
 
 ---
