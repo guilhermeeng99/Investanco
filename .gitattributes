@@ -1,0 +1,15 @@
+# Normalize line endings to LF in the repository (Windows checkout stays CRLF).
+# Kills the "LF will be replaced by CRLF" warnings and generated-file churn.
+* text=auto eol=lf
+
+# Treat binary assets as binary (no EOL conversion).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.jks binary
+*.keystore binary
+*.wasm binary

@@ -115,7 +115,7 @@ flutter test                              # Run all tests
 flutter test test/features/holdings/      # Run feature tests
 flutter analyze                           # Static analysis (must be zero issues)
 flutter run -d chrome                      # Run the app (web)
-dart run build_runner build --delete-conflicting-outputs   # Generate Drift code
+dart run build_runner build   # Generate Drift code
 dart run slang                            # Generate i18n
 ```
 
@@ -128,7 +128,7 @@ dart run slang                            # Generate i18n
 After every code change:
 
 1. Run `dart run slang` if any i18n JSON was modified
-2. Run `dart run build_runner build --delete-conflicting-outputs` if Drift tables/DAOs changed
+2. Run `dart run build_runner build` if Drift tables/DAOs changed
 3. Run `flutter analyze` — **zero** errors, warnings and info-level issues
 4. Run `flutter test` — all tests must pass
 5. Never add `// ignore` without clear justification
