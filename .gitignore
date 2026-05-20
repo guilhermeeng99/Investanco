@@ -50,3 +50,6 @@ app.*.map.json
 
 # Local commit-message scratch file
 .commitmsg.tmp
+
+# Local secrets (API tokens) — never commit. Use env.example.json as a template.
+/env.json

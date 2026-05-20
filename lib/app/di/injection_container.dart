@@ -120,8 +120,19 @@ void _initProfile() {
 }
 
 /// Applies persisted settings (theme + API tokens) before the first frame.
+///
+/// The Finnhub token resolves in this order: a value saved in Settings wins;
+/// otherwise the build-time `FINNHUB_TOKEN` (passed via `--dart-define` /
+/// `--dart-define-from-file=env.json`) is used. So the key can be baked into
+/// the build instead of typed in the app.
 Future<void> _loadTheme() async {
   final settings = await sl<SettingsRepository>().get();
   sl<ThemeCubit>().setMode(toFlutterThemeMode(settings.themeMode));
-  sl<QuoteApiKeys>().finnhubToken = settings.finnhubToken;
+
+  const envFinnhubToken = String.fromEnvironment('FINNHUB_TOKEN');
+  final savedToken = settings.finnhubToken;
+  sl<QuoteApiKeys>().finnhubToken =
+      (savedToken != null && savedToken.isNotEmpty)
+          ? savedToken
+          : (envFinnhubToken.isEmpty ? null : envFinnhubToken);
 }

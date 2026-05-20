@@ -49,12 +49,14 @@ jobs:
         run: |
           flutter build web --release \
             --base-href /Investanco/ \
-            --build-number=$GITHUB_RUN_NUMBER
+            --build-number=$GITHUB_RUN_NUMBER \
+            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
 
       - name: Build Android APK (debug-signed)
         run: |
           flutter build apk --release \
-            --build-number=$GITHUB_RUN_NUMBER
+            --build-number=$GITHUB_RUN_NUMBER \
+            --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }}
 
       - name: Bundle APK with web build
         run: cp build/app/outputs/flutter-apk/app-release.apk build/web/investanco.apk
