@@ -104,7 +104,7 @@ class Transactions extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-/// Local SQLite database (offline-first source of truth). On web it runs via the
+/// Local SQLite cache (Firestore is the source of truth). On web it runs via the
 /// Drift worker + sqlite3 WASM assets (downloaded in CI / shipped with the app).
 /// Cached unit prices. Row class renamed to avoid clashing with `Quote`.
 @DataClassName('QuoteRow')
@@ -221,5 +221,30 @@ class AppDatabase extends _$AppDatabase {
         await delete(snapshots).go();
         await delete(assets).go();
         await delete(institutions).go();
+      });
+
+  /// Replaces the cloud-mirrored tables with [institutions], [assets],
+  /// [transactions] and [snapshots] in a single transaction, so a startup sync
+  /// makes the local cache match Firestore exactly (creates, edits **and**
+  /// deletes from any device are reflected). Quotes (a derived cache) and
+  /// settings (device-local) are preserved. See `docs/specs/cloud_sync.md`.
+  Future<void> replaceMirroredData({
+    required List<InstitutionRow> institutions,
+    required List<AssetRow> assets,
+    required List<TransactionRow> transactions,
+    required List<SnapshotRow> snapshots,
+  }) =>
+      transaction(() async {
+        await delete(this.transactions).go();
+        await delete(this.snapshots).go();
+        await delete(this.assets).go();
+        await delete(this.institutions).go();
+        await batch((b) {
+          b
+            ..insertAll(this.institutions, institutions)
+            ..insertAll(this.assets, assets)
+            ..insertAll(this.transactions, transactions)
+            ..insertAll(this.snapshots, snapshots);
+        });
       });
 }

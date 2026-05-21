@@ -65,4 +65,18 @@ void main() {
     await repo.delete('t1');
     verify(() => mirror.delete('transactions', 't1')).called(1);
   });
+
+  test('save surfaces the failure and skips the cache when the remote fails',
+      () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any()))
+        .thenThrow(Exception('offline'));
+    final repo = TransactionRepositoryImpl(db, mirror);
+
+    final result = await repo.save(transactionFactory(id: 't1'));
+
+    expect(result.isLeft(), isTrue);
+    // Write-through: nothing is cached locally when the cloud write fails.
+    expect(await db.select(db.transactions).get(), isEmpty);
+  });
 }

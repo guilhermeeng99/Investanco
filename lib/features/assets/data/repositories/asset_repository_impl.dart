@@ -34,8 +34,10 @@ class AssetRepositoryImpl implements AssetRepository {
   @override
   Future<Either<Failure, Unit>> save(Asset asset) => guardedWrite(() async {
         final row = _toRow(asset);
-        await _db.into(_db.assets).insertOnConflictUpdate(row);
+        // Firestore-first (write-through): persist to the authoritative cloud
+        // before caching locally, so a write that can't reach Firestore fails.
         await _mirror.upsert(_collection, row.id, row.toJson());
+        await _db.into(_db.assets).insertOnConflictUpdate(row);
       });
 
   @override
@@ -47,8 +49,8 @@ class AssetRepositoryImpl implements AssetRepository {
           .get();
       if (referencing.isNotEmpty) return const Left(InUseFailure());
 
-      await (_db.delete(_db.assets)..where((t) => t.id.equals(id))).go();
       await _mirror.delete(_collection, id);
+      await (_db.delete(_db.assets)..where((t) => t.id.equals(id))).go();
       return const Right(unit);
     } on Object {
       return const Left(CacheFailure());

@@ -1,7 +1,9 @@
-/// Port for mirroring a single Drift row to the user's cloud store **as it
-/// changes**, so edits sync immediately (not only at startup). Repositories call
-/// it after a local write; the bulk startup sync (see `docs/specs/cloud_sync.md`)
-/// still reconciles anything missed (e.g. offline edits).
+/// Port for writing a single Drift row to the user's cloud store **as it
+/// changes** (write-through). Repositories call it *before* touching the local
+/// cache and surface any failure: the cloud is the source of truth, so a write
+/// that can't reach Firestore must fail rather than live only locally —
+/// otherwise the next authoritative startup sync would wipe it. See
+/// `docs/specs/cloud_sync.md`.
 ///
 /// Implemented by `FirestoreRemoteMirror`. [NoopRemoteMirror] is the default in
 /// repositories, so tests and any no-cloud build skip remote writes for free.
@@ -9,10 +11,11 @@ abstract class RemoteMirror {
   /// Allows const default instances.
   const RemoteMirror();
 
-  /// Upserts [json] at `{collection}/{id}` for the current user. Best-effort.
+  /// Upserts [json] at `{collection}/{id}` for the current user. Throws on
+  /// failure (offline / permission / transient) so the caller can surface it.
   Future<void> upsert(String collection, String id, Map<String, dynamic> json);
 
-  /// Deletes `{collection}/{id}` for the current user. Best-effort.
+  /// Deletes `{collection}/{id}` for the current user. Throws on failure.
   Future<void> delete(String collection, String id);
 }
 

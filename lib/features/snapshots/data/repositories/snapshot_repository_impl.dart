@@ -41,7 +41,13 @@ class SnapshotRepositoryImpl implements SnapshotRepository {
           currency: totalValue.currency.name,
         );
         await _db.into(_db.snapshots).insertOnConflictUpdate(row);
-        await _mirror.upsert(_collection, row.id, row.toJson());
+        // Snapshots are a derived daily cache the authoritative sync rebuilds,
+        // so a mirror failure is non-fatal — never fail a dashboard refresh.
+        try {
+          await _mirror.upsert(_collection, row.id, row.toJson());
+        } on Object {
+          // best-effort
+        }
       });
 
   @override

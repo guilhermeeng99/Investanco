@@ -4,9 +4,13 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
 
-/// Firestore implementation of [SyncService]. Reads/writes Drift rows in bulk and
-/// serializes them with Drift's generated `toJson`/`fromJson`. Pull upserts remote
-/// docs into Drift; push batches every local row up. See `docs/specs/cloud_sync.md`.
+/// Firestore implementation of [SyncService].
+///
+/// Firestore is the **source of truth**. [sync] is an authoritative pull: it
+/// fetches every mirrored collection and rebuilds the local Drift cache to match
+/// exactly, so creates, edits **and** deletes made on any device are reflected.
+/// There is no push — repository writes are write-through to Firestore (see
+/// `RemoteMirror`). Mirrors financo's `fullSync`. See `docs/specs/cloud_sync.md`.
 class FirestoreSyncService implements SyncService {
   /// Creates the service over the local [_db] and [_firestore].
   FirestoreSyncService(this._db, this._firestore);
@@ -14,7 +18,7 @@ class FirestoreSyncService implements SyncService {
   final AppDatabase _db;
   final FirebaseFirestore _firestore;
 
-  static const _mirroredCollections = [
+  static const List<String> _mirroredCollections = [
     'institutions',
     'assets',
     'transactions',
@@ -24,8 +28,31 @@ class FirestoreSyncService implements SyncService {
   @override
   Future<Either<Failure, Unit>> sync(String userId) async {
     try {
-      await _pull(userId);
-      await _push(userId);
+      // Phase 1 — fetch from Firestore (network, may throw).
+      final institutions = await _fetchRows(
+        userId,
+        'institutions',
+        InstitutionRow.fromJson,
+      );
+      final assets = await _fetchRows(userId, 'assets', AssetRow.fromJson);
+      final transactions = await _fetchRows(
+        userId,
+        'transactions',
+        TransactionRow.fromJson,
+      );
+      final snapshots = await _fetchRows(
+        userId,
+        'snapshots',
+        SnapshotRow.fromJson,
+      );
+
+      // Phase 2 — rebuild the local cache to match the cloud exactly.
+      await _db.replaceMirroredData(
+        institutions: institutions,
+        assets: assets,
+        transactions: transactions,
+        snapshots: snapshots,
+      );
       return const Right(unit);
     } on Object {
       return const Left(ServerFailure('Cloud sync failed'));
@@ -48,35 +75,13 @@ class FirestoreSyncService implements SyncService {
   @override
   Future<void> resetLocal() => _db.clearUserData();
 
-  /// Firestore caps a [WriteBatch] at 500 operations. Commit in chunks so large
-  /// portfolios (e.g. an active trader with >500 transactions) still push and
-  /// clear in full instead of throwing once the batch overflows.
-  static const _batchLimit = 500;
-
-  Future<void> _deleteCollection(
-    CollectionReference<Map<String, dynamic>> collection,
+  Future<List<T>> _fetchRows<T>(
+    String userId,
+    String name,
+    T Function(Map<String, dynamic>) fromJson,
   ) async {
-    final snapshot = await collection.get();
-    await _commitInChunks(
-      snapshot.docs,
-      (batch, doc) => batch.delete(doc.reference),
-    );
-  }
-
-  /// Splits [items] into ≤[_batchLimit] groups and commits one batch each.
-  Future<void> _commitInChunks<T>(
-    List<T> items,
-    void Function(WriteBatch batch, T item) op,
-  ) async {
-    for (var start = 0; start < items.length; start += _batchLimit) {
-      final end =
-          start + _batchLimit < items.length ? start + _batchLimit : items.length;
-      final batch = _firestore.batch();
-      for (final item in items.sublist(start, end)) {
-        op(batch, item);
-      }
-      await batch.commit();
-    }
+    final snapshot = await _collection(userId, name).get();
+    return snapshot.docs.map((doc) => fromJson(doc.data())).toList();
   }
 
   CollectionReference<Map<String, dynamic>> _collection(
@@ -85,78 +90,24 @@ class FirestoreSyncService implements SyncService {
   ) =>
       _firestore.collection('users').doc(userId).collection(name);
 
-  Future<void> _push(String userId) async {
-    await _pushRows(
-      _collection(userId, 'institutions'),
-      await _db.select(_db.institutions).get(),
-      (row) => row.id,
-      (row) => row.toJson(),
-    );
-    await _pushRows(
-      _collection(userId, 'assets'),
-      await _db.select(_db.assets).get(),
-      (row) => row.id,
-      (row) => row.toJson(),
-    );
-    await _pushRows(
-      _collection(userId, 'transactions'),
-      await _db.select(_db.transactions).get(),
-      (row) => row.id,
-      (row) => row.toJson(),
-    );
-    await _pushRows(
-      _collection(userId, 'snapshots'),
-      await _db.select(_db.snapshots).get(),
-      (row) => row.id,
-      (row) => row.toJson(),
-    );
-  }
+  /// Firestore caps a [WriteBatch] at 500 operations. Delete in chunks so large
+  /// portfolios (e.g. an active trader with >500 transactions) clear in full
+  /// instead of throwing once the batch overflows.
+  static const _batchLimit = 500;
 
-  Future<void> _pushRows<T>(
+  Future<void> _deleteCollection(
     CollectionReference<Map<String, dynamic>> collection,
-    List<T> rows,
-    String Function(T) id,
-    Map<String, dynamic> Function(T) toJson,
-  ) {
-    return _commitInChunks(
-      rows,
-      (batch, row) => batch.set(collection.doc(id(row)), toJson(row)),
-    );
-  }
-
-  Future<void> _pull(String userId) async {
-    await _pullRows(
-      _collection(userId, 'institutions'),
-      (json) => _db.into(_db.institutions).insertOnConflictUpdate(
-            InstitutionRow.fromJson(json),
-          ),
-    );
-    await _pullRows(
-      _collection(userId, 'assets'),
-      (json) =>
-          _db.into(_db.assets).insertOnConflictUpdate(AssetRow.fromJson(json)),
-    );
-    await _pullRows(
-      _collection(userId, 'transactions'),
-      (json) => _db.into(_db.transactions).insertOnConflictUpdate(
-            TransactionRow.fromJson(json),
-          ),
-    );
-    await _pullRows(
-      _collection(userId, 'snapshots'),
-      (json) => _db
-          .into(_db.snapshots)
-          .insertOnConflictUpdate(SnapshotRow.fromJson(json)),
-    );
-  }
-
-  Future<void> _pullRows(
-    CollectionReference<Map<String, dynamic>> collection,
-    Future<void> Function(Map<String, dynamic>) upsert,
   ) async {
     final snapshot = await collection.get();
-    for (final doc in snapshot.docs) {
-      await upsert(doc.data());
+    final docs = snapshot.docs;
+    for (var start = 0; start < docs.length; start += _batchLimit) {
+      final end =
+          start + _batchLimit < docs.length ? start + _batchLimit : docs.length;
+      final batch = _firestore.batch();
+      for (final doc in docs.sublist(start, end)) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
     }
   }
 }

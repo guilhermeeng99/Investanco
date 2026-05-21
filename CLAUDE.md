@@ -87,7 +87,7 @@ Each feature follows:
 | **State management** | flutter_bloc (Cubits for simple state, Blocs for event-driven)          |
 | **DI**               | get_it (service locator in `lib/app/di/injection_container.dart`)       |
 | **Routing**          | go_router (declarative, path-based, shell route)                         |
-| **Local database**   | Drift (SQLite — source of truth, offline-first)                          |
+| **Local database**   | Drift (SQLite — local cache; Firestore is the source of truth)           |
 | **Remote sync**      | Firebase Firestore + Firebase Auth + Google Sign-In *(implemented, Phase 6)* |
 | **Market data**      | dio HTTP client behind `QuoteDataSource` / `FxDataSource` interfaces     |
 | **Charts**           | fl_chart (allocation + portfolio evolution)                             |
@@ -257,9 +257,11 @@ users/{uid}/snapshots/{id}      → id (yyyy-MM-dd), date, totalValueMinor,
 ```
 
 Not mirrored: `quotes` (derived cache) and `settings` (device-local). Security
-rules restrict every `users/{uid}/**` path to its owner. Guidelines: live per-row
-mirror via `RemoteMirror` on each write + bulk pull/push at sign-in; batched writes;
-mirror Drift schema 1:1. See `docs/specs/cloud_sync.md`.
+rules restrict every `users/{uid}/**` path to its owner. **Firestore is the source
+of truth**; Drift is a local cache. Guidelines: write-through via `RemoteMirror` on
+each write (remote-first, online-required) + authoritative full pull at sign-in
+(rebuild local from Firestore, so creates/edits/deletes propagate); mirror Drift
+schema 1:1. See `docs/specs/cloud_sync.md`.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

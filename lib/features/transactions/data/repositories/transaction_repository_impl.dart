@@ -44,14 +44,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<Either<Failure, Unit>> save(AssetTransaction transaction) =>
       guardedWrite(() async {
         final row = _toRow(transaction);
-        await _db.into(_db.transactions).insertOnConflictUpdate(row);
+        // Firestore-first (write-through): the cloud is authoritative, so persist
+        // remotely before caching locally. A write that can't reach Firestore
+        // fails instead of living only in the local cache.
         await _mirror.upsert(_collection, row.id, row.toJson());
+        await _db.into(_db.transactions).insertOnConflictUpdate(row);
       });
 
   @override
   Future<Either<Failure, Unit>> delete(String id) => guardedWrite(() async {
-        await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
         await _mirror.delete(_collection, id);
+        await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
       });
 
   AssetTransaction _toEntity(TransactionRow row) {
