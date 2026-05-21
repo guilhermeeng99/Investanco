@@ -7,6 +7,7 @@
     "edit": "Editar",
     "add": "Adicionar",
     "confirm": "Confirmar",
+    "ok": "OK",
     "required": "Campo obrigatório",
     "retry": "Tentar novamente"
   },
@@ -123,6 +124,18 @@
       "dividend": "Dividendo"
     }
   },
+  "importCsv": {
+    "title": "Importar CSV",
+    "intro": "Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.",
+    "downloadExample": "Baixar exemplo",
+    "selectFile": "Selecionar arquivo",
+    "confirmTitle": "Confirmar importação",
+    "confirmBody": "Importar $count linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.",
+    "success": "Importados $assets novos ativos e $transactions lançamentos.",
+    "exampleDownloaded": "CSV de exemplo baixado.",
+    "exampleFailed": "Não foi possível gerar o arquivo de exemplo.",
+    "errorTitle": "Não foi possível importar"
+  },
   "profile": {
     "title": "Perfil",
     "sectionYourData": "Seus dados",
@@ -147,7 +160,9 @@
     "signOutConfirm": "Tem certeza que deseja sair?",
     "clearData": "Apagar meus dados",
     "clearDataDescription": "Remove todos os seus dados, na nuvem e neste dispositivo.",
-    "clearDataConfirm": "Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?",
+    "clearDataConfirmHeadline": "Esta ação é permanente",
+    "clearDataConfirmBody": "Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.",
+    "clearDataConfirmField": "Digite seu e-mail para confirmar",
     "clearDataSuccess": "Seus dados foram apagados.",
     "version": "Versão"
   },

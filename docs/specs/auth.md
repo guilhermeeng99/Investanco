@@ -30,8 +30,11 @@ abstract class AuthRepository {
 }
 ```
 
-- `FirebaseAuthRepository` — Google sign-in via the firebase_auth provider flow
-  (popup on web, native provider on mobile; no extra `google_sign_in` dep).
+- `FirebaseAuthRepository` — platform-split Google sign-in (mirrors financo):
+  a Firebase popup on web, native `google_sign_in` on mobile. The native mobile
+  flow is **required**: `signInWithProvider` on Android opens a Custom Tab web
+  redirect through `firebaseapp.com/__/auth/handler`, which fails with "missing
+  initial state" in storage-partitioned browsers (the Android WebView/Custom Tab).
 - `LocalAuthRepository` — placeholder for tests/no-Firebase; reports signed-out.
 
 ## State machine (`AuthBloc`)
@@ -72,6 +75,20 @@ Pure function (testable) consumed by `GoRouter.redirect`, with
    no schema change is needed (see `cloud_sync.md`).
 2. Sign-out (`AuthSignOutRequested`) → `AuthUnauthenticated` → the gate routes
    back to `/login`.
+3. Sign-in always forces the Google account chooser. Firebase's `signOut()`
+   clears only the Firebase session, not Google's, so without this a post-sign-out
+   sign-in would silently re-authenticate the previous account and block switching
+   users. Platform-split:
+   - **Web** — the OAuth `prompt=select_account` custom parameter on
+     `GoogleAuthProvider`, passed to `signInWithPopup`.
+   - **Mobile** — `signOut()` also calls `GoogleSignIn.signOut()` (non-fatal, on a
+     best-effort basis) so the next `authenticate()` shows the chooser fresh.
+4. `google_sign_in` is initialised once at startup via `GoogleSignIn.initialize()`,
+   **mobile-only**: on web Firebase's `signInWithPopup` owns the Google Identity
+   Services lifecycle, so initialising there conflicts with it (and calling
+   `GoogleSignIn.signOut()` on web would throw `StateError`). On Android the server
+   client id is read from `google-services.json` (its `oauth_client` web entry),
+   so the release SHA-1/SHA-256 must be registered in the Firebase console.
 
 ## Open questions
 

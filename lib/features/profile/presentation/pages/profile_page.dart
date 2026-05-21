@@ -15,6 +15,7 @@ import 'package:investanco/features/institutions/presentation/pages/institutions
 import 'package:investanco/features/profile/domain/entities/app_settings.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:investanco/features/profile/presentation/widgets/app_version_footer.dart';
+import 'package:investanco/features/profile/presentation/widgets/clear_account_data_dialog.dart';
 import 'package:investanco/features/profile/presentation/widgets/profile_header_card.dart';
 import 'package:investanco/features/profile/presentation/widgets/profile_language_row.dart';
 import 'package:investanco/features/profile/presentation/widgets/profile_palette_picker.dart';
@@ -79,27 +80,11 @@ class _ProfileView extends StatelessWidget {
   Future<void> _confirmClearData(BuildContext context) async {
     final auth = context.read<AuthBloc>().state;
     if (auth is! AuthAuthenticated) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.profile.clearData),
-        content: Text(t.profile.clearDataConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.common.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: ctx.appColors.error,
-            ),
-            child: Text(t.profile.clearData),
-          ),
-        ],
-      ),
+    final confirmed = await showClearAccountDataDialog(
+      context,
+      email: auth.user.email,
     );
-    if (!(confirmed ?? false) || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final result = await sl<SyncService>().clear(auth.user.userId);
     result.fold(

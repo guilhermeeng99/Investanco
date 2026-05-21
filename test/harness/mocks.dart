@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' show ThemeMode;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:investanco/app/theme/theme_cubit.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
@@ -75,6 +76,14 @@ class MockUserCredential extends Mock implements UserCredential {}
 
 /// Fallback for `signInWithProvider(any())` / `signInWithPopup(any())`.
 class FakeAuthProvider extends Fake implements AuthProvider {}
+
+// ── Google Sign-In ──────────────────────────────────────────────────────────
+class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+
+class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
+
+/// Fallback for `signInWithCredential(any())`.
+class FakeAuthCredential extends Fake implements AuthCredential {}
 
 // ── Fakes ───────────────────────────────────────────────────────────────────
 

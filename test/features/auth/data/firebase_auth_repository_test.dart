@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:investanco/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,13 +9,18 @@ import '../../../harness/mocks.dart';
 
 void main() {
   late MockFirebaseAuth auth;
+  late MockGoogleSignIn googleSignIn;
   late FirebaseAuthRepository repository;
 
-  setUpAll(() => registerFallbackValue(FakeAuthProvider()));
+  setUpAll(() {
+    registerFallbackValue(FakeAuthCredential());
+    registerFallbackValue(FakeAuthProvider());
+  });
 
   setUp(() {
     auth = MockFirebaseAuth();
-    repository = FirebaseAuthRepository(auth);
+    googleSignIn = MockGoogleSignIn();
+    repository = FirebaseAuthRepository(auth, googleSignIn);
   });
 
   // Builds a fully-stubbed Firebase user. Must be called outside any `when(...)`
@@ -26,6 +32,20 @@ void main() {
     when(() => user.email).thenReturn('ada@example.com');
     when(() => user.photoURL).thenReturn(null);
     return user;
+  }
+
+  // Stubs a successful native mobile sign-in returning [user]. Tests run on the
+  // Dart VM (kIsWeb == false), so signInWithGoogle takes the mobile path:
+  // google_sign_in.authenticate() → GoogleAuthProvider.credential → Firebase.
+  void stubMobileSignIn(MockFirebaseUser user) {
+    final account = MockGoogleSignInAccount();
+    when(() => account.authentication)
+        .thenReturn(const GoogleSignInAuthentication(idToken: 'id-token'));
+    when(() => googleSignIn.authenticate()).thenAnswer((_) async => account);
+    final credential = MockUserCredential();
+    when(() => credential.user).thenReturn(user);
+    when(() => auth.signInWithCredential(any()))
+        .thenAnswer((_) async => credential);
   }
 
   test('currentUser maps the Firebase user to AuthUser', () {
@@ -57,11 +77,7 @@ void main() {
   });
 
   test('signInWithGoogle returns the mapped user on success', () async {
-    final user = stubbedUser();
-    final credential = MockUserCredential();
-    when(() => credential.user).thenReturn(user);
-    when(() => auth.signInWithProvider(any()))
-        .thenAnswer((_) async => credential);
+    stubMobileSignIn(stubbedUser());
 
     final result = await repository.signInWithGoogle();
 
@@ -69,9 +85,23 @@ void main() {
     expect(result.getOrElse(() => throw Exception()).userId, 'u1');
   });
 
-  test('signInWithGoogle maps a FirebaseAuthException to a failure', () async {
-    when(() => auth.signInWithProvider(any())).thenThrow(
-      fb.FirebaseAuthException(code: 'popup-closed', message: 'closed'),
+  test('signInWithGoogle uses native google_sign_in, not the web redirect',
+      () async {
+    // Regression: signInWithProvider opens a Custom Tab web redirect through
+    // firebaseapp.com/__/auth/handler, which fails with "missing initial state"
+    // on Android. Mobile must use the native google_sign_in flow instead.
+    stubMobileSignIn(stubbedUser());
+
+    await repository.signInWithGoogle();
+
+    verify(() => googleSignIn.authenticate()).called(1);
+    verify(() => auth.signInWithCredential(any())).called(1);
+    verifyNever(() => auth.signInWithProvider(any()));
+  });
+
+  test('signInWithGoogle maps a cancelled chooser to a failure', () async {
+    when(() => googleSignIn.authenticate()).thenThrow(
+      const GoogleSignInException(code: GoogleSignInExceptionCode.canceled),
     );
 
     final result = await repository.signInWithGoogle();
@@ -79,7 +109,35 @@ void main() {
     expect(result.isLeft(), isTrue);
   });
 
-  test('signOut delegates to Firebase', () async {
+  test('signInWithGoogle maps a FirebaseAuthException to a failure', () async {
+    final account = MockGoogleSignInAccount();
+    when(() => account.authentication)
+        .thenReturn(const GoogleSignInAuthentication(idToken: 'id-token'));
+    when(() => googleSignIn.authenticate()).thenAnswer((_) async => account);
+    when(() => auth.signInWithCredential(any())).thenThrow(
+      fb.FirebaseAuthException(code: 'invalid-credential', message: 'bad'),
+    );
+
+    final result = await repository.signInWithGoogle();
+
+    expect(result.isLeft(), isTrue);
+  });
+
+  test('signOut clears both the Google and Firebase sessions', () async {
+    when(() => googleSignIn.signOut()).thenAnswer((_) async {});
+    when(() => auth.signOut()).thenAnswer((_) async {});
+
+    await repository.signOut();
+
+    verify(() => googleSignIn.signOut()).called(1);
+    verify(() => auth.signOut()).called(1);
+  });
+
+  test('signOut still signs out of Firebase when Google sign-out throws',
+      () async {
+    // Non-fatal: a Google sign-out failure must not block Firebase sign-out.
+    when(() => googleSignIn.signOut())
+        .thenThrow(StateError('GoogleSignIn not initialized'));
     when(() => auth.signOut()).thenAnswer((_) async {});
 
     await repository.signOut();

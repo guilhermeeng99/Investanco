@@ -45,6 +45,7 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 	@override late final _TranslationsInstitutionsEn institutions = _TranslationsInstitutionsEn._(_root);
 	@override late final _TranslationsAssetsEn assets = _TranslationsAssetsEn._(_root);
 	@override late final _TranslationsTransactionsEn transactions = _TranslationsTransactionsEn._(_root);
+	@override late final _TranslationsImportCsvEn importCsv = _TranslationsImportCsvEn._(_root);
 	@override late final _TranslationsProfileEn profile = _TranslationsProfileEn._(_root);
 	@override late final _TranslationsStartupEn startup = _TranslationsStartupEn._(_root);
 	@override late final _TranslationsOnboardingEn onboarding = _TranslationsOnboardingEn._(_root);
@@ -64,6 +65,7 @@ class _TranslationsCommonEn implements TranslationsCommonPt {
 	@override String get edit => 'Edit';
 	@override String get add => 'Add';
 	@override String get confirm => 'Confirm';
+	@override String get ok => 'OK';
 	@override String get required => 'Required field';
 	@override String get retry => 'Try again';
 }
@@ -192,6 +194,25 @@ class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
 	@override late final _TranslationsTransactionsKindsEn kinds = _TranslationsTransactionsKindsEn._(_root);
 }
 
+// Path: importCsv
+class _TranslationsImportCsvEn implements TranslationsImportCsvPt {
+	_TranslationsImportCsvEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Import CSV';
+	@override String get intro => 'Bulk-add your portfolio from a spreadsheet. Each row is one position: ticker, type, institution, quantity and average price. Existing assets and institutions are reused; new ones are created automatically.';
+	@override String get downloadExample => 'Download example';
+	@override String get selectFile => 'Select file';
+	@override String get confirmTitle => 'Confirm import';
+	@override String confirmBody({required Object count}) => 'Import ${count} rows? Existing assets and institutions are reused, so re-importing won\'t duplicate them.';
+	@override String success({required Object assets, required Object transactions}) => 'Imported ${assets} new assets and ${transactions} transactions.';
+	@override String get exampleDownloaded => 'Example CSV downloaded.';
+	@override String get exampleFailed => 'Could not generate the example file.';
+	@override String get errorTitle => 'Could not import';
+}
+
 // Path: profile
 class _TranslationsProfileEn implements TranslationsProfilePt {
 	_TranslationsProfileEn._(this._root);
@@ -222,7 +243,9 @@ class _TranslationsProfileEn implements TranslationsProfilePt {
 	@override String get signOutConfirm => 'Are you sure you want to sign out?';
 	@override String get clearData => 'Clear my data';
 	@override String get clearDataDescription => 'Removes all your data, in the cloud and on this device.';
-	@override String get clearDataConfirm => 'This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?';
+	@override String get clearDataConfirmHeadline => 'This action is permanent';
+	@override String get clearDataConfirmBody => 'All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.';
+	@override String get clearDataConfirmField => 'Type your email to confirm';
 	@override String get clearDataSuccess => 'Your data has been cleared.';
 	@override String get version => 'Version';
 }
@@ -357,6 +380,7 @@ extension on TranslationsEn {
 			'common.edit' => 'Edit',
 			'common.add' => 'Add',
 			'common.confirm' => 'Confirm',
+			'common.ok' => 'OK',
 			'common.required' => 'Required field',
 			'common.retry' => 'Try again',
 			'currencies.brl' => 'Real (BRL)',
@@ -450,6 +474,16 @@ extension on TranslationsEn {
 			'transactions.kinds.buy' => 'Buy',
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',
+			'importCsv.title' => 'Import CSV',
+			'importCsv.intro' => 'Bulk-add your portfolio from a spreadsheet. Each row is one position: ticker, type, institution, quantity and average price. Existing assets and institutions are reused; new ones are created automatically.',
+			'importCsv.downloadExample' => 'Download example',
+			'importCsv.selectFile' => 'Select file',
+			'importCsv.confirmTitle' => 'Confirm import',
+			'importCsv.confirmBody' => ({required Object count}) => 'Import ${count} rows? Existing assets and institutions are reused, so re-importing won\'t duplicate them.',
+			'importCsv.success' => ({required Object assets, required Object transactions}) => 'Imported ${assets} new assets and ${transactions} transactions.',
+			'importCsv.exampleDownloaded' => 'Example CSV downloaded.',
+			'importCsv.exampleFailed' => 'Could not generate the example file.',
+			'importCsv.errorTitle' => 'Could not import',
 			'profile.title' => 'Profile',
 			'profile.sectionYourData' => 'Your data',
 			'profile.sectionPreferences' => 'Preferences',
@@ -473,7 +507,9 @@ extension on TranslationsEn {
 			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
 			'profile.clearData' => 'Clear my data',
 			'profile.clearDataDescription' => 'Removes all your data, in the cloud and on this device.',
-			'profile.clearDataConfirm' => 'This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?',
+			'profile.clearDataConfirmHeadline' => 'This action is permanent',
+			'profile.clearDataConfirmBody' => 'All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.',
+			'profile.clearDataConfirmField' => 'Type your email to confirm',
 			'profile.clearDataSuccess' => 'Your data has been cleared.',
 			'profile.version' => 'Version',
 			'startup.tagline' => 'Your portfolio, always up to date',

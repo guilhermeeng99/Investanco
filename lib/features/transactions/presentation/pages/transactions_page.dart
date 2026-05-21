@@ -7,6 +7,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/date_formatter.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/portfolio_csv_import_dialog.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_state.dart';
@@ -78,20 +79,16 @@ class _TransactionsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<TransactionsCubit>();
     return Scaffold(
-      appBar: InvestancoAppBar(
-        title: t.transactions.title,
-        actions: [
-          BlocBuilder<TransactionsCubit, TransactionsState>(
-            builder: (context, state) {
-              if (state is! TransactionsLoaded) return const SizedBox.shrink();
-              return IconButton(
-                tooltip: t.transactions.add,
-                onPressed: () => _openForm(context, cubit, state),
-                icon: const FaIcon(FontAwesomeIcons.plus, size: 18),
-              );
-            },
-          ),
-        ],
+      appBar: InvestancoAppBar(title: t.transactions.title),
+      floatingActionButton: ImportAddFab(
+        heroPrefix: 'transactions',
+        addTooltip: t.transactions.add,
+        importTooltip: t.importCsv.title,
+        onAdd: () {
+          final state = cubit.state;
+          if (state is TransactionsLoaded) _openForm(context, cubit, state);
+        },
+        onImport: () => showPortfolioCsvImportDialog(context),
       ),
       body: BlocBuilder<TransactionsCubit, TransactionsState>(
         builder: (context, state) {
@@ -219,6 +216,15 @@ class _TransactionTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SignedAmount(money: signed, fontSize: 14),
+          IconButton(
+            tooltip: t.common.delete,
+            icon: FaIcon(
+              FontAwesomeIcons.trashCan,
+              size: 16,
+              color: colors.onBackgroundLight,
+            ),
+            onPressed: onDelete,
+          ),
         ],
       ),
     );

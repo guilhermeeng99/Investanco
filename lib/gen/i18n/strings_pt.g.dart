@@ -51,6 +51,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
 	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
+	late final TranslationsImportCsvPt importCsv = TranslationsImportCsvPt._(_root);
 	late final TranslationsProfilePt profile = TranslationsProfilePt._(_root);
 	late final TranslationsStartupPt startup = TranslationsStartupPt._(_root);
 	late final TranslationsOnboardingPt onboarding = TranslationsOnboardingPt._(_root);
@@ -82,6 +83,9 @@ class TranslationsCommonPt {
 
 	/// pt: 'Confirmar'
 	String get confirm => 'Confirmar';
+
+	/// pt: 'OK'
+	String get ok => 'OK';
 
 	/// pt: 'Campo obrigatório'
 	String get required => 'Campo obrigatório';
@@ -348,6 +352,45 @@ class TranslationsTransactionsPt {
 	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
 }
 
+// Path: importCsv
+class TranslationsImportCsvPt {
+	TranslationsImportCsvPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Importar CSV'
+	String get title => 'Importar CSV';
+
+	/// pt: 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.'
+	String get intro => 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.';
+
+	/// pt: 'Baixar exemplo'
+	String get downloadExample => 'Baixar exemplo';
+
+	/// pt: 'Selecionar arquivo'
+	String get selectFile => 'Selecionar arquivo';
+
+	/// pt: 'Confirmar importação'
+	String get confirmTitle => 'Confirmar importação';
+
+	/// pt: 'Importar $count linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.'
+	String confirmBody({required Object count}) => 'Importar ${count} linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.';
+
+	/// pt: 'Importados $assets novos ativos e $transactions lançamentos.'
+	String success({required Object assets, required Object transactions}) => 'Importados ${assets} novos ativos e ${transactions} lançamentos.';
+
+	/// pt: 'CSV de exemplo baixado.'
+	String get exampleDownloaded => 'CSV de exemplo baixado.';
+
+	/// pt: 'Não foi possível gerar o arquivo de exemplo.'
+	String get exampleFailed => 'Não foi possível gerar o arquivo de exemplo.';
+
+	/// pt: 'Não foi possível importar'
+	String get errorTitle => 'Não foi possível importar';
+}
+
 // Path: profile
 class TranslationsProfilePt {
 	TranslationsProfilePt._(this._root);
@@ -425,8 +468,14 @@ class TranslationsProfilePt {
 	/// pt: 'Remove todos os seus dados, na nuvem e neste dispositivo.'
 	String get clearDataDescription => 'Remove todos os seus dados, na nuvem e neste dispositivo.';
 
-	/// pt: 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?'
-	String get clearDataConfirm => 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?';
+	/// pt: 'Esta ação é permanente'
+	String get clearDataConfirmHeadline => 'Esta ação é permanente';
+
+	/// pt: 'Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.'
+	String get clearDataConfirmBody => 'Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.';
+
+	/// pt: 'Digite seu e-mail para confirmar'
+	String get clearDataConfirmField => 'Digite seu e-mail para confirmar';
 
 	/// pt: 'Seus dados foram apagados.'
 	String get clearDataSuccess => 'Seus dados foram apagados.';
@@ -651,6 +700,7 @@ extension on Translations {
 			'common.edit' => 'Editar',
 			'common.add' => 'Adicionar',
 			'common.confirm' => 'Confirmar',
+			'common.ok' => 'OK',
 			'common.required' => 'Campo obrigatório',
 			'common.retry' => 'Tentar novamente',
 			'currencies.brl' => 'Real (BRL)',
@@ -744,6 +794,16 @@ extension on Translations {
 			'transactions.kinds.buy' => 'Compra',
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
+			'importCsv.title' => 'Importar CSV',
+			'importCsv.intro' => 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.',
+			'importCsv.downloadExample' => 'Baixar exemplo',
+			'importCsv.selectFile' => 'Selecionar arquivo',
+			'importCsv.confirmTitle' => 'Confirmar importação',
+			'importCsv.confirmBody' => ({required Object count}) => 'Importar ${count} linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.',
+			'importCsv.success' => ({required Object assets, required Object transactions}) => 'Importados ${assets} novos ativos e ${transactions} lançamentos.',
+			'importCsv.exampleDownloaded' => 'CSV de exemplo baixado.',
+			'importCsv.exampleFailed' => 'Não foi possível gerar o arquivo de exemplo.',
+			'importCsv.errorTitle' => 'Não foi possível importar',
 			'profile.title' => 'Perfil',
 			'profile.sectionYourData' => 'Seus dados',
 			'profile.sectionPreferences' => 'Preferências',
@@ -767,7 +827,9 @@ extension on Translations {
 			'profile.signOutConfirm' => 'Tem certeza que deseja sair?',
 			'profile.clearData' => 'Apagar meus dados',
 			'profile.clearDataDescription' => 'Remove todos os seus dados, na nuvem e neste dispositivo.',
-			'profile.clearDataConfirm' => 'Isso apaga permanentemente todas as instituições, ativos e lançamentos — na nuvem e localmente. Não há como desfazer. Continuar?',
+			'profile.clearDataConfirmHeadline' => 'Esta ação é permanente',
+			'profile.clearDataConfirmBody' => 'Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.',
+			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
 			'profile.clearDataSuccess' => 'Seus dados foram apagados.',
 			'profile.version' => 'Versão',
 			'startup.tagline' => 'Sua carteira, sempre atualizada',

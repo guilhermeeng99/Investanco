@@ -7,6 +7,7 @@
     "edit": "Edit",
     "add": "Add",
     "confirm": "Confirm",
+    "ok": "OK",
     "required": "Required field",
     "retry": "Try again"
   },
@@ -123,6 +124,18 @@
       "dividend": "Dividend"
     }
   },
+  "importCsv": {
+    "title": "Import CSV",
+    "intro": "Bulk-add your portfolio from a spreadsheet. Each row is one position: ticker, type, institution, quantity and average price. Existing assets and institutions are reused; new ones are created automatically.",
+    "downloadExample": "Download example",
+    "selectFile": "Select file",
+    "confirmTitle": "Confirm import",
+    "confirmBody": "Import $count rows? Existing assets and institutions are reused, so re-importing won't duplicate them.",
+    "success": "Imported $assets new assets and $transactions transactions.",
+    "exampleDownloaded": "Example CSV downloaded.",
+    "exampleFailed": "Could not generate the example file.",
+    "errorTitle": "Could not import"
+  },
   "profile": {
     "title": "Profile",
     "sectionYourData": "Your data",
@@ -147,7 +160,9 @@
     "signOutConfirm": "Are you sure you want to sign out?",
     "clearData": "Clear my data",
     "clearDataDescription": "Removes all your data, in the cloud and on this device.",
-    "clearDataConfirm": "This permanently deletes all institutions, assets and transactions — in the cloud and locally. This cannot be undone. Continue?",
+    "clearDataConfirmHeadline": "This action is permanent",
+    "clearDataConfirmBody": "All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.",
+    "clearDataConfirmField": "Type your email to confirm",
     "clearDataSuccess": "Your data has been cleared.",
     "version": "Version"
   },

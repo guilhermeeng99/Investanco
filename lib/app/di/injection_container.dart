@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:investanco/app/i18n/app_locale_cubit.dart';
 import 'package:investanco/app/router/app_router.dart';
 import 'package:investanco/app/theme/dark_palette_cubit.dart';
@@ -23,6 +25,7 @@ import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/institutions/presentation/cubit/institutions_cubit.dart';
+import 'package:investanco/features/portfolio_import/domain/import_portfolio_csv_usecase.dart';
 import 'package:investanco/features/profile/data/repositories/settings_repository_impl.dart';
 import 'package:investanco/features/profile/domain/repositories/settings_repository.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
@@ -59,6 +62,7 @@ final GetIt sl = GetIt.instance;
 Future<void> init() async {
   await _initPrefs();
   await _initAppInfo();
+  await _initGoogleSignIn();
   _initCore();
   _initAppShell();
   _initAuth();
@@ -66,6 +70,7 @@ Future<void> init() async {
   _initInstitutions();
   _initAssets();
   _initTransactions();
+  _initPortfolioImport();
   _initQuotes();
   _initDashboard();
   _initProfile();
@@ -118,12 +123,24 @@ void _initAppShell() {
     ..registerLazySingleton<ThemeCubit>(ThemeCubit.new);
 }
 
+/// google_sign_in 7.x requires `initialize()` before `authenticate()`. Mobile
+/// only: on web Firebase's `signInWithPopup` owns the Google Identity Services
+/// lifecycle, and calling `initialize()` there conflicts with it. The Android
+/// server client id is read from `google-services.json`. See `docs/specs/auth.md`.
+Future<void> _initGoogleSignIn() async {
+  if (kIsWeb) return;
+  await GoogleSignIn.instance.initialize();
+}
+
 /// Auth: Firebase Auth + Google sign-in behind [AuthRepository]. The bloc is an
 /// app-wide singleton (provided at the root, consumed by Settings).
 void _initAuth() {
   sl
     ..registerLazySingleton<AuthRepository>(
-      () => FirebaseAuthRepository(fb.FirebaseAuth.instance),
+      () => FirebaseAuthRepository(
+        fb.FirebaseAuth.instance,
+        GoogleSignIn.instance,
+      ),
     )
     ..registerLazySingleton<AuthBloc>(() => AuthBloc(sl()));
 }
@@ -165,6 +182,14 @@ void _initTransactions() {
     ..registerFactory<TransactionsCubit>(
       () => TransactionsCubit(sl(), sl(), sl(), sl()),
     );
+}
+
+/// Bulk CSV import. Orchestrates the asset/institution/transaction repositories
+/// to register a whole portfolio from one file. See `docs/specs/csv_import.md`.
+void _initPortfolioImport() {
+  sl.registerLazySingleton<ImportPortfolioCsvUseCase>(
+    () => ImportPortfolioCsvUseCase(sl(), sl(), sl(), sl()),
+  );
 }
 
 void _initQuotes() {

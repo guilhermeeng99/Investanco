@@ -3,6 +3,7 @@ import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/features/assets/domain/asset_kind_defaults.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
@@ -100,7 +101,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
       ],
     );
     if (picked == null) return;
-    final (market, currency) = _defaultsForKind(picked);
+    final (market, currency) = assetKindDefaults(picked);
     setState(() {
       _kind = picked;
       _market = market;
@@ -154,21 +155,6 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     );
     if (picked != null) setState(() => _fiBasis = picked);
   }
-
-  (Market, Currency) _defaultsForKind(AssetKind kind) => switch (kind) {
-        AssetKind.stockBr ||
-        AssetKind.fiiBr ||
-        AssetKind.etfBr ||
-        AssetKind.bdrBr =>
-          (Market.br, Currency.brl),
-        AssetKind.stockUs || AssetKind.etfUs => (Market.us, Currency.usd),
-        AssetKind.crypto => (Market.global, Currency.usd),
-        AssetKind.treasury ||
-        AssetKind.fixedIncome ||
-        AssetKind.fund ||
-        AssetKind.cash =>
-          (Market.br, Currency.brl),
-      };
 
   /// Carries kind-specific metadata. Each block is dropped when the kind no
   /// longer matches so stale keys don't linger after a kind change.

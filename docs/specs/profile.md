@@ -30,7 +30,11 @@ in their own device-local cubits (see rules 4–5).
    palette cubits rebuild the theme.
 5. Locale offers a **System** option (`null` = follow device) alongside PT/EN.
 6. **Clear my data** permanently wipes the user's cloud (Firestore) **and** local
-   (Drift) data via `SyncService.clear`; device settings are kept. No undo.
+   (Drift) data via `SyncService.clear`; device settings are kept. No undo. Because
+   it is irreversible, it is gated by a **type-to-confirm** dialog
+   (`showClearAccountDataDialog`): the user must type their own signed-in email
+   (case-insensitive) before the destructive button enables — a single tap can't
+   trigger the wipe. Cancel/dismiss resolves to `false`.
 7. On web, a **Get the app** action downloads the bundled `investanco.apk`.
 8. A **Your data** section (rendered above Preferences) groups management screens
    that change rarely. It currently holds **Institutions**, which pushes the

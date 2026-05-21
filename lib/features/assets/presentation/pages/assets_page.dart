@@ -12,6 +12,7 @@ import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
 import 'package:investanco/features/assets/presentation/widgets/asset_form_sheet.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/portfolio_csv_import_dialog.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Manage assets (PETR4, AAPL, …). See `docs/specs/assets.md`.
@@ -61,15 +62,13 @@ class _AssetsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<AssetsCubit>();
     return Scaffold(
-      appBar: InvestancoAppBar(
-        title: t.assets.title,
-        actions: [
-          IconButton(
-            tooltip: t.assets.add,
-            onPressed: () => AssetFormSheet.show(context, cubit),
-            icon: const FaIcon(FontAwesomeIcons.plus, size: 18),
-          ),
-        ],
+      appBar: InvestancoAppBar(title: t.assets.title),
+      floatingActionButton: ImportAddFab(
+        heroPrefix: 'assets',
+        addTooltip: t.assets.add,
+        importTooltip: t.importCsv.title,
+        onAdd: () => AssetFormSheet.show(context, cubit),
+        onImport: () => showPortfolioCsvImportDialog(context),
       ),
       body: BlocBuilder<AssetsCubit, AssetsState>(
         builder: (context, state) {
