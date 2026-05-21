@@ -12,7 +12,20 @@
           "package_name": "com.guiga.investanco"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "305852403095-tgcat01efi2i1dv9i0geuukvq8o3m7ep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guiga.investanco",
+            "certificate_hash": "08f26bb3f515e117719e5fa47d9d05ba93135177"
+          }
+        },
+        {
+          "client_id": "305852403095-vs3eq3ctoi8p2gj55uk08e7u9ee5dktq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD5uagjc5fov3mpZlCGHmgsuAoo6NZ2MOs"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "305852403095-vs3eq3ctoi8p2gj55uk08e7u9ee5dktq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
