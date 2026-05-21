@@ -6,8 +6,10 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
 
-/// Prices Brazilian equities, FIIs, ETFs, BDRs and crypto via brapi.dev.
-/// Tickers are batched into a single request. See `docs/specs/quotes.md`.
+/// Prices Brazilian equities, FIIs, ETFs and BDRs via brapi.dev. Tickers are
+/// batched into a single request. Crypto is **not** handled here: brapi's free
+/// `/quote/{ticker}` resolves `BTC` to a US ETF, not the coin — crypto goes to
+/// `CoinGeckoQuoteDataSource` instead. See `docs/specs/quotes.md`.
 class BrapiQuoteDataSource implements QuoteDataSource {
   /// Creates the adapter. [token] defaults to the `BRAPI_TOKEN` dart-define
   /// (empty uses the free tier, limited to popular tickers).
@@ -26,8 +28,7 @@ class BrapiQuoteDataSource implements QuoteDataSource {
         AssetKind.stockBr ||
         AssetKind.fiiBr ||
         AssetKind.etfBr ||
-        AssetKind.bdrBr ||
-        AssetKind.crypto =>
+        AssetKind.bdrBr =>
           true,
         _ => false,
       };

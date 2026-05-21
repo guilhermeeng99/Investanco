@@ -106,7 +106,8 @@ project-owned interface (never call an HTTP client directly from domain/UI).
 
 | Source            | Used for                                              | Auth        |
 | ----------------- | ---------------------------------------------------- | ----------- |
-| **brapi.dev**     | BR equities, FIIs, ETFs, BDRs, crypto, indices      | free token  |
+| **brapi.dev**     | BR equities, FIIs, ETFs, BDRs, indices              | free token  |
+| **CoinGecko**     | Crypto prices (BRL/USD; brapi can't price coins)    | none        |
 | **Finnhub**       | US equities/ETFs (Avenue holdings; CORS-friendly)   | free token  |
 | **Tesouro Direto**| Tesouro Direto bond prices                          | none        |
 | **BCB SGS**       | CDI / Selic / IPCA series (fixed-income valuation)  | none        |

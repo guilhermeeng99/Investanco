@@ -101,7 +101,8 @@ boundary). Endpoints and response contracts: `quotes.md`.
 
 | Source | Base | Used for | Auth |
 |--------|------|----------|------|
-| brapi.dev | `https://brapi.dev/api` | BR equities, FII, ETF, BDR, crypto, indices | free token |
+| brapi.dev | `https://brapi.dev/api` | BR equities, FII, ETF, BDR, indices | free token |
+| CoinGecko | `https://api.coingecko.com/api/v3` | crypto prices (BRL/USD) | none |
 | Finnhub | `https://finnhub.io/api/v1` | US equities/ETF (Avenue) | free token |
 | Tesouro Direto | `https://www.tesourodireto.com.br/json/.../treasury/getMarket` | bond prices | none |
 | BCB SGS | `https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados` | CDI(12)/Selic(11)/IPCA(433) | none |
@@ -113,7 +114,7 @@ boundary). Endpoints and response contracts: `quotes.md`.
 |------------|----------------|----------|
 | stockBr, fiiBr, etfBr, bdrBr | brapi | direct quote |
 | stockUs, etfUs | Finnhub | direct quote × FX |
-| crypto | brapi | direct quote (× FX if USD) |
+| crypto | CoinGecko | direct quote in asset currency (BRL or USD; × FX if USD) |
 | treasury | Tesouro Direto | direct unit price by bond name |
 | fixedIncome (CDB/RDB/LCI/LCA) | BCB SGS index | accrual from purchase by contracted rate |
 | fund | manual NAV (v1) | user-updated unit price |

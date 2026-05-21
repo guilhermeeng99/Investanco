@@ -34,6 +34,7 @@ import 'package:investanco/features/profile/presentation/theme_mode_mapper.dart'
 import 'package:investanco/features/quotes/data/datasources/awesomeapi_fx_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/bcb_sgs_index_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/brapi_quote_data_source.dart';
+import 'package:investanco/features/quotes/data/datasources/coingecko_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/tesouro_direto_data_source.dart';
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
@@ -205,6 +206,7 @@ void _initQuotes() {
     ..registerLazySingleton<QuoteRepository>(
       () => QuoteRepositoryImpl(sl(), [
         BrapiQuoteDataSource(sl()),
+        CoinGeckoQuoteDataSource(sl()),
         FinnhubQuoteDataSource(sl()),
         TesouroDiretoDataSource(sl()),
       ]),

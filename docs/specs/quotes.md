@@ -13,7 +13,7 @@ caches them locally (Drift), and exposes a uniform `Quote` regardless of source.
 | `currency` | `Currency` | native currency of the price |
 | `asOf` | DateTime | when the source reported it |
 | `fetchedAt` | DateTime | when we cached it |
-| `source` | `QuoteSource` | brapi / finnhub / tesouro / bcb / manual |
+| `source` | `QuoteSource` | brapi / coingecko / finnhub / tesouro / bcb / manual |
 
 ## Data source interfaces (ports)
 
@@ -35,11 +35,22 @@ abstract class IndexDataSource {
 
 ## Adapters & endpoints
 
-### brapi (BR equities, FII, ETF, BDR, crypto)
+### brapi (BR equities, FII, ETF, BDR)
 - `GET https://brapi.dev/api/quote/{TICKERS}?token={TOKEN}` (comma-separated, batched).
 - Map: `regularMarketPrice → unitPrice`, `regularMarketPreviousClose → previousClose`.
 - Token baked in at build time via `--dart-define=BRAPI_TOKEN=...`; never entered
   in-app. Empty token → free tier (limited tickers).
+- **Not used for crypto.** brapi's free tier rejects `/v2/crypto`, and
+  `/quote/BTC` resolves to a US ETF named "BTC" (Grayscale), not the coin — so
+  crypto is priced by CoinGecko (below).
+
+### CoinGecko (crypto)
+- `GET https://api.coingecko.com/api/v3/simple/price?ids={IDS}&vs_currencies={CCYS}&include_24hr_change=true`.
+  Keyless, batched (comma-separated ids + currencies in one call).
+- Response is keyed by coin **id** (`bitcoin`), not ticker (`BTC`). Id resolution:
+  `asset.metadata['coingeckoId']` → built-in ticker map → lowercased ticker.
+- Price read in the asset's own currency (request `brl` and `usd` together, pick
+  per asset). `previousClose` derived from `{ccy}_24h_change` (no absolute close).
 
 ### Finnhub (US equities/ETF — Avenue)
 - `GET https://finnhub.io/api/v1/quote?symbol={SYMBOL}&token={TOKEN}`.
