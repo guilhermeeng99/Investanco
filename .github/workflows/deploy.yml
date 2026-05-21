@@ -80,7 +80,7 @@ jobs:
         with:
           appId: "1:305852403095:android:e0fcd59c990a5c849008d2"
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDROID }}
-          testers: guigapasocax@gmail.com
+          testers: guilhermeeng99@gmail.com,guigapasocax@gmail.com
           file: build/app/outputs/flutter-apk/app-release.apk
           releaseNotes: "Build ${{ github.run_number }} from main"
 
