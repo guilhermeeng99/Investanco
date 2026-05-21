@@ -4,12 +4,14 @@ library;
 
 export 'amount_text.dart';
 export 'brand_avatar.dart';
+export 'confirm_dialog.dart';
 export 'empty_state.dart';
 export 'error_view.dart';
 export 'investanco_app_bar.dart';
 export 'investanco_button.dart';
 export 'investanco_card.dart';
 export 'investanco_form_section.dart';
+export 'investanco_form_sheet_scaffold.dart';
 export 'investanco_picker_field.dart';
 export 'investanco_pill_toggle.dart';
 export 'investanco_section_header.dart';

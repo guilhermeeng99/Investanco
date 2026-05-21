@@ -8,8 +8,7 @@ import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/asset_factory.dart';
-
-class _MockDio extends Mock implements Dio {}
+import '../../../harness/mocks.dart';
 
 Response<Map<String, dynamic>> _market(List<Map<String, dynamic>> bonds) {
   return Response<Map<String, dynamic>>(
@@ -25,11 +24,11 @@ Response<Map<String, dynamic>> _market(List<Map<String, dynamic>> bonds) {
 }
 
 void main() {
-  late _MockDio dio;
+  late MockDio dio;
   late TesouroDiretoDataSource source;
 
   setUp(() {
-    dio = _MockDio();
+    dio = MockDio();
     source = TesouroDiretoDataSource(dio);
   });
 

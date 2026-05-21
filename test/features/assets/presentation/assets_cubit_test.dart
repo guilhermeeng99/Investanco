@@ -3,38 +3,26 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
-import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
-import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/asset_factory.dart';
-
-class _MockAssetRepository extends Mock implements AssetRepository {}
-
-class _FixedIdGenerator implements IdGenerator {
-  @override
-  String newId() => 'generated-id';
-}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockAssetRepository repository;
+  late MockAssetRepository repository;
   final sample = assetFactory();
 
-  setUpAll(() {
-    registerFallbackValue(sample);
-  });
-
   setUp(() {
-    repository = _MockAssetRepository();
+    repository = MockAssetRepository();
     when(repository.watchAll).thenAnswer((_) => Stream.value([sample]));
   });
 
   blocTest<AssetsCubit, AssetsState>(
     'emits Loaded from the repository stream',
-    build: () => AssetsCubit(repository, _FixedIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator()),
     expect: () => [
       AssetsLoaded([sample]),
     ],
@@ -42,7 +30,7 @@ void main() {
 
   blocTest<AssetsCubit, AssetsState>(
     'add() upper-cases the ticker and persists',
-    build: () => AssetsCubit(repository, _FixedIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator()),
     setUp: () => when(() => repository.save(any()))
         .thenAnswer((_) async => const Right(unit)),
     act: (cubit) => cubit.add(
@@ -62,7 +50,7 @@ void main() {
 
   blocTest<AssetsCubit, AssetsState>(
     'remove() surfaces InUseFailure from the repository',
-    build: () => AssetsCubit(repository, _FixedIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator()),
     setUp: () => when(() => repository.delete(any()))
         .thenAnswer((_) async => const Left(InUseFailure())),
     act: (cubit) async {

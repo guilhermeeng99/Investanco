@@ -13,7 +13,7 @@ caches them locally (Drift), and exposes a uniform `Quote` regardless of source.
 | `currency` | `Currency` | native currency of the price |
 | `asOf` | DateTime | when the source reported it |
 | `fetchedAt` | DateTime | when we cached it |
-| `source` | `QuoteSource` | brapi / yahoo / tesouro / bcb / manual |
+| `source` | `QuoteSource` | brapi / finnhub / tesouro / bcb / manual |
 
 ## Data source interfaces (ports)
 
@@ -41,10 +41,12 @@ abstract class IndexDataSource {
 - Token baked in at build time via `--dart-define=BRAPI_TOKEN=...`; never entered
   in-app. Empty token → free tier (limited tickers).
 
-### Yahoo Finance (US equities/ETF — Avenue)
-- `GET https://query1.finance.yahoo.com/v8/finance/chart/{SYMBOL}`.
-- Map: `chart.result[0].meta.regularMarketPrice` / `previousClose`. Currency `usd`.
-- No key. Treat as best-effort; on failure, fall back to last cached quote.
+### Finnhub (US equities/ETF — Avenue)
+- `GET https://finnhub.io/api/v1/quote?symbol={SYMBOL}&token={TOKEN}`.
+- Map: `c` (current) → `unitPrice`, `pc` (previous close) → `previousClose`. Currency `usd`.
+- One request per symbol (free tier has no batch endpoint). Chosen over Yahoo/Stooq
+  because Finnhub sends CORS headers, so it works from the web build. Token baked in
+  via `--dart-define=FINNHUB_TOKEN=...`; empty token → US holdings show cost basis.
 
 ### Tesouro Direto (bonds)
 - `GET https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasury/getMarket`.
@@ -75,15 +77,15 @@ low-value free-tier keys belong here; true secrecy would need a backend proxy.
 
 ```dart
 abstract class QuoteRepository {
-  Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds);
-  Future<Either<Failure, List<Quote>>> refresh(List<Asset> assets); // fetch + cache
+  Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds); // cached-first; folds to [] on error
+  Future<Either<Failure, List<Quote>>> refresh(List<Asset> assets);      // fetch + cache
 }
 ```
 
 Rules:
 1. **Cached-first**: UI reads cache instantly; refresh runs in background.
 2. A registry routes each asset to the first `QuoteDataSource` whose `supports()` is true.
-3. Batch by source (one brapi call for all BR tickers; one Yahoo call per US symbol).
+3. Batch by source (one brapi call for all BR tickers; one Finnhub call per US symbol).
 4. On fetch failure, keep the previous cached quote and mark it **stale** (`fetchedAt` age).
 5. FX and indices cached with their own TTL (FX: minutes; indices: daily).
 

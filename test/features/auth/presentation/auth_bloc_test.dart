@@ -3,20 +3,18 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
-import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/auth_user_factory.dart';
-
-class _MockAuthRepository extends Mock implements AuthRepository {}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockAuthRepository repository;
+  late MockAuthRepository repository;
   final user = authUserFactory();
 
   setUp(() {
-    repository = _MockAuthRepository();
+    repository = MockAuthRepository();
   });
 
   blocTest<AuthBloc, AuthState>(

@@ -8,14 +8,13 @@ import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/asset_factory.dart';
-
-class _MockDio extends Mock implements Dio {}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockDio dio;
+  late MockDio dio;
 
   setUp(() {
-    dio = _MockDio();
+    dio = MockDio();
   });
 
   test('parses a Finnhub quote (c / pc) into a Quote', () async {

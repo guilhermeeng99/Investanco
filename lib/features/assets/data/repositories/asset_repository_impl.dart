@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
+import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
@@ -31,16 +32,11 @@ class AssetRepositoryImpl implements AssetRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(Asset asset) async {
-    try {
-      final row = _toRow(asset);
-      await _db.into(_db.assets).insertOnConflictUpdate(row);
-      await _mirror.upsert(_collection, row.id, row.toJson());
-      return const Right(unit);
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  Future<Either<Failure, Unit>> save(Asset asset) => guardedWrite(() async {
+        final row = _toRow(asset);
+        await _db.into(_db.assets).insertOnConflictUpdate(row);
+        await _mirror.upsert(_collection, row.id, row.toJson());
+      });
 
   @override
   Future<Either<Failure, Unit>> delete(String id) async {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:investanco/app/widgets/widgets.dart';
-import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
@@ -42,7 +42,6 @@ class _InstitutionFormSheetState extends State<InstitutionFormSheet> {
   late final TextEditingController _nameController;
   late InstitutionKind _kind;
   late Currency _currency;
-  bool _saving = false;
 
   @override
   void initState() {
@@ -93,95 +92,58 @@ class _InstitutionFormSheetState extends State<InstitutionFormSheet> {
     if (picked != null) setState(() => _currency = picked);
   }
 
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _saving = true);
-
+  Future<Failure?> _persist() {
     final existing = widget.existing;
-    final failure = existing == null
-        ? await widget.cubit.add(
+    return existing == null
+        ? widget.cubit.add(
             name: _nameController.text,
             kind: _kind,
             currency: _currency,
           )
-        : await widget.cubit.edit(
+        : widget.cubit.edit(
             existing.copyWith(
               name: _nameController.text.trim(),
               kind: _kind,
               currency: _currency,
             ),
           );
-
-    if (!mounted) return;
-    if (failure != null) {
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.institutions.saveError)),
-      );
-      return;
-    }
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SheetHandle(),
-              const SizedBox(height: 8),
-              Text(
-                widget.existing == null
-                    ? t.institutions.add
-                    : t.institutions.edit,
-                style: context.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 20),
-              InvestancoTextField(
-                label: t.institutions.name,
-                controller: _nameController,
-                textCapitalization: TextCapitalization.words,
-                validator: (value) => (value == null || value.trim().isEmpty)
-                    ? t.common.required
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              InvestancoPickerField(
-                label: t.institutions.kind,
-                value: institutionKindLabel(_kind),
-                placeholder: t.institutions.kind,
-                onTap: _pickKind,
-                leading: BrandAvatar(
-                  size: 32,
-                  background: institutionKindColor(_kind),
-                  icon: institutionKindIcon(_kind),
-                ),
-              ),
-              const SizedBox(height: 12),
-              InvestancoPickerField(
-                label: t.institutions.currency,
-                value: currencyLabel(_currency),
-                placeholder: t.institutions.currency,
-                onTap: _pickCurrency,
-              ),
-              const SizedBox(height: 24),
-              InvestancoButton(
-                label: t.common.save,
-                isLoading: _saving,
-                onPressed: _submit,
-              ),
-            ],
+    return InvestancoFormSheetScaffold(
+      formKey: _formKey,
+      title: widget.existing == null ? t.institutions.add : t.institutions.edit,
+      onSubmit: _persist,
+      errorText: t.institutions.saveError,
+      children: [
+        InvestancoTextField(
+          label: t.institutions.name,
+          controller: _nameController,
+          textCapitalization: TextCapitalization.words,
+          validator: (value) =>
+              (value == null || value.trim().isEmpty) ? t.common.required : null,
+        ),
+        const SizedBox(height: 12),
+        InvestancoPickerField(
+          label: t.institutions.kind,
+          value: institutionKindLabel(_kind),
+          placeholder: t.institutions.kind,
+          onTap: _pickKind,
+          leading: BrandAvatar(
+            size: 32,
+            background: institutionKindColor(_kind),
+            icon: institutionKindIcon(_kind),
           ),
         ),
-      ),
+        const SizedBox(height: 12),
+        InvestancoPickerField(
+          label: t.institutions.currency,
+          value: currencyLabel(_currency),
+          placeholder: t.institutions.currency,
+          onTap: _pickCurrency,
+        ),
+      ],
     );
   }
 }

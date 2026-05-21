@@ -8,15 +8,14 @@ import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/asset_factory.dart';
-
-class _MockDio extends Mock implements Dio {}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockDio dio;
+  late MockDio dio;
   late BrapiQuoteDataSource source;
 
   setUp(() {
-    dio = _MockDio();
+    dio = MockDio();
     source = BrapiQuoteDataSource(dio);
   });
 

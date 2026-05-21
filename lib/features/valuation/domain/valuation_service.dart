@@ -56,35 +56,11 @@ class ValuationService {
     Duration staleThreshold = defaultStaleThreshold,
   }) {
     final holding = input.holding;
-    final quote = input.quote;
     final fx = input.fxToBase;
 
     final investedBase = _toBase(holding.investedCost, fx, base);
-
-    final Money marketValueBase;
-    final Money unrealizedPL;
-    final bool stale;
-    if (quote != null) {
-      final marketNative = Money(
-        (quote.unitPrice.minorUnits * holding.quantity).round(),
-        quote.unitPrice.currency,
-      );
-      marketValueBase = _toBase(marketNative, fx, base);
-      unrealizedPL = marketValueBase - investedBase;
-      stale = now.difference(quote.fetchedAt) > staleThreshold;
-    } else if (input.fixedIncome != null) {
-      final accruedNative = holding.investedCost * _accrualFactor(
-        input.fixedIncome!,
-        now,
-      );
-      marketValueBase = _toBase(accruedNative, fx, base);
-      unrealizedPL = marketValueBase - investedBase;
-      stale = false;
-    } else {
-      marketValueBase = investedBase;
-      unrealizedPL = Money.zero(base);
-      stale = true;
-    }
+    final (marketValueBase, unrealizedPL, stale) =
+        _price(input, investedBase, now, base, staleThreshold);
 
     final realizedBase = _toBase(holding.realizedPL, fx, base);
     final dividendsBase = _toBase(holding.dividends, fx, base);
@@ -93,7 +69,7 @@ class ValuationService {
         ? 0.0
         : unrealizedPL.minorUnits / investedBase.minorUnits;
 
-    final dayChangeBase = _dayChange(quote, holding.quantity, fx, base);
+    final dayChangeBase = _dayChange(input.quote, holding.quantity, fx, base);
 
     return HoldingValuation(
       assetId: holding.assetId,
@@ -160,6 +136,37 @@ class ValuationService {
       byInstitution: byInstitution,
       holdings: valuations,
     );
+  }
+
+  /// `(marketValueBase, unrealizedPL, stale)` for a holding: from a live quote
+  /// if present, else fixed-income accrual, else cost basis (flagged stale).
+  (Money, Money, bool) _price(
+    ValuationInput input,
+    Money investedBase,
+    DateTime now,
+    Currency base,
+    Duration staleThreshold,
+  ) {
+    final holding = input.holding;
+    final quote = input.quote;
+    final fx = input.fxToBase;
+
+    if (quote != null) {
+      final marketNative = Money(
+        (quote.unitPrice.minorUnits * holding.quantity).round(),
+        quote.unitPrice.currency,
+      );
+      final marketValueBase = _toBase(marketNative, fx, base);
+      final stale = now.difference(quote.fetchedAt) > staleThreshold;
+      return (marketValueBase, marketValueBase - investedBase, stale);
+    }
+    if (input.fixedIncome != null) {
+      final accruedNative =
+          holding.investedCost * _accrualFactor(input.fixedIncome!, now);
+      final marketValueBase = _toBase(accruedNative, fx, base);
+      return (marketValueBase, marketValueBase - investedBase, false);
+    }
+    return (investedBase, Money.zero(base), true);
   }
 
   Money _dayChange(Quote? quote, double quantity, double fx, Currency base) {

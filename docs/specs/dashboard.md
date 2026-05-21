@@ -13,20 +13,23 @@ then refreshes quotes in the background.
    `snapshots.md`).
 5. **Sync status**: last refresh time, manual refresh button, error banner.
 
-## State machine (`DashboardBloc`)
+## State machine (`DashboardCubit`)
 
-Events: `DashboardStarted`, `DashboardRefreshRequested`, `DashboardFilterChanged`.
-States:
+A `Cubit` (no events). It subscribes to the transactions/assets/institutions streams
+on creation and recomputes on every emission.
 ```
 DashboardLoading
-DashboardLoaded(PortfolioValuation, lastSyncAt, isRefreshing, filter)
-DashboardError(failure)        // only when no cached data exists at all
+DashboardLoaded(portfolio, assetsById, institutionsById, snapshots, isRefreshing, lastSyncAt?)
+DashboardError()               // only when a source stream errors with no data
 ```
 Rules:
-1. `Started` → emit `Loaded` from cache immediately, then trigger a background refresh.
+1. On first stream data → emit `Loaded` from cache immediately, then auto-trigger one
+   background `refresh()` (guarded by `_autoRefreshed`).
 2. During refresh, keep `Loaded` with `isRefreshing = true` (never blank the screen).
-3. Refresh failure with cached data present → stay `Loaded`, show non-blocking banner.
-4. `FilterChanged` (by class / by institution) recomputes aggregation locally.
+3. A failing refresh keeps the last `Loaded` (cached data stays on screen).
+4. The allocation by-class / by-institution toggle is **presentation-only**: both
+   breakdowns are precomputed in `PortfolioValuation` (`byClass`, `byInstitution`);
+   the cubit does no filtering.
 
 ## Business rules
 

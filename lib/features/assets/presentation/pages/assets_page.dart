@@ -5,6 +5,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/core/format/initials.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
@@ -41,24 +42,12 @@ class _AssetsView extends StatelessWidget {
     AssetsCubit cubit,
     Asset asset,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(asset.ticker),
-        content: Text(t.assets.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.common.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.common.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: asset.ticker,
+      message: t.assets.deleteConfirm,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final failure = await cubit.remove(asset.id);
     if (failure is InUseFailure && context.mounted) {
@@ -136,7 +125,7 @@ class _AssetTile extends StatelessWidget {
         children: [
           BrandAvatar(
             background: assetKindColor(asset.kind),
-            initials: _initials(asset.ticker),
+            initials: tickerInitials(asset.ticker),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -182,11 +171,6 @@ class _AssetTile extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _initials(String ticker) {
-    final clean = ticker.trim().toUpperCase();
-    return clean.length <= 4 ? clean : clean.substring(0, 4);
   }
 }
 

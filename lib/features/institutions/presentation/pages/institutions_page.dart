@@ -41,24 +41,12 @@ class _InstitutionsView extends StatelessWidget {
     InstitutionsCubit cubit,
     Institution institution,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.institutions.edit),
-        content: Text(t.institutions.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.common.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.common.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: t.institutions.edit,
+      message: t.institutions.deleteConfirm,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final failure = await cubit.remove(institution.id);
     if (failure is InUseFailure && context.mounted) {

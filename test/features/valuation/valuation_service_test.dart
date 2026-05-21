@@ -2,13 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
-import 'package:investanco/features/holdings/domain/entities/holding.dart';
-import 'package:investanco/features/quotes/domain/entities/index_point.dart';
-import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
 import '../../harness/factories/asset_factory.dart';
+import '../../harness/factories/fixed_income_terms_factory.dart';
+import '../../harness/factories/holding_factory.dart';
+import '../../harness/factories/index_point_factory.dart';
+import '../../harness/factories/quote_factory.dart';
 
 void main() {
   const service = ValuationService();
@@ -16,34 +17,16 @@ void main() {
   const usd = Currency.usd;
   final now = DateTime(2026, 5, 20, 12);
 
-  Holding holding({
-    double quantity = 10,
-    Money avgCost = const Money(1000, brl),
-    Money realized = const Money(0, brl),
-    Money dividends = const Money(0, brl),
-  }) {
-    return Holding(
-      assetId: 'a1',
-      institutionId: 'i1',
-      quantity: quantity,
-      avgCost: avgCost,
-      realizedPL: realized,
-      dividends: dividends,
-    );
-  }
-
   test('fresh quote yields market value, unrealized P/L and return', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: holding(),
+        holding: holdingFactory(),
         asset: assetFactory(),
         fxToBase: 1,
-        quote: Quote(
-          assetId: 'a1',
+        quote: quoteFactory(
           unitPrice: Money.fromMajor(15, brl),
           asOf: now,
           fetchedAt: now,
-          source: QuoteSource.brapi,
         ),
       ),
       now: now,
@@ -58,7 +41,7 @@ void main() {
 
   test('missing quote falls back to invested and flags stale', () {
     final result = service.valuateHolding(
-      ValuationInput(holding: holding(), asset: assetFactory(), fxToBase: 1),
+      ValuationInput(holding: holdingFactory(), asset: assetFactory(), fxToBase: 1),
       now: now,
     );
 
@@ -70,19 +53,17 @@ void main() {
   test('USD holding is consolidated to BRL via FX', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: holding(quantity: 2, avgCost: const Money(1000, usd)),
+        holding: holdingFactory(quantity: 2, avgCost: const Money(1000, usd)),
         asset: assetFactory(
           currency: usd,
           market: Market.us,
           kind: AssetKind.stockUs,
         ),
         fxToBase: 5,
-        quote: Quote(
-          assetId: 'a1',
+        quote: quoteFactory(
           unitPrice: Money.fromMajor(12, usd),
           asOf: now,
           fetchedAt: now,
-          source: QuoteSource.yahoo,
         ),
       ),
       now: now,
@@ -97,15 +78,13 @@ void main() {
   test('a quote older than the threshold is stale', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: holding(),
+        holding: holdingFactory(),
         asset: assetFactory(),
         fxToBase: 1,
-        quote: Quote(
-          assetId: 'a1',
+        quote: quoteFactory(
           unitPrice: Money.fromMajor(11, brl),
           asOf: now.subtract(const Duration(hours: 2)),
           fetchedAt: now.subtract(const Duration(hours: 2)),
-          source: QuoteSource.brapi,
         ),
       ),
       now: now,
@@ -118,34 +97,28 @@ void main() {
     final portfolio = service.valuatePortfolio(
       [
         ValuationInput(
-          holding: holding(),
+          holding: holdingFactory(),
           asset: assetFactory(id: 'a1'),
           fxToBase: 1,
-          quote: Quote(
-            assetId: 'a1',
+          quote: quoteFactory(
             unitPrice: Money.fromMajor(15, brl),
             asOf: now,
             fetchedAt: now,
-            source: QuoteSource.brapi,
           ),
         ),
         ValuationInput(
-          holding: Holding(
+          holding: holdingFactory(
             assetId: 'a2',
-            institutionId: 'i1',
             quantity: 1,
             avgCost: Money.fromMajor(50, brl),
-            realizedPL: const Money.zero(brl),
-            dividends: const Money.zero(brl),
           ),
           asset: assetFactory(id: 'a2', kind: AssetKind.fiiBr),
           fxToBase: 1,
-          quote: Quote(
+          quote: quoteFactory(
             assetId: 'a2',
             unitPrice: Money.fromMajor(60, brl),
             asOf: now,
             fetchedAt: now,
-            source: QuoteSource.brapi,
           ),
         ),
       ],
@@ -160,22 +133,19 @@ void main() {
   });
 
   // R$10,000 principal modeled as quantity 1 × avgCost 10,000.
-  Holding fixedIncomeHolding() =>
-      holding(quantity: 1, avgCost: const Money(1000000, brl));
+  final fixedIncomeHolding =
+      holdingFactory(quantity: 1, avgCost: const Money(1000000, brl));
 
   test('CDI accrual compounds daily rates scaled by the contracted percent', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: fixedIncomeHolding(),
+        holding: fixedIncomeHolding,
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
-        fixedIncome: FixedIncomeTerms(
-          basis: FixedIncomeBasis.cdi,
-          ratePercent: 100,
-          purchaseDate: DateTime(2026, 5, 1),
+        fixedIncome: fixedIncomeTermsFactory(
           series: [
-            IndexPoint(date: DateTime(2026, 5, 4), rate: 1),
-            IndexPoint(date: DateTime(2026, 5, 5), rate: 1),
+            indexPointFactory(date: DateTime(2026, 5, 4)),
+            indexPointFactory(date: DateTime(2026, 5, 5)),
           ],
         ),
       ),
@@ -191,14 +161,12 @@ void main() {
   test('110% of CDI scales each daily rate by 1.10', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: fixedIncomeHolding(),
+        holding: fixedIncomeHolding,
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
-        fixedIncome: FixedIncomeTerms(
-          basis: FixedIncomeBasis.cdi,
+        fixedIncome: fixedIncomeTermsFactory(
           ratePercent: 110,
-          purchaseDate: DateTime(2026, 5, 1),
-          series: [IndexPoint(date: DateTime(2026, 5, 4), rate: 1)],
+          series: [indexPointFactory(date: DateTime(2026, 5, 4))],
         ),
       ),
       now: now,
@@ -211,10 +179,10 @@ void main() {
   test('prefixed accrues by annual rate over business days (252)', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: fixedIncomeHolding(),
+        holding: fixedIncomeHolding,
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
-        fixedIncome: FixedIncomeTerms(
+        fixedIncome: fixedIncomeTermsFactory(
           basis: FixedIncomeBasis.prefixed,
           ratePercent: 10,
           purchaseDate: DateTime(2026, 5, 18), // Mon; 2 business days to Wed 20th
@@ -230,14 +198,14 @@ void main() {
   test('IPCA+ multiplies accumulated inflation by the spread', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: fixedIncomeHolding(),
+        holding: fixedIncomeHolding,
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
-        fixedIncome: FixedIncomeTerms(
+        fixedIncome: fixedIncomeTermsFactory(
           basis: FixedIncomeBasis.ipca,
           ratePercent: 6,
           purchaseDate: DateTime(2026, 5, 18), // 2 business days to Wed 20th
-          series: [IndexPoint(date: DateTime(2026, 5, 19), rate: 0.5)],
+          series: [indexPointFactory(date: DateTime(2026, 5, 19), rate: 0.5)],
         ),
       ),
       now: now,
@@ -250,21 +218,16 @@ void main() {
   test('a present quote takes precedence over fixed-income terms', () {
     final result = service.valuateHolding(
       ValuationInput(
-        holding: fixedIncomeHolding(),
+        holding: fixedIncomeHolding,
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
-        quote: Quote(
-          assetId: 'a1',
+        quote: quoteFactory(
           unitPrice: Money.fromMajor(11000, brl),
           asOf: now,
           fetchedAt: now,
-          source: QuoteSource.manual,
         ),
-        fixedIncome: FixedIncomeTerms(
-          basis: FixedIncomeBasis.cdi,
-          ratePercent: 100,
-          purchaseDate: DateTime(2026, 5, 1),
-          series: [IndexPoint(date: DateTime(2026, 5, 4), rate: 1)],
+        fixedIncome: fixedIncomeTermsFactory(
+          series: [indexPointFactory(date: DateTime(2026, 5, 4))],
         ),
       ),
       now: now,

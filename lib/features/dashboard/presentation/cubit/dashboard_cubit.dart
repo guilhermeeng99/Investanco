@@ -139,9 +139,10 @@ class DashboardCubit extends Cubit<DashboardState> {
 
     final assetsById = {for (final a in assets) a.id: a};
     final holdings = _calculator.derive(transactions);
-    final quotes = await _quoteRepository.getCached(
+    final cached = await _quoteRepository.getCached(
       holdings.map((h) => h.assetId).toList(),
     );
+    final quotes = cached.getOrElse(() => const []);
     final quotesById = {for (final q in quotes) q.assetId: q};
     final earliestBuy = _earliestBuyByHolding(transactions);
 
@@ -162,10 +163,11 @@ class DashboardCubit extends Cubit<DashboardState> {
       now: DateTime.now(),
     );
 
-    final snapshots = await _snapshotRepository.range(
+    final snapshotsResult = await _snapshotRepository.range(
       DateTime.now().subtract(const Duration(days: 365)),
       DateTime.now(),
     );
+    final snapshots = snapshotsResult.getOrElse(() => const []);
 
     emit(
       DashboardLoaded(

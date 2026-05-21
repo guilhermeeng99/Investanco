@@ -18,12 +18,16 @@ class QuoteRepositoryImpl implements QuoteRepository {
   final List<QuoteDataSource> _sources;
 
   @override
-  Future<List<Quote>> getCached(List<String> assetIds) async {
-    if (assetIds.isEmpty) return [];
-    final rows = await (_db.select(_db.quotes)
-          ..where((t) => t.assetId.isIn(assetIds)))
-        .get();
-    return rows.map(_toQuote).toList();
+  Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds) async {
+    if (assetIds.isEmpty) return const Right([]);
+    try {
+      final rows = await (_db.select(_db.quotes)
+            ..where((t) => t.assetId.isIn(assetIds)))
+          .get();
+      return Right(rows.map(_toQuote).toList());
+    } on Object {
+      return const Left(CacheFailure());
+    }
   }
 
   @override

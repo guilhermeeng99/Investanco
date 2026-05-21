@@ -6,23 +6,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/startup/presentation/cubit/startup_cubit.dart';
-import 'package:investanco/features/sync/domain/sync_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/auth_user_factory.dart';
-
-class _MockAuthBloc extends Mock implements AuthBloc {}
-
-class _MockSyncService extends Mock implements SyncService {}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockAuthBloc authBloc;
-  late _MockSyncService syncService;
+  late MockAuthBloc authBloc;
+  late MockSyncService syncService;
   final user = authUserFactory();
 
   setUp(() {
-    authBloc = _MockAuthBloc();
-    syncService = _MockSyncService();
+    authBloc = MockAuthBloc();
+    syncService = MockSyncService();
   });
 
   StartupCubit build() => StartupCubit(authBloc, syncService);

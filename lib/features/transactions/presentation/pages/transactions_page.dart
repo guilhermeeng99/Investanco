@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/core/format/date_formatter.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_state.dart';
@@ -65,24 +66,12 @@ class _TransactionsView extends StatelessWidget {
     TransactionsCubit cubit,
     String id,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.transactions.title),
-        content: Text(t.transactions.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.common.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.common.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: t.transactions.title,
+      message: t.transactions.deleteConfirm,
     );
-    if (confirmed == true) await cubit.remove(id);
+    if (confirmed) await cubit.remove(id);
   }
 
   @override
@@ -218,7 +207,7 @@ class _TransactionTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${institution ?? '—'}  ·  ${_formatDate(tx.date)}',
+                  '${institution ?? '—'}  ·  ${formatShortDate(tx.date)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.textTheme.bodySmall?.copyWith(
@@ -234,10 +223,6 @@ class _TransactionTile extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/'
-      '${date.month.toString().padLeft(2, '0')}/${date.year}';
 }
 
 class _EmptyState extends StatelessWidget {

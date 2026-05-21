@@ -5,19 +5,23 @@ binds to the authenticated user.
 
 ## Entity contract
 
+`AppSettings` (Equatable + `copyWith`):
+
 | Field | Type | Default |
 |-------|------|---------|
+| `themeMode` | `AppThemeMode` (`system`/`light`/`dark`) | `system` |
 | `baseCurrency` | `Currency` | `brl` |
-| `themeMode` | `ThemeMode` | `system` |
-| `staleThresholdMinutes` | int | 60 |
-| `syncIntervalMinutes` | int | 5 |
-| `locale` | String | `pt` |
 
-Stored in a single-row Drift table (`settings`) keyed by a constant id.
+Stored in a single-row Drift table (`settings`, id always 0). `AppThemeMode` is a
+domain enum mapped to Flutter's `ThemeMode` in the presentation layer
+(`theme_mode_mapper.dart`). Stale threshold and refresh cadence are **not** settings
+(they are constants/deferred); locale and colour palette live outside `AppSettings`
+in their own device-local cubits (see rules 4–5).
 
 ## Business rules
 
-1. `baseCurrency` change re-runs valuation (re-consolidates all foreign holdings).
+1. `baseCurrency` is persisted but fixed to BRL in v1 (no switcher UI yet);
+   consolidation always targets BRL.
 2. `themeMode`/`locale` apply immediately (`ThemeCubit` / `AppLocaleCubit`).
 3. Market-data tokens are **not** in settings — they are build-time dart-define
    (see `quotes.md`), so there is no token UI and nothing token-related to persist.
@@ -34,8 +38,11 @@ data — they are per-device and not mirrored to Firestore.
 
 ## State machine (`ProfileCubit`)
 
-`ProfileLoading → ProfileLoaded(settings) | ProfileError`. Mutations emit updated
-`ProfileLoaded`.
+`ProfileCubit extends Cubit<AppSettings>` — the state **is** the settings object
+(no separate loading/loaded/error states). It starts at `const AppSettings()`
+defaults; `load()` emits the persisted settings; `setThemeMode(mode)` persists,
+applies live via `ThemeCubit`, and emits the updated settings. Locale, palette,
+sign-out and "clear my data" are driven by their own cubits/services, not this one.
 
 ## Edge cases
 

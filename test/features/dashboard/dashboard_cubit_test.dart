@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
@@ -11,13 +10,8 @@ import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
-import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
-import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
-import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
-import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/domain/entities/snapshot.dart';
-import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
 import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
@@ -25,38 +19,29 @@ import 'package:investanco/features/valuation/domain/valuation_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../harness/factories/asset_factory.dart';
+import '../../harness/factories/index_point_factory.dart';
 import '../../harness/factories/institution_factory.dart';
+import '../../harness/factories/quote_factory.dart';
 import '../../harness/factories/transaction_factory.dart';
+import '../../harness/helpers.dart';
+import '../../harness/mocks.dart';
 
-class _MockQuoteRepository extends Mock implements QuoteRepository {}
-
-class _MockFxDataSource extends Mock implements FxDataSource {}
-
-class _MockIndexDataSource extends Mock implements IndexDataSource {}
-
-class _MockSnapshotRepository extends Mock implements SnapshotRepository {}
-
+// Integration-style test: the cubit runs against real local repositories over an
+// in-memory Drift db, while the network-backed sources (quotes, FX, index,
+// snapshot writes) are mocked at their boundary.
 void main() {
   late AppDatabase db;
-  late _MockQuoteRepository quoteRepository;
-  late _MockFxDataSource fxDataSource;
-  late _MockIndexDataSource indexDataSource;
-  late _MockSnapshotRepository snapshotRepository;
-
-  setUpAll(() {
-    registerFallbackValue(<String>[]);
-    registerFallbackValue(<Asset>[]);
-    registerFallbackValue(const Money.zero(Currency.brl));
-    registerFallbackValue(DateTime(2026));
-    registerFallbackValue(EconomicIndex.cdi);
-  });
+  late MockQuoteRepository quoteRepository;
+  late MockFxDataSource fxDataSource;
+  late MockIndexDataSource indexDataSource;
+  late MockSnapshotRepository snapshotRepository;
 
   setUp(() async {
-    db = AppDatabase(NativeDatabase.memory());
-    quoteRepository = _MockQuoteRepository();
-    fxDataSource = _MockFxDataSource();
-    indexDataSource = _MockIndexDataSource();
-    snapshotRepository = _MockSnapshotRepository();
+    db = memoryDatabase();
+    quoteRepository = MockQuoteRepository();
+    fxDataSource = MockFxDataSource();
+    indexDataSource = MockIndexDataSource();
+    snapshotRepository = MockSnapshotRepository();
 
     // Seed a US position: 2 SOXX @ US$80 at Avenue.
     await InstitutionRepositoryImpl(db).save(
@@ -84,10 +69,6 @@ void main() {
     );
   });
 
-  tearDown(() async {
-    await db.close();
-  });
-
   DashboardCubit buildCubit() => DashboardCubit(
         TransactionRepositoryImpl(db),
         AssetRepositoryImpl(db),
@@ -102,28 +83,27 @@ void main() {
 
   test('builds a priced portfolio from local data + quote + FX', () async {
     final now = DateTime.now();
-    final quote = Quote(
-      assetId: 'a1',
+    final quote = quoteFactory(
       unitPrice: Money.fromMajor(100, Currency.usd),
       asOf: now,
       fetchedAt: now,
       source: QuoteSource.finnhub,
     );
     when(() => quoteRepository.getCached(any()))
-        .thenAnswer((_) async => [quote]);
+        .thenAnswer((_) async => Right([quote]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => Right([quote]));
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(5));
     when(() => snapshotRepository.range(any(), any()))
-        .thenAnswer((_) async => <Snapshot>[]);
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
     when(
       () => snapshotRepository.upsertToday(
         totalValue: any(named: 'totalValue'),
         totalInvested: any(named: 'totalInvested'),
         totalPL: any(named: 'totalPL'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => const Right(unit));
 
     final cubit = buildCubit();
     addTearDown(cubit.close);
@@ -168,26 +148,27 @@ void main() {
       ),
     );
 
-    when(() => quoteRepository.getCached(any())).thenAnswer((_) async => []);
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => const Right([]));
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(5));
     when(() => indexDataSource.series(any(), any())).thenAnswer(
       (_) async => Right([
-        IndexPoint(date: DateTime(2020, 1, 2), rate: 1),
-        IndexPoint(date: DateTime(2020, 1, 3), rate: 1),
+        indexPointFactory(date: DateTime(2020, 1, 2), rate: 1),
+        indexPointFactory(date: DateTime(2020, 1, 3), rate: 1),
       ]),
     );
     when(() => snapshotRepository.range(any(), any()))
-        .thenAnswer((_) async => <Snapshot>[]);
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
     when(
       () => snapshotRepository.upsertToday(
         totalValue: any(named: 'totalValue'),
         totalInvested: any(named: 'totalInvested'),
         totalPL: any(named: 'totalPL'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => const Right(unit));
 
     final cubit = buildCubit();
     addTearDown(cubit.close);

@@ -47,8 +47,13 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - Real-time tick streaming (we use delayed/EOD-ish quotes; refresh on demand).
 - Multi-user / social features.
 
-### Deferred (see ROADMAP Phase 6–7)
-- Firebase cloud sync (multi-device).
+### Done since v1 (see ROADMAP)
+- Firebase cloud sync (multi-device) + Google sign-in gate (Phases 6–7).
+
+### Still deferred
+- Auto-import adapters (Pluggy / CSV / scraper) — manual entry suffices.
+- Tax reports (IR / DARF); FIFO cost basis; base-currency switcher.
+- Hardened refresh orchestration (retry/backoff, periodic timer) — see `sync.md`.
 
 ---
 
@@ -93,7 +98,7 @@ boundary). Endpoints and response contracts: `quotes.md`.
 | Source | Base | Used for | Auth |
 |--------|------|----------|------|
 | brapi.dev | `https://brapi.dev/api` | BR equities, FII, ETF, BDR, crypto, indices | free token |
-| Yahoo Finance | `https://query1.finance.yahoo.com` | US equities/ETF (Avenue) | none |
+| Finnhub | `https://finnhub.io/api/v1` | US equities/ETF (Avenue) | free token |
 | Tesouro Direto | `https://www.tesourodireto.com.br/json/.../treasury/getMarket` | bond prices | none |
 | BCB SGS | `https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados` | CDI(12)/Selic(11)/IPCA(433) | none |
 | AwesomeAPI | `https://economia.awesomeapi.com.br/json/last/USD-BRL` | USD→BRL FX | none |
@@ -103,8 +108,8 @@ boundary). Endpoints and response contracts: `quotes.md`.
 | Asset kind | Pricing source | Strategy |
 |------------|----------------|----------|
 | stockBr, fiiBr, etfBr, bdrBr | brapi | direct quote |
-| stockUs, etfUs | Yahoo Finance | direct quote × FX |
-| crypto | brapi (or Yahoo) | direct quote (× FX if USD) |
+| stockUs, etfUs | Finnhub | direct quote × FX |
+| crypto | brapi | direct quote (× FX if USD) |
 | treasury | Tesouro Direto | direct unit price by bond name |
 | fixedIncome (CDB/RDB/LCI/LCA) | BCB SGS index | accrual from purchase by contracted rate |
 | fund | manual NAV (v1) | user-updated unit price |

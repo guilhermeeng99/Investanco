@@ -1,21 +1,18 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/profile/data/repositories/settings_repository_impl.dart';
 import 'package:investanco/features/profile/domain/entities/app_settings.dart';
 
+import '../../../harness/helpers.dart';
+
 void main() {
   late AppDatabase db;
   late SettingsRepositoryImpl repository;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = memoryDatabase();
     repository = SettingsRepositoryImpl(db);
-  });
-
-  tearDown(() async {
-    await db.close();
   });
 
   test('returns defaults on first run', () async {

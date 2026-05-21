@@ -52,8 +52,8 @@ class Asset extends Equatable {
   /// Native quote currency.
   final Currency currency;
 
-  /// Kind-specific data (e.g. fixed-income `index`/`rate`/`maturity`,
-  /// `tesouroName`). See `docs/specs/assets.md`.
+  /// Kind-specific data (e.g. fixed-income `fiBasis`/`fiRate` via
+  /// `FixedIncomeMetadata`, or `tesouroName`). See `docs/specs/assets.md`.
   final Map<String, String> metadata;
 
   /// Creation timestamp.

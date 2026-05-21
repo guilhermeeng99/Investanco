@@ -4,14 +4,14 @@ import 'package:investanco/features/quotes/data/datasources/bcb_sgs_index_data_s
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDio extends Mock implements Dio {}
+import '../../../harness/mocks.dart';
 
 void main() {
-  late _MockDio dio;
+  late MockDio dio;
   late BcbSgsIndexDataSource source;
 
   setUp(() {
-    dio = _MockDio();
+    dio = MockDio();
     source = BcbSgsIndexDataSource(dio);
   });
 

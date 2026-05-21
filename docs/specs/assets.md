@@ -28,8 +28,10 @@ enum AssetKind { stockBr, fiiBr, etfBr, bdrBr, stockUs, etfUs, crypto,
 2. `(ticker, market)` is unique per user.
 3. `kind` determines `pricingStrategy` (resolved in `quotes.md`); `currency`
    defaults from `market` (`br→brl`, `us→usd`).
-4. `metadata` for `fixedIncome` MUST contain: `index` (`cdi|ipca|prefixed`),
-   `rate` (e.g. `1.10` for 110% CDI, or absolute % for prefixed), `maturity`.
+4. `metadata` for `fixedIncome` MUST contain `fiBasis` (a `FixedIncomeBasis` name:
+   `cdi|selic|prefixed|ipca`) and `fiRate` (the contracted rate: `110` for 110% of
+   CDI/Selic, or the absolute annual % for prefixed/IPCA+). Keys are centralized in
+   `FixedIncomeMetadata` (read/write). See `valuation.md`.
 5. `metadata` for `treasury` contains the Tesouro bond canonical name used to match
    the Tesouro Direto API.
 
@@ -37,17 +39,17 @@ enum AssetKind { stockBr, fiiBr, etfBr, bdrBr, stockUs, etfUs, crypto,
 
 ```dart
 abstract class AssetRepository {
-  Future<Either<Failure, List<Asset>>> watchAll();
-  Future<Either<Failure, Asset>> getById(String id);
-  Future<Either<Failure, Unit>> create(Asset asset);
-  Future<Either<Failure, Unit>> update(Asset asset);
+  Stream<List<Asset>> watchAll();                    // reactive list, ordered by ticker
+  Future<Either<Failure, Unit>> save(Asset asset);   // create or update (upsert)
   Future<Either<Failure, Unit>> delete(String id);   // InUseFailure if has transactions
 }
 ```
 
 ## State machine (`AssetsCubit`)
 
-`AssetsInitial → AssetsLoading → AssetsLoaded(list) | AssetsError(failure)`.
+`AssetsLoading → AssetsLoaded(list) | AssetsError(failure)`. The cubit subscribes to
+`watchAll()`; mutations (`add`/`edit`/`remove`) return a `Failure?` for the form to
+surface and let the stream re-emit the updated list.
 
 ## Edge cases
 

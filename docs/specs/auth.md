@@ -1,4 +1,4 @@
-# Spec: Auth *(Phase 7 — login gate wired)*
+# Spec: Auth *(Phase 6 — Firebase auth + required login gate)*
 
 Authentication is **required**: the app is gated behind Google sign-in. The whole
 UI sits below an auth guard — an unauthenticated user only ever sees the startup

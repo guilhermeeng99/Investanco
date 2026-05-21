@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/core/format/initials.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/valuation/domain/entities/holding_valuation.dart';
@@ -64,7 +65,7 @@ class _HoldingTile extends StatelessWidget {
         children: [
           BrandAvatar(
             background: assetKindColor(holding.assetKind),
-            initials: _initials(ticker),
+            initials: tickerInitials(ticker),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -116,11 +117,6 @@ class _HoldingTile extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _initials(String ticker) {
-    final clean = ticker.trim().toUpperCase();
-    return clean.length <= 4 ? clean : clean.substring(0, 4);
   }
 
   String _quantity(double quantity) => quantity == quantity.roundToDouble()

@@ -12,7 +12,7 @@ record; recomputed (and may be cached) from transactions.
 | `institutionId` | String | group key |
 | `quantity` | Decimal | Σ buys − Σ sells |
 | `avgCost` | Money (native) | weighted average incl. fees (overview §6.1) |
-| `investedCost` | Money | `quantity * avgCost` |
+| `investedCost` | Money | computed getter: `quantity * avgCost` |
 | `realizedPL` | Money | Σ realized gains/losses from sells |
 | `dividends` | Money | Σ dividend amounts |
 
@@ -32,7 +32,7 @@ record; recomputed (and may be cached) from transactions.
 ```dart
 abstract class HoldingCalculator {
   /// Pure: derives holdings from a transaction list, ordered by date.
-  List<Holding> derive(List<Transaction> transactions);
+  List<Holding> derive(List<AssetTransaction> transactions);
 }
 ```
 

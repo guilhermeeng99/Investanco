@@ -28,18 +28,17 @@ source.
 
 ```dart
 abstract class InstitutionRepository {
-  Future<Either<Failure, List<Institution>>> watchAll();      // stream-backed list
-  Future<Either<Failure, Institution>> getById(String id);
-  Future<Either<Failure, Unit>> create(Institution institution);
-  Future<Either<Failure, Unit>> update(Institution institution);
+  Stream<List<Institution>> watchAll();                       // reactive list, ordered by name
+  Future<Either<Failure, Unit>> save(Institution institution); // create or update (upsert)
   Future<Either<Failure, Unit>> delete(String id);            // InUseFailure if referenced
 }
 ```
 
 ## State machine (`InstitutionsCubit`)
 
-`InstitutionsInitial → InstitutionsLoading → InstitutionsLoaded(list) | InstitutionsError(failure)`
-Mutations emit `InstitutionsLoaded` with the updated list (optimistic, reverted on failure).
+`InstitutionsLoading → InstitutionsLoaded(list) | InstitutionsError(failure)`. The cubit
+subscribes to `watchAll()`; mutations (`add`/`edit`/`remove`) return a `Failure?` and the
+stream re-emits the updated list.
 
 ## Edge cases
 

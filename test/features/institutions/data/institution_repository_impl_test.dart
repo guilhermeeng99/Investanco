@@ -1,23 +1,21 @@
 import 'package:dartz/dartz.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
+import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 
 import '../../../harness/factories/institution_factory.dart';
+import '../../../harness/factories/transaction_factory.dart';
+import '../../../harness/helpers.dart';
 
 void main() {
   late AppDatabase db;
   late InstitutionRepositoryImpl repository;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = memoryDatabase();
     repository = InstitutionRepositoryImpl(db);
-  });
-
-  tearDown(() async {
-    await db.close();
   });
 
   test('save then watchAll emits the institution', () async {
@@ -47,22 +45,7 @@ void main() {
 
   test('delete returns InUseFailure when a transaction references it', () async {
     await repository.save(institutionFactory());
-    await db.into(db.transactions).insert(
-          TransactionsCompanion.insert(
-            id: 't1',
-            institutionId: 'i1',
-            assetId: 'a1',
-            kind: 'buy',
-            quantity: 1,
-            unitPriceMinor: 100,
-            feesMinor: 0,
-            amountMinor: 100,
-            currency: 'brl',
-            date: DateTime(2026, 1, 2),
-            createdAt: DateTime(2026, 1, 2),
-            updatedAt: DateTime(2026, 1, 2),
-          ),
-        );
+    await TransactionRepositoryImpl(db).save(transactionFactory());
 
     final result = await repository.delete('i1');
 

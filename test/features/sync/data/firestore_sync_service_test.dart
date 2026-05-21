@@ -1,8 +1,9 @@
-import 'package:drift/native.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/features/sync/data/firestore_sync_service.dart';
+
+import '../../../harness/helpers.dart';
 
 void main() {
   late AppDatabase db;
@@ -10,12 +11,10 @@ void main() {
   late FirestoreSyncService service;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = memoryDatabase();
     firestore = FakeFirebaseFirestore();
     service = FirestoreSyncService(db, firestore);
   });
-
-  tearDown(() => db.close());
 
   Future<void> seedAll() async {
     await db.into(db.institutions).insert(

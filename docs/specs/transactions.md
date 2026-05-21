@@ -3,6 +3,9 @@
 The events that build a position: buys, sells, dividends. Transactions are the
 **source of truth**; holdings are derived from them (`holdings.md`).
 
+> The entity is named `AssetTransaction` (not `Transaction`) to avoid clashing with
+> Drift's generated `Transaction` class.
+
 ## Entity contract
 
 | Field | Type | Invariant |
@@ -11,7 +14,7 @@ The events that build a position: buys, sells, dividends. Transactions are the
 | `institutionId` | String | FK → Institution |
 | `assetId` | String | FK → Asset |
 | `kind` | `TransactionKind` | `buy`, `sell`, `dividend` |
-| `quantity` | Decimal | > 0 (for buy/sell); ignored for dividend |
+| `quantity` | double | > 0 (for buy/sell); ignored for dividend |
 | `unitPrice` | Money (minor units, native currency) | ≥ 0 |
 | `fees` | Money | ≥ 0, default 0 |
 | `amount` | Money | for dividend: total received; else derived `quantity*unitPrice` |
@@ -33,18 +36,20 @@ The events that build a position: buys, sells, dividends. Transactions are the
 
 ```dart
 abstract class TransactionRepository {
-  Future<Either<Failure, List<Transaction>>> watchAll();
-  Future<Either<Failure, List<Transaction>>> watchByAsset(String assetId);
-  Future<Either<Failure, Unit>> create(Transaction tx);
-  Future<Either<Failure, Unit>> update(Transaction tx);
+  Stream<List<AssetTransaction>> watchAll();                  // newest first
+  Stream<List<AssetTransaction>> watchByAsset(String assetId); // oldest first (for holdings)
+  Future<Either<Failure, Unit>> save(AssetTransaction tx);    // create or update (upsert)
   Future<Either<Failure, Unit>> delete(String id);
 }
 ```
 
 ## State machine (`TransactionsCubit`)
 
-`TransactionsInitial → Loading → Loaded(list) | Error(failure)`.
-Form: `TransactionFormCubit` → `Editing → Submitting → Success | Invalid(field) | Failure`.
+`TransactionsLoading → TransactionsLoaded(transactions, assetsById, institutionsById)
+| TransactionsError(failure)`. The cubit merges three streams (transactions, assets,
+institutions) so the list can render asset/institution labels. The form is a plain
+`StatefulWidget` (`transaction_form_sheet.dart`) — there is no separate form cubit;
+it validates locally and calls `add`/`edit`, which return a `Failure?`.
 
 ## Edge cases
 

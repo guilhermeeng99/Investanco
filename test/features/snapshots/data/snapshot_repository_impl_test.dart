@@ -1,21 +1,18 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
 
+import '../../../harness/helpers.dart';
+
 void main() {
   late AppDatabase db;
   late SnapshotRepositoryImpl repository;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = memoryDatabase();
     repository = SnapshotRepositoryImpl(db);
-  });
-
-  tearDown(() async {
-    await db.close();
   });
 
   test('upsertToday is idempotent per day (last write wins)', () async {
@@ -30,10 +27,11 @@ void main() {
       totalPL: Money.fromMajor(30, Currency.brl),
     );
 
-    final list = await repository.range(
+    final result = await repository.range(
       DateTime.now().subtract(const Duration(days: 1)),
       DateTime.now().add(const Duration(days: 1)),
     );
+    final list = result.getOrElse(() => const []);
 
     expect(list.length, 1);
     expect(list.single.totalValue, Money.fromMajor(110, Currency.brl));
@@ -46,6 +44,7 @@ void main() {
       totalPL: const Money.zero(Currency.brl),
     );
 
-    expect(await repository.range(DateTime(2000), DateTime(2001)), isEmpty);
+    final result = await repository.range(DateTime(2000), DateTime(2001));
+    expect(result.getOrElse(() => const []), isEmpty);
   });
 }

@@ -31,10 +31,12 @@ lib/
 ├── app/
 │   ├── assets/   # App assets: i18n/ (slang sources), images/
 │   ├── di/       # get_it service locator
-│   ├── router/   # go_router config + shell
-│   ├── theme/    # AppColors, AppTypography, AppTheme, ThemeCubit
+│   ├── i18n/     # AppLocaleCubit (runtime locale preference)
+│   ├── router/   # go_router config
+│   ├── shell/    # HomeShell (nav rail + bottom bar)
+│   ├── theme/    # AppColors, AppTheme, ThemeCubit, palette cubits
 │   └── widgets/  # Shared design-system widgets (Investanco* + helpers)
-├── core/         # Shared: database, errors, network, extensions, utils
+├── core/         # Shared: database, errors, network, format, l10n, money, sync, utils
 ├── features/     # Feature modules (each with data/domain/presentation)
 └── gen/          # Generated code (i18n strings in gen/i18n)
 ```
@@ -86,7 +88,7 @@ Each feature follows:
 | **DI**               | get_it (service locator in `lib/app/di/injection_container.dart`)       |
 | **Routing**          | go_router (declarative, path-based, shell route)                         |
 | **Local database**   | Drift (SQLite — source of truth, offline-first)                          |
-| **Remote sync**      | Firebase Firestore + Firebase Auth + Google Sign-In *(planned, Phase 6)* |
+| **Remote sync**      | Firebase Firestore + Firebase Auth + Google Sign-In *(implemented, Phase 6)* |
 | **Market data**      | dio HTTP client behind `QuoteDataSource` / `FxDataSource` interfaces     |
 | **Charts**           | fl_chart (allocation + portfolio evolution)                             |
 | **Error handling**   | dartz `Either<Failure, T>` pattern                                       |
@@ -105,7 +107,7 @@ project-owned interface (never call an HTTP client directly from domain/UI).
 | Source            | Used for                                              | Auth        |
 | ----------------- | ---------------------------------------------------- | ----------- |
 | **brapi.dev**     | BR equities, FIIs, ETFs, BDRs, crypto, indices      | free token  |
-| **Yahoo Finance** | US equities/ETFs (Avenue holdings)                  | none        |
+| **Finnhub**       | US equities/ETFs (Avenue holdings; CORS-friendly)   | free token  |
 | **Tesouro Direto**| Tesouro Direto bond prices                          | none        |
 | **BCB SGS**       | CDI / Selic / IPCA series (fixed-income valuation)  | none        |
 | **AwesomeAPI**    | USD→BRL FX rate (consolidation to BRL)              | none        |
@@ -216,8 +218,8 @@ Test infrastructure lives in `test/harness/`:
 
 ## State Management
 
-* **Bloc** for complex event-driven logic (Sync, Dashboard)
-* **Cubit** for simpler state (Institutions, Assets, Transactions, Holdings, Profile, Startup)
+* **Bloc** for event-driven logic (Auth)
+* **Cubit** for everything else (Dashboard, Institutions, Assets, Transactions, Profile, Startup, theme/locale)
 
 ### Rules
 
@@ -236,18 +238,26 @@ Test infrastructure lives in `test/harness/`:
 
 ---
 
-## Firestore Schema *(planned — Phase 6)*
+## Firestore Schema *(implemented — Phase 6)*
+
+Everything is **nested under the user**; each doc is a Drift row serialized 1:1 via
+the generated `toJson()`, doc id = row id. There is **no** Firestore profile doc —
+the user's name/email/photo come from Firebase Auth, not Firestore.
 
 ```
-users/{userId}                          → name, email, photoUrl, baseCurrency, createdAt
-institutions/{id}                       → userId, name, type, createdAt
-assets/{id}                             → userId, ticker, name, kind, market, currency
-transactions/{id}                       → userId, institutionId, assetId, kind, quantity, unitPrice, fees, date, notes, createdAt
-snapshots/{id}                          → userId, date, totalValueBrl, totalCostBrl, byClass
+users/{uid}/institutions/{id}   → id, name, kind, currency, createdAt
+users/{uid}/assets/{id}         → id, ticker, name, kind, market, currency, metadata, createdAt
+users/{uid}/transactions/{id}   → id, institutionId, assetId, kind, quantity,
+                                   unitPriceMinor, feesMinor, amountMinor, currency,
+                                   date, notes, createdAt, updatedAt
+users/{uid}/snapshots/{id}      → id (yyyy-MM-dd), date, totalValueMinor,
+                                   totalInvestedMinor, totalPlMinor, currency
 ```
 
-Guidelines: always scope queries by `userId`; avoid unbounded queries; prefer
-batched writes; mirror Drift schema 1:1.
+Not mirrored: `quotes` (derived cache) and `settings` (device-local). Security
+rules restrict every `users/{uid}/**` path to its owner. Guidelines: live per-row
+mirror via `RemoteMirror` on each write + bulk pull/push at sign-in; batched writes;
+mirror Drift schema 1:1. See `docs/specs/cloud_sync.md`.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

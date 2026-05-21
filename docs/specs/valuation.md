@@ -15,8 +15,11 @@ class ValuationInput {
 }
 
 class HoldingValuation {
-  final Money marketValueNative;
-  final Money marketValueBase;   // BRL
+  final String assetId;
+  final String institutionId;
+  final AssetKind assetKind;     // for allocation by class
+  final double quantity;         // net quantity held
+  final Money marketValueBase;   // BRL (native value already × FX)
   final Money investedBase;
   final Money unrealizedPL;
   final Money totalPL;           // unrealized + realized + dividends

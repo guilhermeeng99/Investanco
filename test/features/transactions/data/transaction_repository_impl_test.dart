@@ -1,29 +1,21 @@
 import 'package:dartz/dartz.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
-import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/transaction_factory.dart';
-
-class _MockRemoteMirror extends Mock implements RemoteMirror {}
+import '../../../harness/helpers.dart';
+import '../../../harness/mocks.dart';
 
 void main() {
   late AppDatabase db;
   late TransactionRepositoryImpl repository;
 
-  setUpAll(() => registerFallbackValue(<String, dynamic>{}));
-
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = memoryDatabase();
     repository = TransactionRepositoryImpl(db);
-  });
-
-  tearDown(() async {
-    await db.close();
   });
 
   test('save then watchAll emits the transaction', () async {
@@ -62,7 +54,7 @@ void main() {
   });
 
   test('mirrors writes to the cloud on save and delete', () async {
-    final mirror = _MockRemoteMirror();
+    final mirror = MockRemoteMirror();
     when(() => mirror.upsert(any(), any(), any())).thenAnswer((_) async {});
     when(() => mirror.delete(any(), any())).thenAnswer((_) async {});
     final repo = TransactionRepositoryImpl(db, mirror);

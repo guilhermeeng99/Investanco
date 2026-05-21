@@ -5,32 +5,49 @@ even if a data source later becomes unavailable. Our history is **our** data.
 
 ## Entity contract
 
+The domain `Snapshot` is a value object (Equatable, no id) — all money in base currency:
+
 | Field | Type | Invariant |
 |-------|------|-----------|
-| `id` | String (uuid) | immutable |
-| `date` | Date (no time) | unique per user — one snapshot per day |
-| `totalValueBrl` | Money | portfolio value at capture |
-| `totalInvestedBrl` | Money | cost basis at capture |
-| `totalPLBrl` | Money | unrealized + realized + dividends |
-| `byClass` | Map<AssetKind, Money> | allocation breakdown |
-| `createdAt` | DateTime | audit |
+| `date` | DateTime (local midnight) | one snapshot per day |
+| `totalValue` | Money | portfolio value at capture |
+| `totalInvested` | Money | cost basis at capture |
+| `totalPL` | Money | unrealized P/L at capture |
+
+The Drift row (`SnapshotRow`) additionally carries `id` (the `yyyy-MM-dd` day key,
+used for idempotent upsert and as the Firestore doc id) and `currency`. There is no
+`byClass`/`createdAt` — the snapshot stores totals only.
 
 ## Business rules
 
-1. **Idempotent per day**: writing a snapshot for an existing date **updates** it
-   (last write of the day wins). Key on `date`.
-2. Written automatically after a successful sync (see `sync.md`).
-3. Never written when the whole portfolio is stale/unpriced (avoid garbage points).
-4. Snapshots are local-only in v1 (mirrored to Firestore in Phase 6).
+1. **Idempotent per day**: the row id is `yyyy-MM-dd`, so writing again the same day
+   **updates** it (`insertOnConflictUpdate`).
+2. Written by `DashboardCubit._writeSnapshot()` at the end of a refresh — not by a
+   separate sync component (see `dashboard.md`; `sync.md` is deferred).
+3. Never written when the portfolio has no fresh-priced open position (avoids garbage
+   points): `_writeSnapshot` skips unless at least one held position is non-stale.
+4. Mirrored to Firestore per write via `RemoteMirror` and in bulk at sign-in (see
+   `cloud_sync.md`).
 
 ## Repository contract
 
 ```dart
 abstract class SnapshotRepository {
-  Future<Either<Failure, Unit>> upsertToday(PortfolioValuation valuation);
+  // Writes (or updates) today's snapshot — idempotent per day.
+  Future<Either<Failure, Unit>> upsertToday({
+    required Money totalValue,
+    required Money totalInvested,
+    required Money totalPL,
+  });
+
+  // Snapshots within the inclusive date range, oldest first.
   Future<Either<Failure, List<Snapshot>>> range(DateTime from, DateTime to);
 }
 ```
+
+The Drift impl mirrors each write to Firestore via the same guarded path as the
+other repositories: a local or cloud write failure surfaces as a `CacheFailure`
+(the dashboard treats a snapshot write/read as best-effort).
 
 ## Edge cases
 

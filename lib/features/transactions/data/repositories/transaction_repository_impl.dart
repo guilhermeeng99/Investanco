@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
+import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
@@ -40,27 +41,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(AssetTransaction transaction) async {
-    try {
-      final row = _toRow(transaction);
-      await _db.into(_db.transactions).insertOnConflictUpdate(row);
-      await _mirror.upsert(_collection, row.id, row.toJson());
-      return const Right(unit);
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  Future<Either<Failure, Unit>> save(AssetTransaction transaction) =>
+      guardedWrite(() async {
+        final row = _toRow(transaction);
+        await _db.into(_db.transactions).insertOnConflictUpdate(row);
+        await _mirror.upsert(_collection, row.id, row.toJson());
+      });
 
   @override
-  Future<Either<Failure, Unit>> delete(String id) async {
-    try {
-      await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
-      await _mirror.delete(_collection, id);
-      return const Right(unit);
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  Future<Either<Failure, Unit>> delete(String id) => guardedWrite(() async {
+        await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+        await _mirror.delete(_collection, id);
+      });
 
   AssetTransaction _toEntity(TransactionRow row) {
     final currency = Currency.values.byName(row.currency);
