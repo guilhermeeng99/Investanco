@@ -17,6 +17,7 @@ import 'package:investanco/features/snapshots/domain/repositories/snapshot_repos
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
+import 'package:investanco/features/valuation/domain/fixed_income_lots.dart';
 import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
@@ -152,7 +153,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
     final quotes = cached.getOrElse(() => const []);
     final quotesById = {for (final q in quotes) q.assetId: q};
-    final earliestBuy = _earliestBuyByHolding(transactions);
+    final lotsByHolding = _lotsByHolding(transactions, holdings);
 
     final inputs = [
       for (final holding in holdings)
@@ -164,7 +165,10 @@ class DashboardCubit extends Cubit<DashboardState> {
             fxToBase: asset.currency == Currency.brl
                 ? 1.0
                 : (_fxLoaded ? _fxUsdToBrl : null),
-            fixedIncome: _termsFor(asset, holding, earliestBuy),
+            fixedIncome: _termsFor(
+              asset,
+              lotsByHolding[_holdingKey(holding.assetId, holding.institutionId)],
+            ),
           ),
     ];
 
@@ -226,36 +230,43 @@ class DashboardCubit extends Cubit<DashboardState> {
   }
 
   /// Accrual terms for a fixed-income holding, or null when not applicable.
-  FixedIncomeTerms? _termsFor(
-    Asset asset,
-    Holding holding,
-    Map<String, DateTime> earliestBuy,
-  ) {
+  FixedIncomeTerms? _termsFor(Asset asset, List<FixedIncomeLot>? lots) {
     if (asset.kind != AssetKind.fixedIncome) return null;
     final parsed = FixedIncomeMetadata.read(asset);
-    final purchase =
-        earliestBuy[_holdingKey(holding.assetId, holding.institutionId)];
-    if (parsed == null || purchase == null) return null;
+    if (parsed == null || lots == null || lots.isEmpty) return null;
     final (basis, rate) = parsed;
     final index = basis.economicIndex;
     return FixedIncomeTerms(
       basis: basis,
       ratePercent: rate,
-      purchaseDate: purchase,
+      lots: lots,
       series: index == null ? const [] : (_indexSeries[index] ?? const []),
     );
   }
 
-  /// Earliest buy date per holding key (`assetId|institutionId`).
-  Map<String, DateTime> _earliestBuyByHolding(List<AssetTransaction> txns) {
-    final earliest = <String, DateTime>{};
+  /// Fixed-income principal lots per holding key (`assetId|institutionId`),
+  /// distributing each holding's net invested cost across its buy dates so every
+  /// contribution accrues from its own date.
+  Map<String, List<FixedIncomeLot>> _lotsByHolding(
+    List<AssetTransaction> txns,
+    List<Holding> holdings,
+  ) {
+    final buysByKey = <String, List<AssetTransaction>>{};
     for (final tx in txns) {
       if (tx.kind != TransactionKind.buy) continue;
-      final key = _holdingKey(tx.assetId, tx.institutionId);
-      final current = earliest[key];
-      if (current == null || tx.date.isBefore(current)) earliest[key] = tx.date;
+      buysByKey
+          .putIfAbsent(_holdingKey(tx.assetId, tx.institutionId), () => [])
+          .add(tx);
     }
-    return earliest;
+    final result = <String, List<FixedIncomeLot>>{};
+    for (final holding in holdings) {
+      final key = _holdingKey(holding.assetId, holding.institutionId);
+      final buys = buysByKey[key];
+      if (buys == null) continue;
+      final lots = buildFixedIncomeLots(holding.investedCost, buys);
+      if (lots.isNotEmpty) result[key] = lots;
+    }
+    return result;
   }
 
   DateTime? _earliestBuyForAsset(String assetId, List<AssetTransaction> txns) {

@@ -192,9 +192,9 @@ class ValuationService {
       final stale = now.difference(quote.fetchedAt) > staleThreshold;
       return (marketValueBase, marketValueBase - investedBase, stale);
     }
-    if (input.fixedIncome != null) {
-      final accruedNative =
-          holding.investedCost * _accrualFactor(input.fixedIncome!, now);
+    final terms = input.fixedIncome;
+    if (terms != null && terms.lots.isNotEmpty) {
+      final accruedNative = _accrue(terms, input.asset.currency, now);
       final marketValueBase = _toBase(accruedNative, rate, base);
       return (marketValueBase, marketValueBase - investedBase, false);
     }
@@ -217,24 +217,37 @@ class ValuationService {
     return Money((amount.minorUnits * fx).round(), base);
   }
 
-  /// Multiplier applied to the principal to reach current value. See
-  /// `docs/specs/valuation.md` §2.
-  double _accrualFactor(FixedIncomeTerms terms, DateTime now) {
+  /// Accrued current value (native): each lot grown from its own date and
+  /// summed. Lots sum to the invested cost, so a single lot reproduces the old
+  /// `principal × factor`. See `docs/specs/valuation.md` §2.
+  Money _accrue(FixedIncomeTerms terms, Currency currency, DateTime now) {
+    var total = Money.zero(currency);
+    for (final lot in terms.lots) {
+      total += lot.principal * _accrualFactor(terms, lot.date, now);
+    }
+    return total;
+  }
+
+  /// Multiplier applied to one lot's principal to reach its current value,
+  /// accruing from [since]. See `docs/specs/valuation.md` §2.
+  double _accrualFactor(FixedIncomeTerms terms, DateTime since, DateTime now) {
     return switch (terms.basis) {
-      FixedIncomeBasis.cdi || FixedIncomeBasis.selic => _indexedFactor(terms),
+      FixedIncomeBasis.cdi ||
+      FixedIncomeBasis.selic =>
+        _indexedFactor(terms, since),
       FixedIncomeBasis.prefixed =>
-        _prefixedFactor(terms.ratePercent, terms.purchaseDate, now),
-      FixedIncomeBasis.ipca => _ipcaFactor(terms, now),
+        _prefixedFactor(terms.ratePercent, since, now),
+      FixedIncomeBasis.ipca => _ipcaFactor(terms, since, now),
     };
   }
 
-  /// CDI/Selic: compound each daily rate scaled by the contracted percentage.
-  /// `110% of CDI` → `∏(1 + dailyCdi * 1.10)`.
-  double _indexedFactor(FixedIncomeTerms terms) {
+  /// CDI/Selic: compound each daily rate (since [since]) scaled by the
+  /// contracted percentage. `110% of CDI` → `∏(1 + dailyCdi * 1.10)`.
+  double _indexedFactor(FixedIncomeTerms terms, DateTime since) {
     final multiplier = terms.ratePercent / 100;
     var factor = 1.0;
     for (final point in terms.series) {
-      if (point.date.isBefore(terms.purchaseDate)) continue;
+      if (point.date.isBefore(since)) continue;
       factor *= 1 + (point.rate / 100) * multiplier;
     }
     return factor;
@@ -246,14 +259,15 @@ class ValuationService {
     return pow(1 + annualRate / 100, days / 252).toDouble();
   }
 
-  /// IPCA+: accumulated monthly inflation times the spread over business days.
-  double _ipcaFactor(FixedIncomeTerms terms, DateTime now) {
+  /// IPCA+: accumulated monthly inflation (since [since]) times the spread over
+  /// business days.
+  double _ipcaFactor(FixedIncomeTerms terms, DateTime since, DateTime now) {
     var inflation = 1.0;
     for (final point in terms.series) {
-      if (point.date.isBefore(terms.purchaseDate)) continue;
+      if (point.date.isBefore(since)) continue;
       inflation *= 1 + point.rate / 100;
     }
-    final days = _businessDaysBetween(terms.purchaseDate, now);
+    final days = _businessDaysBetween(since, now);
     final spread = pow(1 + terms.ratePercent / 100, days / 252).toDouble();
     return inflation * spread;
   }

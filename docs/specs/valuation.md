@@ -11,7 +11,7 @@ class ValuationInput {
   final Asset asset;
   final Quote? quote;                  // null when price unavailable
   final double fxToBase;               // 1.0 when same currency
-  final FixedIncomeTerms? fixedIncome; // basis + rate + purchaseDate + index series
+  final FixedIncomeTerms? fixedIncome; // basis + rate + per-date lots + index series
 }
 
 class HoldingValuation {
@@ -32,17 +32,22 @@ class HoldingValuation {
 ## Rules (mirror overview §6)
 
 1. **Market value (native)** = `quantity * quote.unitPrice`.
-2. **Fixed income** (no market quote): `currentValue = principal * accrualFactor`,
-   where `principal = holding.investedCost` and `accrualFactor` follows `basis`.
-   `ratePercent` meaning: CDI/Selic → percent **of** the index (110 = 110% of CDI);
-   prefixed → annual rate; IPCA+ → annual spread.
-   - CDI: `∏(1 + (dailyCdi_d/100) * (ratePercent/100))` over each series day ≥ purchase.
+2. **Fixed income** (no market quote): `currentValue = Σ lot.principal * accrualFactor(lot.date)`
+   over the holding's contribution **lots**, each accruing from its own date — so
+   recurring deposits aren't all compounded from the first one. The lots are the
+   net `holding.investedCost` split across the buy dates, weighted by each buy's
+   gross amount, so they sum back to the invested cost (a single buy ⇒ one lot ⇒
+   the old `principal * factor`). `accrualFactor` follows `basis`; `ratePercent`
+   meaning: CDI/Selic → percent **of** the index (110 = 110% of CDI); prefixed →
+   annual rate; IPCA+ → annual spread.
+   - CDI: `∏(1 + (dailyCdi_d/100) * (ratePercent/100))` over each series day ≥ the lot date.
    - Selic: same shape with the Selic daily series.
    - Prefixed: `(1 + ratePercent/100)^(businessDays/252)`.
    - IPCA+: `(∏(1 + ipca_m/100)) * (1 + ratePercent/100)^(businessDays/252)`.
-   `businessDays` counts weekdays since purchase (bank holidays ignored — the BCB
-   series already excludes them for index bonds; only prefixed/IPCA+ are slightly
-   affected). Falls back to cost + `priceStale` only when `fixedIncome` is absent.
+   `businessDays` counts weekdays since the lot date (bank holidays ignored — the
+   BCB series already excludes them for index bonds; only prefixed/IPCA+ are
+   slightly affected). Falls back to cost + `priceStale` only when `fixedIncome`
+   is absent or has no lots.
 3. **Base conversion**: `valueBase = marketValueNative * fxToBase` (fxToBase = 1 when
    currency == base).
 4. **Unrealized P/L** = `marketValueBase - investedBase`.
