@@ -39,6 +39,14 @@ class AppRouter {
         path: LoginPage.routePath,
         builder: (context, state) => const LoginPage(),
       ),
+      // Institutions is a pushed sub-page (reached from Profile → "Your data",
+      // and the dashboard empty-state CTA), not a primary tab — it changes too
+      // rarely to earn shell real estate. Lives on the root navigator so it
+      // covers the shell with a back chip. See `docs/specs/institutions.md`.
+      GoRoute(
+        path: InstitutionsPage.routePath,
+        builder: (context, state) => const InstitutionsPage(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
@@ -48,14 +56,6 @@ class AppRouter {
               GoRoute(
                 path: DashboardPage.routePath,
                 builder: (context, state) => const DashboardPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: InstitutionsPage.routePath,
-                builder: (context, state) => const InstitutionsPage(),
               ),
             ],
           ),

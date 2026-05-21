@@ -32,6 +32,10 @@ in their own device-local cubits (see rules 4–5).
 6. **Clear my data** permanently wipes the user's cloud (Firestore) **and** local
    (Drift) data via `SyncService.clear`; device settings are kept. No undo.
 7. On web, a **Get the app** action downloads the bundled `investanco.apk`.
+8. A **Your data** section (rendered above Preferences) groups management screens
+   that change rarely. It currently holds **Institutions**, which pushes the
+   institutions sub-page (`/institutions`, with a back chip) rather than occupying
+   a primary nav tab. See `institutions.md`.
 
 Device-local preferences (theme mode, palette, locale) live outside the synced
 data — they are per-device and not mirrored to Firestore.

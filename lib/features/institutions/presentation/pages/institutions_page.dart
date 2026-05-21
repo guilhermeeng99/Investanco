@@ -62,6 +62,7 @@ class _InstitutionsView extends StatelessWidget {
     return Scaffold(
       appBar: InvestancoAppBar(
         title: t.institutions.title,
+        showBack: true,
         actions: [
           IconButton(
             tooltip: t.institutions.add,

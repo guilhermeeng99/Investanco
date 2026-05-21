@@ -4,6 +4,10 @@ Where assets are custodied: Nubank, Avenue, a broker, a bank. Pure organizationa
 grouping — used to filter/segment holdings and (later) to attach an auto-import
 source.
 
+Accessed as a **pushed sub-page** (`/institutions`, root navigator, back chip via
+`InvestancoAppBar(showBack: true)`) reached from **Profile → Your data** and the
+dashboard empty-state CTA — not a primary nav tab, since holdings change rarely.
+
 ## Entity contract
 
 | Field | Type | Invariant |

@@ -116,9 +116,6 @@ class TranslationsNavPt {
 	/// pt: 'Carteira'
 	String get dashboard => 'Carteira';
 
-	/// pt: 'Instituições'
-	String get institutions => 'Instituições';
-
 	/// pt: 'Ativos'
 	String get assets => 'Ativos';
 
@@ -361,6 +358,9 @@ class TranslationsProfilePt {
 
 	/// pt: 'Perfil'
 	String get title => 'Perfil';
+
+	/// pt: 'Seus dados'
+	String get sectionYourData => 'Seus dados';
 
 	/// pt: 'Preferências'
 	String get sectionPreferences => 'Preferências';
@@ -656,7 +656,6 @@ extension on Translations {
 			'currencies.brl' => 'Real (BRL)',
 			'currencies.usd' => 'Dólar (USD)',
 			'nav.dashboard' => 'Carteira',
-			'nav.institutions' => 'Instituições',
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
 			'nav.profile' => 'Perfil',
@@ -746,6 +745,7 @@ extension on Translations {
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
 			'profile.title' => 'Perfil',
+			'profile.sectionYourData' => 'Seus dados',
 			'profile.sectionPreferences' => 'Preferências',
 			'profile.sectionAccount' => 'Conta',
 			'profile.sectionGetTheApp' => 'Baixar o app',

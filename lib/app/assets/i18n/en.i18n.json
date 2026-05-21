@@ -16,7 +16,6 @@
   },
   "nav": {
     "dashboard": "Portfolio",
-    "institutions": "Institutions",
     "assets": "Assets",
     "transactions": "Transactions",
     "profile": "Profile"
@@ -126,6 +125,7 @@
   },
   "profile": {
     "title": "Profile",
+    "sectionYourData": "Your data",
     "sectionPreferences": "Preferences",
     "sectionAccount": "Account",
     "sectionGetTheApp": "Get the app",

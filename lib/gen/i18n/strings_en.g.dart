@@ -87,7 +87,6 @@ class _TranslationsNavEn implements TranslationsNavPt {
 
 	// Translations
 	@override String get dashboard => 'Portfolio';
-	@override String get institutions => 'Institutions';
 	@override String get assets => 'Assets';
 	@override String get transactions => 'Transactions';
 	@override String get profile => 'Profile';
@@ -201,6 +200,7 @@ class _TranslationsProfileEn implements TranslationsProfilePt {
 
 	// Translations
 	@override String get title => 'Profile';
+	@override String get sectionYourData => 'Your data';
 	@override String get sectionPreferences => 'Preferences';
 	@override String get sectionAccount => 'Account';
 	@override String get sectionGetTheApp => 'Get the app';
@@ -362,7 +362,6 @@ extension on TranslationsEn {
 			'currencies.brl' => 'Real (BRL)',
 			'currencies.usd' => 'Dollar (USD)',
 			'nav.dashboard' => 'Portfolio',
-			'nav.institutions' => 'Institutions',
 			'nav.assets' => 'Assets',
 			'nav.transactions' => 'Transactions',
 			'nav.profile' => 'Profile',
@@ -452,6 +451,7 @@ extension on TranslationsEn {
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',
 			'profile.title' => 'Profile',
+			'profile.sectionYourData' => 'Your data',
 			'profile.sectionPreferences' => 'Preferences',
 			'profile.sectionAccount' => 'Account',
 			'profile.sectionGetTheApp' => 'Get the app',

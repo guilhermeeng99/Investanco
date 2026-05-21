@@ -16,7 +16,6 @@
   },
   "nav": {
     "dashboard": "Carteira",
-    "institutions": "Instituições",
     "assets": "Ativos",
     "transactions": "Lançamentos",
     "profile": "Perfil"
@@ -126,6 +125,7 @@
   },
   "profile": {
     "title": "Perfil",
+    "sectionYourData": "Seus dados",
     "sectionPreferences": "Preferências",
     "sectionAccount": "Conta",
     "sectionGetTheApp": "Baixar o app",

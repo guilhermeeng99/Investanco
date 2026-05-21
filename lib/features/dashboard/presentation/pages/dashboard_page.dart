@@ -140,7 +140,7 @@ class _EmptyState extends StatelessWidget {
       title: t.dashboard.emptyTitle,
       message: t.dashboard.empty,
       actionLabel: t.dashboard.addFirst,
-      onAction: () => context.go('/institutions'),
+      onAction: () => context.push('/institutions'),
     );
   }
 }

@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/investanco_app_bar.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/utils/web_file_download.dart'
     if (dart.library.js_interop) 'package:investanco/core/utils/web_file_download_web.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
 import 'package:investanco/features/profile/domain/entities/app_settings.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:investanco/features/profile/presentation/widgets/app_version_footer.dart';
@@ -121,6 +123,18 @@ class _ProfileView extends StatelessWidget {
         children: [
           const _Header(),
           const SizedBox(height: 24),
+          ProfileSection(
+            label: t.profile.sectionYourData,
+            children: [
+              ProfileRow(
+                icon: FontAwesomeIcons.buildingColumns,
+                title: t.institutions.title,
+                onTap: () =>
+                    unawaited(context.push(InstitutionsPage.routePath)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           ProfileSection(
             label: t.profile.sectionPreferences,
             children: const [
