@@ -47,11 +47,15 @@ class Money extends Equatable {
   /// Scales the amount by a quantity/factor, rounding to the nearest cent.
   Money operator *(num factor) => Money((minorUnits * factor).round(), currency);
 
+  /// Guards against combining different currencies. Throws (not `assert`) so a
+  /// currency mix fails loudly in release too — silently summing BRL + USD minor
+  /// units would corrupt totals. Conversions must go through FX first.
   void _assertSameCurrency(Money other) {
-    assert(
-      other.currency == currency,
-      'Cannot combine $currency with ${other.currency}',
-    );
+    if (other.currency != currency) {
+      throw ArgumentError(
+        'Cannot combine $currency with ${other.currency}',
+      );
+    }
   }
 
   @override

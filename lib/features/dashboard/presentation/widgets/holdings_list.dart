@@ -105,15 +105,25 @@ class _HoldingTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              MoneyText(money: holding.marketValueBase, fontSize: 15),
-              const SizedBox(height: 2),
-              PercentText(ratio: holding.returnPct, fontSize: 12),
-            ],
-          ),
+          if (holding.fxMissing)
+            // No FX rate to consolidate this foreign holding → show a dash
+            // instead of a bogus value. The stale clock above already warns.
+            Text(
+              '—',
+              style: context.textTheme.titleSmall?.copyWith(
+                color: colors.onBackgroundLight,
+              ),
+            )
+          else
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                MoneyText(money: holding.marketValueBase, fontSize: 15),
+                const SizedBox(height: 2),
+                PercentText(ratio: holding.returnPct, fontSize: 12),
+              ],
+            ),
         ],
       ),
     );

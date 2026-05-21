@@ -10,4 +10,11 @@ abstract class SyncService {
   /// Permanently deletes the user's mirrored data — both the Firestore
   /// collections and the local Drift rows (settings are kept). No undo.
   Future<Either<Failure, Unit>> clear(String userId);
+
+  /// Wipes only the **local** Drift rows (keeps Firestore and settings). Called
+  /// on sign-out so the next account that signs in on this device starts from a
+  /// clean local mirror instead of inheriting the previous user's data (the
+  /// cloud is the source of truth, so re-login restores it). See
+  /// `docs/specs/cloud_sync.md`.
+  Future<void> resetLocal();
 }

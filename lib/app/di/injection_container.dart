@@ -25,7 +25,8 @@ import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/institutions/presentation/cubit/institutions_cubit.dart';
-import 'package:investanco/features/portfolio_import/domain/import_portfolio_csv_usecase.dart';
+import 'package:investanco/features/portfolio_import/domain/import_assets_csv_usecase.dart';
+import 'package:investanco/features/portfolio_import/domain/import_transactions_csv_usecase.dart';
 import 'package:investanco/features/profile/data/repositories/settings_repository_impl.dart';
 import 'package:investanco/features/profile/domain/repositories/settings_repository.dart';
 import 'package:investanco/features/profile/presentation/cubit/profile_cubit.dart';
@@ -142,7 +143,7 @@ void _initAuth() {
         GoogleSignIn.instance,
       ),
     )
-    ..registerLazySingleton<AuthBloc>(() => AuthBloc(sl()));
+    ..registerLazySingleton<AuthBloc>(() => AuthBloc(sl(), sl()));
 }
 
 /// Cloud sync: mirrors Drift to the signed-in user's Firestore. The per-session
@@ -184,12 +185,16 @@ void _initTransactions() {
     );
 }
 
-/// Bulk CSV import. Orchestrates the asset/institution/transaction repositories
-/// to register a whole portfolio from one file. See `docs/specs/csv_import.md`.
+/// Bulk CSV import — separate flows for assets (instruments) and transactions
+/// (movements, linked to existing assets). See `docs/specs/csv_import.md`.
 void _initPortfolioImport() {
-  sl.registerLazySingleton<ImportPortfolioCsvUseCase>(
-    () => ImportPortfolioCsvUseCase(sl(), sl(), sl(), sl()),
-  );
+  sl
+    ..registerLazySingleton<ImportAssetsCsvUseCase>(
+      () => ImportAssetsCsvUseCase(sl(), sl()),
+    )
+    ..registerLazySingleton<ImportTransactionsCsvUseCase>(
+      () => ImportTransactionsCsvUseCase(sl(), sl(), sl(), sl()),
+    );
 }
 
 void _initQuotes() {

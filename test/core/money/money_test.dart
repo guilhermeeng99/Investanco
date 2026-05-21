@@ -32,5 +32,12 @@ void main() {
     test('zero is zero', () {
       expect(const Money.zero(Currency.usd).isZero, isTrue);
     });
+
+    test('combining different currencies throws (release-safe guard)', () {
+      const brl = Money(100, Currency.brl);
+      const usd = Money(100, Currency.usd);
+      expect(() => brl + usd, throwsArgumentError);
+      expect(() => brl - usd, throwsArgumentError);
+    });
   });
 }

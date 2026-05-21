@@ -32,7 +32,8 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 ## 2. Scope
 
 ### In scope (v1)
-- Register institutions, assets and transactions (buy/sell/dividend).
+- Register institutions, assets and transactions (buy/sell/dividend) — one at a
+  time, or in bulk via CSV import (`csv_import.md`).
 - Derive holdings (quantity + average cost) from transactions.
 - Auto-fetch prices: BR equities/FIIs/ETFs/BDRs, US equities/ETFs, Tesouro Direto,
   crypto; auto-fetch FX (USD→BRL) and indices (CDI/Selic/IPCA).
@@ -49,9 +50,12 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 
 ### Done since v1 (see ROADMAP)
 - Firebase cloud sync (multi-device) + Google sign-in gate (Phases 6–7).
+- Bulk CSV import — separate Assets and Transactions imports, each with a review
+  screen before committing. See `csv_import.md`.
 
 ### Still deferred
-- Auto-import adapters (Pluggy / CSV / scraper) — manual entry suffices.
+- Live broker auto-import (Pluggy / scraper) — bulk CSV import shipped instead;
+  live integrations would need broker auth/aggregators.
 - Tax reports (IR / DARF); FIFO cost basis; base-currency switcher.
 - Hardened refresh orchestration (retry/backoff, periodic timer) — see `sync.md`.
 

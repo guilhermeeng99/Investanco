@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:investanco/app/theme/app_colors.dart';
+import 'package:investanco/app/widgets/investanco_dialog.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -9,7 +9,9 @@ import 'package:investanco/gen/i18n/strings.g.dart';
 /// tapped Delete. Falls back to `false` on cancel / dismiss.
 ///
 /// Mirrors financo's clear-data flow: a destructive, irreversible action must
-/// require explicit confirmation, not a single careless tap.
+/// require explicit confirmation, not a single careless tap. Built on
+/// [InvestancoDialog] so it shares the app's dialog look (warning badge,
+/// centred copy, destructive action button).
 Future<bool> showClearAccountDataDialog(
   BuildContext context, {
   required String email,
@@ -56,123 +58,59 @@ class _ClearAccountDataDialogState extends State<_ClearAccountDataDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Dialog(
-      backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _WarningHeader(colors: colors),
-              const SizedBox(height: 16),
-              Text(
-                t.profile.clearDataConfirmHeadline,
-                textAlign: TextAlign.center,
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                t.profile.clearDataConfirmBody,
-                textAlign: TextAlign.center,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: colors.onBackgroundLight,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 20),
-              _EmailChip(email: widget.email, colors: colors),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  labelText: t.profile.clearDataConfirmField,
-                ),
-                onSubmitted: (_) {
-                  if (_matches) Navigator.pop(context, true);
-                },
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(t.common.cancel),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _matches
-                          ? () => Navigator.pop(context, true)
-                          : null,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.error,
-                        disabledBackgroundColor: colors.error.withValues(
-                          alpha: 0.3,
-                        ),
-                      ),
-                      child: Text(t.common.delete),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    return InvestancoDialog(
+      icon: FontAwesomeIcons.triangleExclamation,
+      iconColor: context.appColors.error,
+      title: t.profile.clearDataConfirmHeadline,
+      message: t.profile.clearDataConfirmBody,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _EmailChip(email: widget.email),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              labelText: t.profile.clearDataConfirmField,
+            ),
+            onSubmitted: (_) {
+              if (_matches) Navigator.pop(context, true);
+            },
           ),
-        ),
+        ],
       ),
+      actions: [
+        InvestancoDialogAction(
+          label: t.common.cancel,
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        InvestancoDialogAction(
+          label: t.common.delete,
+          kind: InvestancoDialogActionKind.destructive,
+          // Disabled until the typed email matches — gates the irreversible
+          // wipe behind an explicit, deliberate confirmation.
+          onPressed: _matches ? () => Navigator.pop(context, true) : null,
+        ),
+      ],
     );
   }
 }
 
-class _WarningHeader extends StatelessWidget {
-  const _WarningHeader({required this.colors});
-
-  final AppColorsData colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: colors.error.withValues(alpha: 0.14),
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: FaIcon(
-            FontAwesomeIcons.triangleExclamation,
-            size: 24,
-            color: colors.error,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+/// Read-only chip echoing the email the user must type to confirm.
 class _EmailChip extends StatelessWidget {
-  const _EmailChip({required this.email, required this.colors});
+  const _EmailChip({required this.email});
 
   final String email;
-  final AppColorsData colors;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(

@@ -12,7 +12,7 @@ import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
 import 'package:investanco/features/assets/presentation/widgets/asset_form_sheet.dart';
-import 'package:investanco/features/portfolio_import/presentation/widgets/portfolio_csv_import_dialog.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/assets_csv_import_dialog.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
 /// Manage assets (PETR4, AAPL, …). See `docs/specs/assets.md`.
@@ -66,36 +66,39 @@ class _AssetsView extends StatelessWidget {
       floatingActionButton: ImportAddFab(
         heroPrefix: 'assets',
         addTooltip: t.assets.add,
-        importTooltip: t.importCsv.title,
+        importTooltip: t.importAssets.title,
         onAdd: () => AssetFormSheet.show(context, cubit),
-        onImport: () => showPortfolioCsvImportDialog(context),
+        onImport: () => showAssetsCsvImportDialog(context),
       ),
       body: BlocBuilder<AssetsCubit, AssetsState>(
         builder: (context, state) {
           return switch (state) {
             AssetsLoading() => const LoadingShimmerList(),
             AssetsError() => ErrorView(
-                message: t.assets.saveError,
-                onRetry: () {},
-              ),
+              message: t.assets.saveError,
+              onRetry: () {},
+            ),
             AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
-                icon: FontAwesomeIcons.coins,
-                title: t.assets.title,
-                message: t.assets.empty,
-                actionLabel: t.assets.add,
-                onAction: () => AssetFormSheet.show(context, cubit),
-              ),
+              icon: FontAwesomeIcons.coins,
+              title: t.assets.title,
+              message: t.assets.empty,
+              actionLabel: t.assets.add,
+              onAction: () => AssetFormSheet.show(context, cubit),
+            ),
             AssetsLoaded(:final assets) => ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-                itemCount: assets.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) => _AssetTile(
-                  asset: assets[index],
-                  onTap: () =>
-                      AssetFormSheet.show(context, cubit, existing: assets[index]),
-                  onDelete: () => _confirmDelete(context, cubit, assets[index]),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+              itemCount: assets.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) => _AssetTile(
+                asset: assets[index],
+                onTap: () => AssetFormSheet.show(
+                  context,
+                  cubit,
+                  existing: assets[index],
                 ),
+                onDelete: () => _confirmDelete(context, cubit, assets[index]),
               ),
+            ),
           };
         },
       ),
@@ -151,8 +154,14 @@ class _AssetTile extends StatelessWidget {
                 Wrap(
                   spacing: 6,
                   children: [
-                    _Tag(assetKindLabel(asset.kind), assetKindColor(asset.kind)),
-                    _Tag(asset.currency.code, colors.neutral),
+                    InvestancoChip(
+                      label: assetKindLabel(asset.kind),
+                      color: assetKindColor(asset.kind),
+                    ),
+                    InvestancoChip(
+                      label: asset.currency.code,
+                      color: colors.neutral,
+                    ),
                   ],
                 ),
               ],
@@ -168,31 +177,6 @@ class _AssetTile extends StatelessWidget {
             onPressed: onDelete,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _Tag extends StatelessWidget {
-  const _Tag(this.label, this.color);
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: context.textTheme.labelSmall?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

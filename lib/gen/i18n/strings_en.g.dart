@@ -46,6 +46,8 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 	@override late final _TranslationsAssetsEn assets = _TranslationsAssetsEn._(_root);
 	@override late final _TranslationsTransactionsEn transactions = _TranslationsTransactionsEn._(_root);
 	@override late final _TranslationsImportCsvEn importCsv = _TranslationsImportCsvEn._(_root);
+	@override late final _TranslationsImportAssetsEn importAssets = _TranslationsImportAssetsEn._(_root);
+	@override late final _TranslationsImportTransactionsEn importTransactions = _TranslationsImportTransactionsEn._(_root);
 	@override late final _TranslationsProfileEn profile = _TranslationsProfileEn._(_root);
 	@override late final _TranslationsStartupEn startup = _TranslationsStartupEn._(_root);
 	@override late final _TranslationsOnboardingEn onboarding = _TranslationsOnboardingEn._(_root);
@@ -201,16 +203,58 @@ class _TranslationsImportCsvEn implements TranslationsImportCsvPt {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Import CSV';
-	@override String get intro => 'Bulk-add your portfolio from a spreadsheet. Each row is one position: ticker, type, institution, quantity and average price. Existing assets and institutions are reused; new ones are created automatically.';
 	@override String get downloadExample => 'Download example';
 	@override String get selectFile => 'Select file';
-	@override String get confirmTitle => 'Confirm import';
-	@override String confirmBody({required Object count}) => 'Import ${count} rows? Existing assets and institutions are reused, so re-importing won\'t duplicate them.';
-	@override String success({required Object assets, required Object transactions}) => 'Imported ${assets} new assets and ${transactions} transactions.';
 	@override String get exampleDownloaded => 'Example CSV downloaded.';
 	@override String get exampleFailed => 'Could not generate the example file.';
 	@override String get errorTitle => 'Could not import';
+	@override String get fileError => 'Couldn\'t read the selected file. Make sure it\'s a valid CSV.';
+	@override String get genericError => 'Something went wrong. Please try again.';
+	@override String get previewItemsHeader => 'Items';
+	@override String previewReusedCount({required Object count}) => '+${count} reused';
+	@override String get previewBadgeNew => 'New';
+	@override String get previewNothingLeft => 'Nothing to import';
+	@override String get previewEmptyTitle => 'Nothing left';
+	@override String get previewEmpty => 'You removed every row. Go back to pick another file.';
+	@override String get previewImporting => 'Importing…';
+	@override String get previewRemoveRow => 'Remove';
+}
+
+// Path: importAssets
+class _TranslationsImportAssetsEn implements TranslationsImportAssetsPt {
+	_TranslationsImportAssetsEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Import assets';
+	@override String get intro => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency. Existing assets (matched by ticker) are reused.';
+	@override String get previewTitle => 'Review assets';
+	@override String get previewSubtitle => 'Check what will be added before importing';
+	@override String get statNew => 'New assets';
+	@override String get reuseNote => 'Assets already in your portfolio (matched by ticker) are reused — re-importing won\'t duplicate them.';
+	@override String submit({required Object count}) => 'Import ${count} assets';
+	@override String success({required Object count}) => 'Imported ${count} new assets.';
+}
+
+// Path: importTransactions
+class _TranslationsImportTransactionsEn implements TranslationsImportTransactionsPt {
+	_TranslationsImportTransactionsEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Import transactions';
+	@override String get intro => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist; missing institutions are created automatically.';
+	@override String get previewTitle => 'Review transactions';
+	@override String get previewSubtitle => 'Check what will be added before importing';
+	@override String get statTransactions => 'Transactions';
+	@override String get statNewInstitutions => 'New institutions';
+	@override String get reuseNote => 'Missing institutions are created automatically; existing ones (matched by name) are reused.';
+	@override String submit({required Object count}) => 'Import ${count} transactions';
+	@override String success({required Object count}) => 'Imported ${count} transactions.';
+	@override String get missingTitle => 'Assets not found';
+	@override String missingBody({required Object tickers}) => 'These tickers aren\'t registered yet — import them on the Assets tab first: ${tickers}';
 }
 
 // Path: profile
@@ -474,16 +518,40 @@ extension on TranslationsEn {
 			'transactions.kinds.buy' => 'Buy',
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',
-			'importCsv.title' => 'Import CSV',
-			'importCsv.intro' => 'Bulk-add your portfolio from a spreadsheet. Each row is one position: ticker, type, institution, quantity and average price. Existing assets and institutions are reused; new ones are created automatically.',
 			'importCsv.downloadExample' => 'Download example',
 			'importCsv.selectFile' => 'Select file',
-			'importCsv.confirmTitle' => 'Confirm import',
-			'importCsv.confirmBody' => ({required Object count}) => 'Import ${count} rows? Existing assets and institutions are reused, so re-importing won\'t duplicate them.',
-			'importCsv.success' => ({required Object assets, required Object transactions}) => 'Imported ${assets} new assets and ${transactions} transactions.',
 			'importCsv.exampleDownloaded' => 'Example CSV downloaded.',
 			'importCsv.exampleFailed' => 'Could not generate the example file.',
 			'importCsv.errorTitle' => 'Could not import',
+			'importCsv.fileError' => 'Couldn\'t read the selected file. Make sure it\'s a valid CSV.',
+			'importCsv.genericError' => 'Something went wrong. Please try again.',
+			'importCsv.previewItemsHeader' => 'Items',
+			'importCsv.previewReusedCount' => ({required Object count}) => '+${count} reused',
+			'importCsv.previewBadgeNew' => 'New',
+			'importCsv.previewNothingLeft' => 'Nothing to import',
+			'importCsv.previewEmptyTitle' => 'Nothing left',
+			'importCsv.previewEmpty' => 'You removed every row. Go back to pick another file.',
+			'importCsv.previewImporting' => 'Importing…',
+			'importCsv.previewRemoveRow' => 'Remove',
+			'importAssets.title' => 'Import assets',
+			'importAssets.intro' => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency. Existing assets (matched by ticker) are reused.',
+			'importAssets.previewTitle' => 'Review assets',
+			'importAssets.previewSubtitle' => 'Check what will be added before importing',
+			'importAssets.statNew' => 'New assets',
+			'importAssets.reuseNote' => 'Assets already in your portfolio (matched by ticker) are reused — re-importing won\'t duplicate them.',
+			'importAssets.submit' => ({required Object count}) => 'Import ${count} assets',
+			'importAssets.success' => ({required Object count}) => 'Imported ${count} new assets.',
+			'importTransactions.title' => 'Import transactions',
+			'importTransactions.intro' => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist; missing institutions are created automatically.',
+			'importTransactions.previewTitle' => 'Review transactions',
+			'importTransactions.previewSubtitle' => 'Check what will be added before importing',
+			'importTransactions.statTransactions' => 'Transactions',
+			'importTransactions.statNewInstitutions' => 'New institutions',
+			'importTransactions.reuseNote' => 'Missing institutions are created automatically; existing ones (matched by name) are reused.',
+			'importTransactions.submit' => ({required Object count}) => 'Import ${count} transactions',
+			'importTransactions.success' => ({required Object count}) => 'Imported ${count} transactions.',
+			'importTransactions.missingTitle' => 'Assets not found',
+			'importTransactions.missingBody' => ({required Object tickers}) => 'These tickers aren\'t registered yet — import them on the Assets tab first: ${tickers}',
 			'profile.title' => 'Profile',
 			'profile.sectionYourData' => 'Your data',
 			'profile.sectionPreferences' => 'Preferences',

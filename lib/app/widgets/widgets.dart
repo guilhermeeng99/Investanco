@@ -11,6 +11,8 @@ export 'import_add_fab.dart';
 export 'investanco_app_bar.dart';
 export 'investanco_button.dart';
 export 'investanco_card.dart';
+export 'investanco_chip.dart';
+export 'investanco_dialog.dart';
 export 'investanco_form_section.dart';
 export 'investanco_form_sheet_scaffold.dart';
 export 'investanco_picker_field.dart';

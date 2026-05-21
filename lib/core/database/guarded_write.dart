@@ -10,7 +10,10 @@ Future<Either<Failure, Unit>> guardedWrite(
   try {
     await write();
     return const Right(unit);
-  } on Object {
+  } on Exception {
+    // Only catch I/O-style failures (Drift/Firestore throw Exceptions). Errors
+    // (StateError, type errors) signal bugs and must propagate, not be masked
+    // as a CacheFailure.
     return const Left(CacheFailure());
   }
 }

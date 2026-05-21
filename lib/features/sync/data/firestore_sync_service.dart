@@ -45,16 +45,38 @@ class FirestoreSyncService implements SyncService {
     }
   }
 
+  @override
+  Future<void> resetLocal() => _db.clearUserData();
+
+  /// Firestore caps a [WriteBatch] at 500 operations. Commit in chunks so large
+  /// portfolios (e.g. an active trader with >500 transactions) still push and
+  /// clear in full instead of throwing once the batch overflows.
+  static const _batchLimit = 500;
+
   Future<void> _deleteCollection(
     CollectionReference<Map<String, dynamic>> collection,
   ) async {
     final snapshot = await collection.get();
-    if (snapshot.docs.isEmpty) return;
-    final batch = _firestore.batch();
-    for (final doc in snapshot.docs) {
-      batch.delete(doc.reference);
+    await _commitInChunks(
+      snapshot.docs,
+      (batch, doc) => batch.delete(doc.reference),
+    );
+  }
+
+  /// Splits [items] into ≤[_batchLimit] groups and commits one batch each.
+  Future<void> _commitInChunks<T>(
+    List<T> items,
+    void Function(WriteBatch batch, T item) op,
+  ) async {
+    for (var start = 0; start < items.length; start += _batchLimit) {
+      final end =
+          start + _batchLimit < items.length ? start + _batchLimit : items.length;
+      final batch = _firestore.batch();
+      for (final item in items.sublist(start, end)) {
+        op(batch, item);
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 
   CollectionReference<Map<String, dynamic>> _collection(
@@ -95,13 +117,11 @@ class FirestoreSyncService implements SyncService {
     List<T> rows,
     String Function(T) id,
     Map<String, dynamic> Function(T) toJson,
-  ) async {
-    if (rows.isEmpty) return;
-    final batch = _firestore.batch();
-    for (final row in rows) {
-      batch.set(collection.doc(id(row)), toJson(row));
-    }
-    await batch.commit();
+  ) {
+    return _commitInChunks(
+      rows,
+      (batch, row) => batch.set(collection.doc(id(row)), toJson(row)),
+    );
   }
 
   Future<void> _pull(String userId) async {

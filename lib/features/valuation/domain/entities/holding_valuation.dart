@@ -18,6 +18,7 @@ class HoldingValuation extends Equatable {
     required this.returnPct,
     required this.dayChangeBase,
     required this.priceStale,
+    this.fxMissing = false,
   });
 
   /// Asset id.
@@ -53,6 +54,10 @@ class HoldingValuation extends Equatable {
   /// Whether the price is missing or stale.
   final bool priceStale;
 
+  /// Whether this foreign holding was excluded from totals because no FX rate
+  /// was available to consolidate it to the base currency.
+  final bool fxMissing;
+
   @override
   List<Object?> get props => [
         assetId,
@@ -66,5 +71,6 @@ class HoldingValuation extends Equatable {
         returnPct,
         dayChangeBase,
         priceStale,
+        fxMissing,
       ];
 }

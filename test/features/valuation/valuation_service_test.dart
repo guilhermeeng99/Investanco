@@ -75,6 +75,68 @@ void main() {
     expect(result.unrealizedPL, Money.fromMajor(20, brl));
   });
 
+  test('a foreign holding with no FX is zeroed and flagged fxMissing', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(quantity: 2, avgCost: const Money(1000, usd)),
+        asset: assetFactory(
+          currency: usd,
+          market: Market.us,
+          kind: AssetKind.stockUs,
+        ),
+        fxToBase: null, // rate unavailable — must not value at a bogus 1:1
+        quote: quoteFactory(
+          unitPrice: Money.fromMajor(12, usd),
+          asOf: now,
+          fetchedAt: now,
+        ),
+      ),
+      now: now,
+    );
+
+    expect(result.fxMissing, isTrue);
+    expect(result.priceStale, isTrue);
+    expect(result.marketValueBase, const Money.zero(brl));
+    expect(result.investedBase, const Money.zero(brl));
+  });
+
+  test('portfolio excludes an FX-missing foreign holding from totals', () {
+    final portfolio = service.valuatePortfolio(
+      [
+        ValuationInput(
+          holding: holdingFactory(quantity: 1, avgCost: const Money(800, brl)),
+          asset: assetFactory(),
+          fxToBase: 1,
+          quote: quoteFactory(
+            unitPrice: Money.fromMajor(10, brl),
+            asOf: now,
+            fetchedAt: now,
+          ),
+        ),
+        ValuationInput(
+          holding: holdingFactory(quantity: 2, avgCost: const Money(1000, usd)),
+          asset: assetFactory(
+            currency: usd,
+            market: Market.us,
+            kind: AssetKind.stockUs,
+          ),
+          fxToBase: null,
+          quote: quoteFactory(
+            unitPrice: Money.fromMajor(12, usd),
+            asOf: now,
+            fetchedAt: now,
+          ),
+        ),
+      ],
+      now: now,
+    );
+
+    // Both holdings are listed, but only the BRL one counts toward the total.
+    expect(portfolio.holdings, hasLength(2));
+    expect(portfolio.holdings.where((h) => h.fxMissing), hasLength(1));
+    expect(portfolio.totalValueBase, Money.fromMajor(10, brl));
+  });
+
   test('a quote older than the threshold is stale', () {
     final result = service.valuateHolding(
       ValuationInput(

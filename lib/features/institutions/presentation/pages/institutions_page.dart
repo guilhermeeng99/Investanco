@@ -43,7 +43,7 @@ class _InstitutionsView extends StatelessWidget {
   ) async {
     final confirmed = await showConfirmDialog(
       context,
-      title: t.institutions.edit,
+      title: institution.name,
       message: t.institutions.deleteConfirm,
     );
     if (!confirmed || !context.mounted) return;

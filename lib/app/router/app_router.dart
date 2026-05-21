@@ -8,6 +8,10 @@ import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/auth/presentation/pages/login_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:investanco/features/institutions/presentation/pages/institutions_page.dart';
+import 'package:investanco/features/portfolio_import/domain/asset_import_models.dart';
+import 'package:investanco/features/portfolio_import/domain/transaction_import_models.dart';
+import 'package:investanco/features/portfolio_import/presentation/pages/assets_import_preview_page.dart';
+import 'package:investanco/features/portfolio_import/presentation/pages/transactions_import_preview_page.dart';
 import 'package:investanco/features/profile/presentation/pages/profile_page.dart';
 import 'package:investanco/features/startup/presentation/pages/startup_page.dart';
 import 'package:investanco/features/transactions/presentation/pages/transactions_page.dart';
@@ -46,6 +50,31 @@ class AppRouter {
       GoRoute(
         path: InstitutionsPage.routePath,
         builder: (context, state) => const InstitutionsPage(),
+      ),
+      // Bulk-import review screens, pushed (with the parsed preview as `extra`)
+      // from the Assets / Transactions import flows. Root-level so they cover
+      // the shell during the focused review step. See `docs/specs/csv_import.md`.
+      GoRoute(
+        path: AssetsImportPreviewPage.routePath,
+        builder: (context, state) {
+          final preview = state.extra;
+          return AssetsImportPreviewPage(
+            preview: preview is AssetImportPreview
+                ? preview
+                : const AssetImportPreview(rows: []),
+          );
+        },
+      ),
+      GoRoute(
+        path: TransactionsImportPreviewPage.routePath,
+        builder: (context, state) {
+          final preview = state.extra;
+          return TransactionsImportPreviewPage(
+            preview: preview is TransactionImportPreview
+                ? preview
+                : const TransactionImportPreview(rows: []),
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

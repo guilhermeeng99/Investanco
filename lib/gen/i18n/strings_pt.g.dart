@@ -52,6 +52,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
 	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
 	late final TranslationsImportCsvPt importCsv = TranslationsImportCsvPt._(_root);
+	late final TranslationsImportAssetsPt importAssets = TranslationsImportAssetsPt._(_root);
+	late final TranslationsImportTransactionsPt importTransactions = TranslationsImportTransactionsPt._(_root);
 	late final TranslationsProfilePt profile = TranslationsProfilePt._(_root);
 	late final TranslationsStartupPt startup = TranslationsStartupPt._(_root);
 	late final TranslationsOnboardingPt onboarding = TranslationsOnboardingPt._(_root);
@@ -360,26 +362,11 @@ class TranslationsImportCsvPt {
 
 	// Translations
 
-	/// pt: 'Importar CSV'
-	String get title => 'Importar CSV';
-
-	/// pt: 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.'
-	String get intro => 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.';
-
 	/// pt: 'Baixar exemplo'
 	String get downloadExample => 'Baixar exemplo';
 
 	/// pt: 'Selecionar arquivo'
 	String get selectFile => 'Selecionar arquivo';
-
-	/// pt: 'Confirmar importação'
-	String get confirmTitle => 'Confirmar importação';
-
-	/// pt: 'Importar $count linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.'
-	String confirmBody({required Object count}) => 'Importar ${count} linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.';
-
-	/// pt: 'Importados $assets novos ativos e $transactions lançamentos.'
-	String success({required Object assets, required Object transactions}) => 'Importados ${assets} novos ativos e ${transactions} lançamentos.';
 
 	/// pt: 'CSV de exemplo baixado.'
 	String get exampleDownloaded => 'CSV de exemplo baixado.';
@@ -389,6 +376,111 @@ class TranslationsImportCsvPt {
 
 	/// pt: 'Não foi possível importar'
 	String get errorTitle => 'Não foi possível importar';
+
+	/// pt: 'Não foi possível ler o arquivo selecionado. Verifique se é um CSV válido.'
+	String get fileError => 'Não foi possível ler o arquivo selecionado. Verifique se é um CSV válido.';
+
+	/// pt: 'Algo deu errado. Tente novamente.'
+	String get genericError => 'Algo deu errado. Tente novamente.';
+
+	/// pt: 'Itens'
+	String get previewItemsHeader => 'Itens';
+
+	/// pt: '+$count reaproveitados'
+	String previewReusedCount({required Object count}) => '+${count} reaproveitados';
+
+	/// pt: 'Novo'
+	String get previewBadgeNew => 'Novo';
+
+	/// pt: 'Nada para importar'
+	String get previewNothingLeft => 'Nada para importar';
+
+	/// pt: 'Nada restante'
+	String get previewEmptyTitle => 'Nada restante';
+
+	/// pt: 'Você removeu todas as linhas. Volte para escolher outro arquivo.'
+	String get previewEmpty => 'Você removeu todas as linhas. Volte para escolher outro arquivo.';
+
+	/// pt: 'Importando…'
+	String get previewImporting => 'Importando…';
+
+	/// pt: 'Remover'
+	String get previewRemoveRow => 'Remover';
+}
+
+// Path: importAssets
+class TranslationsImportAssetsPt {
+	TranslationsImportAssetsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Importar ativos'
+	String get title => 'Importar ativos';
+
+	/// pt: 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.'
+	String get intro => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.';
+
+	/// pt: 'Revisar ativos'
+	String get previewTitle => 'Revisar ativos';
+
+	/// pt: 'Confira o que será adicionado antes de importar'
+	String get previewSubtitle => 'Confira o que será adicionado antes de importar';
+
+	/// pt: 'Novos ativos'
+	String get statNew => 'Novos ativos';
+
+	/// pt: 'Ativos já na sua carteira (por ticker) são reaproveitados — reimportar não duplica.'
+	String get reuseNote => 'Ativos já na sua carteira (por ticker) são reaproveitados — reimportar não duplica.';
+
+	/// pt: 'Importar $count ativos'
+	String submit({required Object count}) => 'Importar ${count} ativos';
+
+	/// pt: 'Importados $count novos ativos.'
+	String success({required Object count}) => 'Importados ${count} novos ativos.';
+}
+
+// Path: importTransactions
+class TranslationsImportTransactionsPt {
+	TranslationsImportTransactionsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Importar lançamentos'
+	String get title => 'Importar lançamentos';
+
+	/// pt: 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.'
+	String get intro => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.';
+
+	/// pt: 'Revisar lançamentos'
+	String get previewTitle => 'Revisar lançamentos';
+
+	/// pt: 'Confira o que será adicionado antes de importar'
+	String get previewSubtitle => 'Confira o que será adicionado antes de importar';
+
+	/// pt: 'Lançamentos'
+	String get statTransactions => 'Lançamentos';
+
+	/// pt: 'Novas instituições'
+	String get statNewInstitutions => 'Novas instituições';
+
+	/// pt: 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.'
+	String get reuseNote => 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.';
+
+	/// pt: 'Importar $count lançamentos'
+	String submit({required Object count}) => 'Importar ${count} lançamentos';
+
+	/// pt: 'Importados $count lançamentos.'
+	String success({required Object count}) => 'Importados ${count} lançamentos.';
+
+	/// pt: 'Ativos não encontrados'
+	String get missingTitle => 'Ativos não encontrados';
+
+	/// pt: 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: $tickers'
+	String missingBody({required Object tickers}) => 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: ${tickers}';
 }
 
 // Path: profile
@@ -794,16 +886,40 @@ extension on Translations {
 			'transactions.kinds.buy' => 'Compra',
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',
-			'importCsv.title' => 'Importar CSV',
-			'importCsv.intro' => 'Cadastre sua carteira inteira a partir de uma planilha. Cada linha é uma posição: ticker, tipo, instituição, quantidade e preço médio. Ativos e instituições existentes são reaproveitados; novos são criados automaticamente.',
 			'importCsv.downloadExample' => 'Baixar exemplo',
 			'importCsv.selectFile' => 'Selecionar arquivo',
-			'importCsv.confirmTitle' => 'Confirmar importação',
-			'importCsv.confirmBody' => ({required Object count}) => 'Importar ${count} linhas? Ativos e instituições existentes são reaproveitados, então reimportar não duplica.',
-			'importCsv.success' => ({required Object assets, required Object transactions}) => 'Importados ${assets} novos ativos e ${transactions} lançamentos.',
 			'importCsv.exampleDownloaded' => 'CSV de exemplo baixado.',
 			'importCsv.exampleFailed' => 'Não foi possível gerar o arquivo de exemplo.',
 			'importCsv.errorTitle' => 'Não foi possível importar',
+			'importCsv.fileError' => 'Não foi possível ler o arquivo selecionado. Verifique se é um CSV válido.',
+			'importCsv.genericError' => 'Algo deu errado. Tente novamente.',
+			'importCsv.previewItemsHeader' => 'Itens',
+			'importCsv.previewReusedCount' => ({required Object count}) => '+${count} reaproveitados',
+			'importCsv.previewBadgeNew' => 'Novo',
+			'importCsv.previewNothingLeft' => 'Nada para importar',
+			'importCsv.previewEmptyTitle' => 'Nada restante',
+			'importCsv.previewEmpty' => 'Você removeu todas as linhas. Volte para escolher outro arquivo.',
+			'importCsv.previewImporting' => 'Importando…',
+			'importCsv.previewRemoveRow' => 'Remover',
+			'importAssets.title' => 'Importar ativos',
+			'importAssets.intro' => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.',
+			'importAssets.previewTitle' => 'Revisar ativos',
+			'importAssets.previewSubtitle' => 'Confira o que será adicionado antes de importar',
+			'importAssets.statNew' => 'Novos ativos',
+			'importAssets.reuseNote' => 'Ativos já na sua carteira (por ticker) são reaproveitados — reimportar não duplica.',
+			'importAssets.submit' => ({required Object count}) => 'Importar ${count} ativos',
+			'importAssets.success' => ({required Object count}) => 'Importados ${count} novos ativos.',
+			'importTransactions.title' => 'Importar lançamentos',
+			'importTransactions.intro' => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.',
+			'importTransactions.previewTitle' => 'Revisar lançamentos',
+			'importTransactions.previewSubtitle' => 'Confira o que será adicionado antes de importar',
+			'importTransactions.statTransactions' => 'Lançamentos',
+			'importTransactions.statNewInstitutions' => 'Novas instituições',
+			'importTransactions.reuseNote' => 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.',
+			'importTransactions.submit' => ({required Object count}) => 'Importar ${count} lançamentos',
+			'importTransactions.success' => ({required Object count}) => 'Importados ${count} lançamentos.',
+			'importTransactions.missingTitle' => 'Ativos não encontrados',
+			'importTransactions.missingBody' => ({required Object tickers}) => 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: ${tickers}',
 			'profile.title' => 'Perfil',
 			'profile.sectionYourData' => 'Seus dados',
 			'profile.sectionPreferences' => 'Preferências',

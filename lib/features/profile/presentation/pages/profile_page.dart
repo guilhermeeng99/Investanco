@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/investanco_app_bar.dart';
+import 'package:investanco/app/widgets/investanco_dialog.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/utils/web_file_download.dart'
     if (dart.library.js_interop) 'package:investanco/core/utils/web_file_download_web.dart';
@@ -55,24 +56,14 @@ class _ProfileView extends StatelessWidget {
   const _ProfileView();
 
   Future<void> _confirmSignOut(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.profile.signOut),
-        content: Text(t.profile.signOutConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.common.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.profile.signOut),
-          ),
-        ],
-      ),
+    final confirmed = await showInvestancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.rightFromBracket,
+      title: t.profile.signOut,
+      message: t.profile.signOutConfirm,
+      confirmLabel: t.profile.signOut,
     );
-    if ((confirmed ?? false) && context.mounted) {
+    if (confirmed && context.mounted) {
       context.read<AuthBloc>().add(const AuthSignOutRequested());
     }
   }

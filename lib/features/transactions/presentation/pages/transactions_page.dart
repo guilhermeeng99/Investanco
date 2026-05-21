@@ -7,7 +7,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/date_formatter.dart';
-import 'package:investanco/features/portfolio_import/presentation/widgets/portfolio_csv_import_dialog.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/transactions_csv_import_dialog.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_state.dart';
@@ -83,12 +83,12 @@ class _TransactionsView extends StatelessWidget {
       floatingActionButton: ImportAddFab(
         heroPrefix: 'transactions',
         addTooltip: t.transactions.add,
-        importTooltip: t.importCsv.title,
+        importTooltip: t.importTransactions.title,
         onAdd: () {
           final state = cubit.state;
           if (state is TransactionsLoaded) _openForm(context, cubit, state);
         },
-        onImport: () => showPortfolioCsvImportDialog(context),
+        onImport: () => showTransactionsCsvImportDialog(context),
       ),
       body: BlocBuilder<TransactionsCubit, TransactionsState>(
         builder: (context, state) {

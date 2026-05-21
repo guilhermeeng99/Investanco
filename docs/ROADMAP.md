@@ -111,6 +111,8 @@ proceeds. The source of truth for product/feature contracts is `docs/specs/`.
 - **Offline-first (Drift) before Firebase** — app runs and is testable with no
   cloud credentials; cloud sync is additive (Phase 6).
 - **Manual holdings + automatic pricing** — most robust model; no broker auth,
-  scraping or aggregator dependency. Auto-import adapters (Pluggy / CSV / scraper)
-  were considered and dropped: manual entry is low-frequency and fully sufficient.
+  scraping or aggregator dependency. **Bulk CSV import shipped** — separate
+  Assets and Transactions imports, each with a review screen before commit (see
+  `specs/csv_import.md`). Live broker auto-import (Pluggy / scraper) stays dropped:
+  manual entry plus CSV is sufficient and avoids broker auth/aggregators.
 - **Money as integer minor units** — avoid floating-point drift in financial math.

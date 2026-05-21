@@ -71,8 +71,9 @@ class _DashboardView extends StatelessWidget {
                 message: t.dashboard.loadError,
                 onRetry: () => context.read<DashboardCubit>().refresh(),
               ),
-            DashboardLoaded(hasHoldings: false) => const _EmptyState(),
-            DashboardLoaded() => _LoadedView(state: state),
+            DashboardLoaded() => state.hasHoldings
+                ? _LoadedView(state: state)
+                : _EmptyState(state: state),
           };
         },
       ),
@@ -130,17 +131,36 @@ class _LoadedView extends StatelessWidget {
   }
 }
 
+/// Onboarding empty state whose CTA targets the next missing step
+/// (institution → asset → transaction) rather than always "add institution".
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.state});
+
+  final DashboardLoaded state;
 
   @override
   Widget build(BuildContext context) {
-    return EmptyState(
-      icon: FontAwesomeIcons.seedling,
-      title: t.dashboard.emptyTitle,
-      message: t.dashboard.empty,
-      actionLabel: t.dashboard.addFirst,
-      onAction: () => context.push('/institutions'),
-    );
+    return switch (state.nextSetupStep) {
+      PortfolioSetupStep.institution => _cta(
+          t.dashboard.addFirst,
+          () => context.push('/institutions'),
+        ),
+      PortfolioSetupStep.asset => _cta(
+          t.assets.add,
+          () => context.go('/assets'),
+        ),
+      PortfolioSetupStep.transaction => _cta(
+          t.transactions.add,
+          () => context.go('/transactions'),
+        ),
+    };
   }
+
+  Widget _cta(String label, VoidCallback onAction) => EmptyState(
+        icon: FontAwesomeIcons.seedling,
+        title: t.dashboard.emptyTitle,
+        message: t.dashboard.empty,
+        actionLabel: label,
+        onAction: onAction,
+      );
 }

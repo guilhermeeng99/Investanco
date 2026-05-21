@@ -213,6 +213,8 @@ Test infrastructure lives in `test/harness/`:
 
 * Every user-facing string via slang (`t.section.key`) — never hardcode
 * Monetary values formatted with `formatCurrency()` — never display raw numbers
+* Modals use the shared `InvestancoDialog` (or the `showInvestancoConfirmDialog` /
+  `showInvestancoMessageDialog` helpers in `app/widgets/`) — never a bare `AlertDialog`
 
 ---
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
 
@@ -30,14 +31,13 @@ class StartupCubit extends Cubit<StartupState> {
   Future<void> initialize() async {
     emit(const StartupLoading(step: StartupStep.checkingAuth, progress: 0));
 
-    final isAuthenticated = await _waitForAuth();
-    if (!isAuthenticated) {
+    final user = await _waitForAuth();
+    if (user == null) {
       emit(const StartupUnauthenticated());
       return;
     }
 
     // Block on the cloud mirror before entering, so the first screen is current.
-    final user = (_authBloc.state as AuthAuthenticated).user;
     emit(const StartupLoading(step: StartupStep.syncing, progress: 0.3));
     final result = await _syncService.sync(user.userId);
     emit(
@@ -48,19 +48,21 @@ class StartupCubit extends Cubit<StartupState> {
     );
   }
 
-  /// Resolves to the signed-in state. Short-circuits when already terminal;
-  /// otherwise awaits the first terminal state (ignoring [AuthInProgress]).
-  Future<bool> _waitForAuth() async {
+  /// Resolves to the signed-in [AuthUser], or null when unauthenticated.
+  /// Short-circuits when already terminal; otherwise awaits the first terminal
+  /// state (ignoring [AuthInProgress]). Returning the user (not a bool) avoids an
+  /// unsafe `state as AuthAuthenticated` cast after the await.
+  Future<AuthUser?> _waitForAuth() async {
     final current = _authBloc.state;
-    if (current is AuthAuthenticated) return true;
-    if (current is AuthUnauthenticated) return false;
+    if (current is AuthAuthenticated) return current.user;
+    if (current is AuthUnauthenticated) return null;
 
-    final completer = Completer<bool>();
+    final completer = Completer<AuthUser?>();
     final subscription = _authBloc.stream.listen((state) {
       if (state is AuthAuthenticated) {
-        if (!completer.isCompleted) completer.complete(true);
+        if (!completer.isCompleted) completer.complete(state.user);
       } else if (state is AuthUnauthenticated) {
-        if (!completer.isCompleted) completer.complete(false);
+        if (!completer.isCompleted) completer.complete(null);
       }
     });
 

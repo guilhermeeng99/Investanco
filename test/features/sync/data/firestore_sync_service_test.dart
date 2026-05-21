@@ -107,6 +107,23 @@ void main() {
     expect(await db.select(db.institutions).get(), isEmpty);
   });
 
+  test('resetLocal wipes local rows but leaves Firestore intact', () async {
+    await seedAll();
+    await service.sync('u1'); // mirror up
+
+    await service.resetLocal();
+
+    // Local cleared so the next account starts clean (no cross-account leak)…
+    expect(await db.select(db.institutions).get(), isEmpty);
+    expect(await db.select(db.transactions).get(), isEmpty);
+    expect(await db.select(db.snapshots).get(), isEmpty);
+    // …but the cloud (source of truth) is untouched, so re-login restores it.
+    expect(
+      (await firestore.collection('users/u1/institutions').get()).docs,
+      isNotEmpty,
+    );
+  });
+
   test('clear wipes both Firestore and local data', () async {
     await seedAll();
     await service.sync('u1'); // mirror up

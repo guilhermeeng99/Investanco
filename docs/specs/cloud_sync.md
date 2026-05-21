@@ -79,9 +79,19 @@ the merged local set is pushed. Convergent for a single user across devices.
 - **No field-level LWW**: last full-document write wins; `transactions.updatedAt`
   is not yet used to resolve per-record conflicts.
 
+## Sign-out
+
+On explicit sign-out the local Drift rows are wiped (`SyncService.resetLocal`,
+called by `AuthBloc`), keeping settings. The cloud is the source of truth, so the
+same user's next sign-in pulls everything back. This prevents a **cross-account
+leak**: without it, account B signing in on the same device would merge A's
+leftover rows and the bulk push would upload them to B's Firestore. Best-effort —
+a failed wipe doesn't block sign-out.
+
 ## Edge cases
 
-- Signed out → no sync; local data untouched.
+- Signed out → no sync; local data wiped (cloud keeps the data; re-login restores
+  it). A device with no one signed in holds no portfolio rows.
 - Offline / permission error → `StartupError` on the splash with a retry; local
   data intact, retried on the next sign-in.
 - First sign-in on a fresh device → pull populates an empty local DB.

@@ -1,113 +1,151 @@
-# Spec: CSV Import (bulk portfolio)
+# Spec: CSV Import
 
-Bulk-register a whole portfolio from a single CSV — one row per **position**
-(asset + the buy that created it). Designed for dumping a broker holdings list
-(e.g. Avenue) without typing every asset and transaction by hand. Mirrors
-financo's CSV-import UX (intro dialog → download example → pick file → import),
-adapted to Investanco's domain. See also `assets.md`, `transactions.md`,
+Two **separate** bulk imports, each on the page it belongs to and matching the
+reference project (financo) which imports per entity:
+
+- **Assets** (Assets page) — register a catalog of instruments.
+- **Transactions** (Transactions page) — register movements against assets that
+  already exist.
+
+They are independent flows with their own example files, parsers, use cases and
+review screens. Mirrors financo's CSV-import UX (intro dialog → download example
+→ pick file → review → import). See also `assets.md`, `transactions.md`,
 `institutions.md`.
 
-## Why one combined row
+## Why separate
 
-A broker statement gives, per holding, the **ticker, quantity and average
-price**. That is exactly one asset plus one buy transaction. So each CSV row
-creates (or reuses) the institution, the asset, and **one buy** whose unit price
-is the average price — reconstructing the invested cost. Current value and P/L
-stay derived from live quotes (`quotes.md`), never imported.
+Assets and transactions are different concepts. An asset carries classification
+(`kind/market/currency`); a transaction carries a movement (`operation/quantity/
+price/date`) and only *references* an asset. Importing them separately keeps each
+file focused, and lets the transaction preview warn when a referenced asset isn't
+registered yet — instead of silently fabricating one without a class.
 
-## CSV format
+## File format (both)
 
-UTF-8, comma-separated, first line is a header. Columns are matched by name
-(accent- and case-insensitive, order-free, extra columns ignored) via synonyms,
-so a Portuguese or English export both work.
+UTF-8 **or Latin-1/Windows-1252** (BR Excel exports; decoded by `csv_decoder`),
+comma-separated, first line is a header. Columns are matched by name (accent- and
+case-insensitive, order-free, extra columns ignored) via synonyms in
+`csv_field_parsers.dart` (`mapCsvHeader`), so a Portuguese or English export both
+work. Numbers accept BR (`1.234,56`) and EN (`1,234.56`) grouping; dates accept
+`DD/MM/YYYY` or `YYYY-MM-DD`; quantities may be fractional.
 
-| Logical column | Synonyms (normalized) | Required | Default |
-|----------------|-----------------------|----------|---------|
-| ticker | ticker, símbolo, symbol, código, code | yes | — |
-| kind | kind, tipo, classe, class | yes | — |
-| institution | institution, instituição, corretora, broker, conta, account | yes | — |
-| quantity | quantity, quantidade, qtd, qty, shares, cotas | yes (buy/sell) | — |
-| price | price, preço, preço médio, average, unit price, valor unitário | yes (buy/sell) | — |
-| name | name, nome, descrição, description | no | = ticker |
-| market | market, mercado | no | by kind |
-| currency | currency, moeda | no | by kind |
-| operation | operation, operação, transação, side, movimento | no | buy |
-| fees | fees, taxas, custos | no | 0 |
-| date | date, data | no | today |
-| amount | amount, valor, total | dividends only | — |
-| notes | notes, notas, observação, obs | no | — |
+### Assets CSV
 
-- **kind** accepts the enum name (`etfUs`) or a friendly label (`ETF (US)`,
-  `ETF (EUA)`, `Ação US`, `Cripto`, `Renda fixa`, …), normalized.
-- **market/currency** default to the usual pairing for the kind (US kinds →
-  US/USD, BR kinds → BR/BRL, crypto → Global/USD) — see `assetKindDefaults`.
-- **numbers** accept BR (`1.234,56`) and EN (`1,234.56`) grouping; a lone dot or
-  comma is the decimal separator. Quantities may be fractional (`1.92012`).
-- **dates** accept `DD/MM/YYYY` or `YYYY-MM-DD`.
+| Logical column | Required | Default |
+|----------------|----------|---------|
+| ticker | yes | — |
+| kind | yes | — |
+| name | no | = ticker |
+| market | no | by kind (`assetKindDefaults`) |
+| currency | no | by kind |
 
-## Entity contract
+`kind` accepts the enum name (`etfUs`) or a friendly label (`ETF (EUA)`,
+`Ação BR`, `Cripto`, …), normalized.
 
-`PortfolioImportRow` (Equatable) — one parsed, not-yet-persisted row:
-`ticker, name, kind, market, currency, institutionName, operation,
+### Transactions CSV
+
+| Logical column | Required | Default |
+|----------------|----------|---------|
+| ticker | yes (must already exist) | — |
+| institution | yes (created if missing) | — |
+| quantity | yes (buy/sell) | — |
+| price | yes (buy/sell) | — |
+| amount | dividends only | — |
+| operation | no | buy |
+| fees | no | 0 |
+| date | no | today |
+| notes | no | — |
+
+The transaction's money is denominated in the **referenced asset's currency**
+(the file carries no currency column). A new institution is created with that
+currency and `kind = broker`.
+
+## Entity contracts
+
+`AssetImportRow` (Equatable): `ticker, name, kind, market, currency`.
+`AssetImportPreview`: `rows` of `AssetImportPreviewRow {row, isNew}` with derived
+`newCount`, `reusedCount` (distinct by ticker) and `withoutRowAt(i)`.
+`AssetImportResult`: `assetsCreated`.
+
+`TransactionImportRow` (Equatable): `ticker, institutionName, operation,
 quantity, unitPriceMajor, feesMajor, amountMajor?, date, notes?`.
+`TransactionImportPreview`: `rows` of `TransactionImportPreviewRow {row,
+assetExists, institutionIsNew}` with `transactionCount`, `newInstitutionCount`,
+`missingTickers` (distinct tickers with no asset), `canImport` (rows present and
+no missing assets) and `withoutRowAt(i)`.
+`TransactionImportResult`: `transactionsCreated, institutionsCreated`.
 
-`PortfolioImportResult` (Equatable): `institutionsCreated, assetsCreated,
-transactionsCreated`.
+## Use cases
 
-## Use case (`ImportPortfolioCsvUseCase`)
-
-Depends on `AssetRepository`, `InstitutionRepository`, `TransactionRepository`,
-`IdGenerator`. Three entry points (mirrors financo's preview/import split):
+`ImportAssetsCsvUseCase(AssetRepository, IdGenerator)`:
 
 ```dart
-Either<Failure, List<PortfolioImportRow>> parseRows(String csv);   // pure
-Future<Either<Failure, PortfolioImportResult>> importRows(List<PortfolioImportRow>);
-Future<Either<Failure, PortfolioImportResult>> call(String csv);   // parse + import
+Either<Failure, List<AssetImportRow>> parseRows(String csv);        // pure
+Future<AssetImportPreview> previewRows(List<AssetImportRow>);       // read-only
+Future<Either<Failure, AssetImportResult>> importRows(List<AssetImportRow>);
 ```
+
+`ImportTransactionsCsvUseCase(AssetRepository, InstitutionRepository,
+TransactionRepository, IdGenerator)`: same trio over the transaction types.
 
 Business rules:
 
 1. **Parse is pure** — no I/O. A malformed file (missing required column, bad
-   number/date, unknown kind, empty) → `ValidationFailure` with a row-tagged
-   message; nothing is written.
-2. **Idempotent references**: an institution is matched by name
-   (case-insensitive); an asset by ticker (case-insensitive). A match is reused;
-   a miss is **created** (institution kind defaults to `broker`, currency from
-   the row/kind). So re-importing the same file does not duplicate assets or
-   institutions — only appends transactions.
-3. Each row creates **one** transaction: buy/sell use `quantity` + `unitPrice`
-   (`amount = unitPrice × quantity`); dividend uses `amount` (quantity 0).
-4. Persistence stops at the **first** repository failure and returns it (partial
-   data may remain — the caller surfaces the error). Counts in the result reflect
-   only what was created.
-5. Fully-blank lines are tolerated (skipped) during parse; a non-blank but
-   malformed row aborts parsing with a `ValidationFailure`.
+   number/date, unknown kind, empty, zero quantity, dividend without amount) →
+   `ValidationFailure` with a row-tagged message; nothing is written.
+2. **Assets**: matched by ticker (case-insensitive). A miss is created; a hit is
+   reused (row fields ignored). Re-importing the same file doesn't duplicate.
+3. **Transactions**: the asset **must already exist** (matched by ticker) — a
+   missing asset returns a `ValidationFailure` from `importRows` (the preview
+   blocks it upstream). The institution is reused by name or **created**
+   (currency from the asset, kind `broker`). One transaction per row.
+4. Reads are guarded: a repository read error → `CacheFailure`. Persistence stops
+   at the first write failure and returns it (counts reflect only what was
+   created; partial data may remain).
+5. Fully-blank lines are tolerated (skipped) during parse.
 
-## State / UI flow
+## UI flow
 
-No bloc — the dialog calls `ImportPortfolioCsvUseCase` from `get_it` directly.
+No bloc — dialogs/pages call the use cases from `get_it` directly. Every dialog
+uses the shared `InvestancoDialog`; the intro/error dialogs and the sample
+download live in `csv_import_dialog.dart` (`showCsvImportIntroDialog`,
+`showCsvImportErrorDialog`, `downloadCsvSample`), shared by both imports.
 
-`showPortfolioCsvImportDialog(context)`:
+`showAssetsCsvImportDialog(context)` / `showTransactionsCsvImportDialog(context)`:
 
-1. **Intro** `AlertDialog`: explains the format. Actions: *Cancel* /
-   *Download example* / *Select file*.
-2. *Download example* → writes a ready-to-edit sample CSV (web: browser download;
-   mobile/desktop: save dialog) → confirmation snackbar.
-3. *Select file* → pick a `.csv` (bytes) → `parseRows`. On `Left` → error dialog.
-   On `Right` → **confirm** dialog (`Import N rows?`) → `importRows` → success
-   snackbar (`X assets, Y transactions`) or error dialog.
+1. **Intro** `InvestancoDialog` (CSV icon): *Select file* (primary) / *Download
+   example* / *Cancel*.
+2. *Download example* → writes the entity's sample
+   (`investanco_assets_example.csv` / `investanco_transactions_example.csv`) →
+   confirmation snackbar.
+3. *Select file* → pick a `.csv` → decode → `parseRows`. On `Left` → error
+   dialog. On `Right` → `previewRows` → push the review page.
 
-Entry points: the **Assets** and **Transactions** pages each carry a stacked
-floating action (`ImportAddFab`) — a small *import* button above the primary
-*add* button (mirrors financo). Both open the same dialog; the import is a whole
-portfolio (assets + transactions), so either tab is a valid place to start it.
+### Review pages
+
+- `AssetsImportPreviewPage` (`/import/assets/preview`): summary (items, new
+  assets + `+N reused` caption) + per-row list (ticker, name, kind/currency
+  chips, `New` badge) + remove + submit. Pops an `AssetImportResult`.
+- `TransactionsImportPreviewPage` (`/import/transactions/preview`): summary
+  (transactions, new institutions) + a **missing-assets banner** (lists tickers
+  with no asset) that disables submit, + per-row list (operation/institution
+  chips, `qty × price · date`, missing rows flagged in error colour) + remove +
+  submit. Pops a `TransactionImportResult`.
+
+Both: removing rows recomputes the summary (and the transactions banner) live; a
+blocking overlay covers the page during the import; on success the page pops the
+result and the caller shows a snackbar; a failure keeps the page with an error
+dialog. Shared leaf widgets in `import_preview_widgets.dart`.
+
+Entry points: the **Assets** page opens the assets import; the **Transactions**
+page opens the transactions import (both via the stacked `ImportAddFab`).
 
 ## Edge cases
 
-- Asset exists but the row repeats name/kind → existing asset reused; row fields
-  ignored (no edit on import).
-- Unknown kind / currency / market token → `ValidationFailure` (kind) or default
-  (market/currency), never a silent wrong classification for kind.
-- Empty file / header only → `ValidationFailure`.
-- A US ETF with no Finnhub token still imports; it just shows cost basis until a
-  quote loads (`quotes.md`).
+- Transaction referencing an unknown ticker → flagged in the preview, import
+  blocked until the row is removed or the asset is imported first.
+- Asset exists but the asset row repeats name/kind → existing asset reused.
+- Unknown kind/currency/market token → `ValidationFailure` (kind) or default
+  (market/currency).
+- Empty file / header only / all-blank rows → `ValidationFailure`.
+- Non-UTF-8 file (BR Excel) → decoded as Latin-1 so accents survive.

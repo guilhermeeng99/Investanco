@@ -79,6 +79,11 @@ class DashboardCubit extends Cubit<DashboardState> {
 
   double _fxUsdToBrl = 1;
 
+  /// Whether a real USD→BRL rate has been fetched. Until it has, foreign
+  /// holdings are passed a null FX so valuation excludes them (with a warning)
+  /// instead of consolidating at a bogus 1:1. See `docs/specs/valuation.md`.
+  bool _fxLoaded = false;
+
   /// Index series fetched on refresh, reused by `_recompute` to accrue fixed
   /// income. Keyed by index; each holding filters it from its own purchase date.
   final Map<EconomicIndex, List<IndexPoint>> _indexSeries = {};
@@ -107,7 +112,10 @@ class DashboardCubit extends Cubit<DashboardState> {
     await _refreshIndices(heldAssets, transactions);
     if (heldAssets.any((a) => a.currency != Currency.brl)) {
       final fx = await _fxDataSource.rate(Currency.usd, Currency.brl);
-      fx.fold((_) {}, (rate) => _fxUsdToBrl = rate);
+      fx.fold((_) {}, (rate) {
+        _fxUsdToBrl = rate;
+        _fxLoaded = true;
+      });
     }
 
     _lastSyncAt = DateTime.now();
@@ -153,7 +161,9 @@ class DashboardCubit extends Cubit<DashboardState> {
             holding: holding,
             asset: asset,
             quote: quotesById[holding.assetId],
-            fxToBase: asset.currency == Currency.brl ? 1.0 : _fxUsdToBrl,
+            fxToBase: asset.currency == Currency.brl
+                ? 1.0
+                : (_fxLoaded ? _fxUsdToBrl : null),
             fixedIncome: _termsFor(asset, holding, earliestBuy),
           ),
     ];

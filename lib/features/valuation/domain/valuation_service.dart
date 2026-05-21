@@ -34,9 +34,11 @@ class ValuationInput {
   /// falling back to cost.
   final FixedIncomeTerms? fixedIncome;
 
-  /// Multiplier converting the asset's currency to the base currency
-  /// (1.0 when already in base).
-  final double fxToBase;
+  /// Multiplier converting the asset's currency to the base currency (1.0 when
+  /// already in base). **Null** means the rate is unavailable for a foreign
+  /// holding — it's then excluded from totals and flagged, never valued at a
+  /// bogus 1:1. See `docs/specs/valuation.md`.
+  final double? fxToBase;
 }
 
 /// Pure valuation math. Turns holdings + quotes + FX into money figures
@@ -58,18 +60,26 @@ class ValuationService {
     final holding = input.holding;
     final fx = input.fxToBase;
 
-    final investedBase = _toBase(holding.investedCost, fx, base);
-    final (marketValueBase, unrealizedPL, stale) =
-        _price(input, investedBase, now, base, staleThreshold);
+    // A foreign holding with no FX rate can't be consolidated to base — exclude
+    // it (zeroed + flagged) instead of valuing at a bogus 1:1. valuatePortfolio
+    // skips it from totals; the UI warns. See `docs/specs/valuation.md`.
+    if (input.asset.currency != base && fx == null) {
+      return _unvaluable(input, base);
+    }
+    final rate = fx ?? 1.0;
 
-    final realizedBase = _toBase(holding.realizedPL, fx, base);
-    final dividendsBase = _toBase(holding.dividends, fx, base);
+    final investedBase = _toBase(holding.investedCost, rate, base);
+    final (marketValueBase, unrealizedPL, stale) =
+        _price(input, investedBase, rate, now, base, staleThreshold);
+
+    final realizedBase = _toBase(holding.realizedPL, rate, base);
+    final dividendsBase = _toBase(holding.dividends, rate, base);
     final totalPL = unrealizedPL + realizedBase + dividendsBase;
     final returnPct = investedBase.minorUnits == 0
         ? 0.0
         : unrealizedPL.minorUnits / investedBase.minorUnits;
 
-    final dayChangeBase = _dayChange(input.quote, holding.quantity, fx, base);
+    final dayChangeBase = _dayChange(input.quote, holding.quantity, rate, base);
 
     return HoldingValuation(
       assetId: holding.assetId,
@@ -83,6 +93,25 @@ class ValuationService {
       returnPct: returnPct,
       dayChangeBase: dayChangeBase,
       priceStale: stale,
+    );
+  }
+
+  /// A foreign holding that can't be priced in base (no FX): every base figure
+  /// zeroed and `fxMissing` set, so totals exclude it and the UI can warn.
+  HoldingValuation _unvaluable(ValuationInput input, Currency base) {
+    return HoldingValuation(
+      assetId: input.holding.assetId,
+      institutionId: input.holding.institutionId,
+      assetKind: input.asset.kind,
+      quantity: input.holding.quantity,
+      marketValueBase: Money.zero(base),
+      investedBase: Money.zero(base),
+      unrealizedPL: Money.zero(base),
+      totalPL: Money.zero(base),
+      returnPct: 0,
+      dayChangeBase: Money.zero(base),
+      priceStale: true,
+      fxMissing: true,
     );
   }
 
@@ -111,6 +140,9 @@ class ValuationService {
     final byInstitution = <String, Money>{};
 
     for (final v in valuations) {
+      // Foreign holdings with no FX rate are excluded from every total (they're
+      // still returned in `holdings` so the UI can list them with a warning).
+      if (v.fxMissing) continue;
       totalValue += v.marketValueBase;
       totalInvested += v.investedBase;
       totalUnrealized += v.unrealizedPL;
@@ -143,27 +175,27 @@ class ValuationService {
   (Money, Money, bool) _price(
     ValuationInput input,
     Money investedBase,
+    double rate,
     DateTime now,
     Currency base,
     Duration staleThreshold,
   ) {
     final holding = input.holding;
     final quote = input.quote;
-    final fx = input.fxToBase;
 
     if (quote != null) {
       final marketNative = Money(
         (quote.unitPrice.minorUnits * holding.quantity).round(),
         quote.unitPrice.currency,
       );
-      final marketValueBase = _toBase(marketNative, fx, base);
+      final marketValueBase = _toBase(marketNative, rate, base);
       final stale = now.difference(quote.fetchedAt) > staleThreshold;
       return (marketValueBase, marketValueBase - investedBase, stale);
     }
     if (input.fixedIncome != null) {
       final accruedNative =
           holding.investedCost * _accrualFactor(input.fixedIncome!, now);
-      final marketValueBase = _toBase(accruedNative, fx, base);
+      final marketValueBase = _toBase(accruedNative, rate, base);
       return (marketValueBase, marketValueBase - investedBase, false);
     }
     return (investedBase, Money.zero(base), true);
