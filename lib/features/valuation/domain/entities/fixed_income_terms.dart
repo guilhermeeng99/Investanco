@@ -28,22 +28,24 @@ extension FixedIncomeBasisIndex on FixedIncomeBasis {
       };
 }
 
-/// One contribution (deposit) into a fixed-income position: how much principal
-/// went in and when. Each lot accrues from its own [date], so recurring deposits
-/// into a CDB/RDB/caixinha are valued correctly instead of all accruing from the
-/// first deposit (which over-counts later money).
-class FixedIncomeLot extends Equatable {
-  /// Creates a lot.
-  const FixedIncomeLot({required this.date, required this.principal});
+/// A dated cash movement on a fixed-income position: a deposit (positive
+/// [amount]) or a withdrawal/redemption (negative). Each flow accrues the index
+/// from its own [date], so a CDB/RDB/caixinha with many deposits **and partial
+/// redemptions** values correctly — by linearity of daily accrual, the balance
+/// today is `Σ amount × accrualFactor(date → now)` regardless of order.
+class FixedIncomeCashFlow extends Equatable {
+  /// Creates a cash flow. [amount] is signed: deposits positive, withdrawals
+  /// negative (native currency).
+  const FixedIncomeCashFlow({required this.date, required this.amount});
 
-  /// When this contribution was made — accrual start for this lot.
+  /// When the money moved — accrual start (deposit) or stop (withdrawal).
   final DateTime date;
 
-  /// Principal contributed (native currency).
-  final Money principal;
+  /// Signed amount: `+` deposit (aplicação), `−` withdrawal (resgate).
+  final Money amount;
 
   @override
-  List<Object?> get props => [date, principal];
+  List<Object?> get props => [date, amount];
 }
 
 /// Everything needed to accrue one fixed-income holding to its current value.
@@ -53,16 +55,15 @@ class FixedIncomeLot extends Equatable {
 /// - `prefixed`: the annual rate itself (12 → 12% a.a.);
 /// - `ipca`: the annual spread over inflation (6 → IPCA + 6% a.a.).
 ///
-/// The position is a list of [lots] (one per contribution); each accrues from
-/// its own date, and they sum to the holding's invested cost. [series] is the
-/// index observations since the earliest lot (daily for CDI/Selic, monthly for
-/// IPCA); it is empty for `prefixed`.
+/// The position is a list of dated [cashFlows] (deposits and withdrawals); each
+/// accrues from its own date. [series] is the index observations since the
+/// earliest flow (daily for CDI/Selic, monthly for IPCA); empty for `prefixed`.
 class FixedIncomeTerms extends Equatable {
   /// Creates the terms.
   const FixedIncomeTerms({
     required this.basis,
     required this.ratePercent,
-    required this.lots,
+    required this.cashFlows,
     this.series = const [],
   });
 
@@ -72,17 +73,17 @@ class FixedIncomeTerms extends Equatable {
   /// Contracted rate; meaning varies by [basis] (see class doc).
   final double ratePercent;
 
-  /// Contributions making up the position; each accrues from its own date.
-  final List<FixedIncomeLot> lots;
+  /// Dated deposits/withdrawals making up the position.
+  final List<FixedIncomeCashFlow> cashFlows;
 
-  /// Index observations since the earliest lot; empty for `prefixed`.
+  /// Index observations since the earliest cash flow; empty for `prefixed`.
   final List<IndexPoint> series;
 
-  /// Earliest contribution date, or null when there are no lots.
-  DateTime? get earliestDate => lots.isEmpty
+  /// Earliest cash-flow date, or null when there are none.
+  DateTime? get earliestDate => cashFlows.isEmpty
       ? null
-      : lots.map((l) => l.date).reduce((a, b) => a.isBefore(b) ? a : b);
+      : cashFlows.map((c) => c.date).reduce((a, b) => a.isBefore(b) ? a : b);
 
   @override
-  List<Object?> get props => [basis, ratePercent, lots, series];
+  List<Object?> get props => [basis, ratePercent, cashFlows, series];
 }

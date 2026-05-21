@@ -31,6 +31,13 @@ The events that build a position: buys, sells, dividends. Transactions are the
 5. Editing/deleting a transaction re-derives the affected holding (see 6.1 in overview).
 6. Native currency is the **asset's** currency; consolidation to BRL happens at
    valuation time, not storage time.
+7. **Fixed income** uses transactions as cash flows: `buy` = deposit (aplicação),
+   `sell` = redemption (resgate). Enter `quantity = 1` and `unitPrice = amount`;
+   `quantity` is only a placeholder (a count) — the valuation reads each
+   transaction's `amount` and `date` as a dated cash flow (see `valuation.md` §2),
+   so partial redemptions value correctly. Keeping `quantity = 1` also keeps the
+   oversell guard (rule 2) from blocking a redemption that includes accrued
+   yield.
 
 ## Repository contract
 

@@ -17,7 +17,7 @@ import 'package:investanco/features/snapshots/domain/repositories/snapshot_repos
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
-import 'package:investanco/features/valuation/domain/fixed_income_lots.dart';
+import 'package:investanco/features/valuation/domain/fixed_income_cash_flows.dart';
 import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
@@ -103,10 +103,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     await _recompute();
 
     final holdings = _calculator.derive(transactions);
-    final heldIds = holdings
-        .where((h) => h.quantity > 0)
-        .map((h) => h.assetId)
-        .toSet();
+    final heldIds = _heldAssetIds(holdings, assets, transactions);
     final heldAssets = assets.where((a) => heldIds.contains(a.id)).toList();
 
     await _quoteRepository.refresh(heldAssets);
@@ -153,7 +150,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
     final quotes = cached.getOrElse(() => const []);
     final quotesById = {for (final q in quotes) q.assetId: q};
-    final lotsByHolding = _lotsByHolding(transactions, holdings);
+    final cashFlowsByHolding = _cashFlowsByHolding(transactions);
 
     final inputs = [
       for (final holding in holdings)
@@ -167,7 +164,8 @@ class DashboardCubit extends Cubit<DashboardState> {
                 : (_fxLoaded ? _fxUsdToBrl : null),
             fixedIncome: _termsFor(
               asset,
-              lotsByHolding[_holdingKey(holding.assetId, holding.institutionId)],
+              cashFlowsByHolding[
+                  _holdingKey(holding.assetId, holding.institutionId)],
             ),
           ),
     ];
@@ -230,43 +228,62 @@ class DashboardCubit extends Cubit<DashboardState> {
   }
 
   /// Accrual terms for a fixed-income holding, or null when not applicable.
-  FixedIncomeTerms? _termsFor(Asset asset, List<FixedIncomeLot>? lots) {
+  FixedIncomeTerms? _termsFor(
+    Asset asset,
+    List<FixedIncomeCashFlow>? cashFlows,
+  ) {
     if (asset.kind != AssetKind.fixedIncome) return null;
     final parsed = FixedIncomeMetadata.read(asset);
-    if (parsed == null || lots == null || lots.isEmpty) return null;
+    if (parsed == null || cashFlows == null || cashFlows.isEmpty) return null;
     final (basis, rate) = parsed;
     final index = basis.economicIndex;
     return FixedIncomeTerms(
       basis: basis,
       ratePercent: rate,
-      lots: lots,
+      cashFlows: cashFlows,
       series: index == null ? const [] : (_indexSeries[index] ?? const []),
     );
   }
 
-  /// Fixed-income principal lots per holding key (`assetId|institutionId`),
-  /// distributing each holding's net invested cost across its buy dates so every
-  /// contribution accrues from its own date.
-  Map<String, List<FixedIncomeLot>> _lotsByHolding(
+  /// Fixed-income cash flows per holding key (`assetId|institutionId`): deposits
+  /// (buys) and redemptions (sells), each dated, so every flow accrues from its
+  /// own date and partial redemptions are handled natively.
+  Map<String, List<FixedIncomeCashFlow>> _cashFlowsByHolding(
     List<AssetTransaction> txns,
-    List<Holding> holdings,
   ) {
-    final buysByKey = <String, List<AssetTransaction>>{};
+    final byKey = <String, List<AssetTransaction>>{};
     for (final tx in txns) {
-      if (tx.kind != TransactionKind.buy) continue;
-      buysByKey
+      byKey
           .putIfAbsent(_holdingKey(tx.assetId, tx.institutionId), () => [])
           .add(tx);
     }
-    final result = <String, List<FixedIncomeLot>>{};
-    for (final holding in holdings) {
-      final key = _holdingKey(holding.assetId, holding.institutionId);
-      final buys = buysByKey[key];
-      if (buys == null) continue;
-      final lots = buildFixedIncomeLots(holding.investedCost, buys);
-      if (lots.isNotEmpty) result[key] = lots;
+    final result = <String, List<FixedIncomeCashFlow>>{};
+    for (final entry in byKey.entries) {
+      final flows = buildFixedIncomeCashFlows(entry.value);
+      if (flows.isNotEmpty) result[entry.key] = flows;
     }
     return result;
+  }
+
+  /// Asset ids to fetch market data for: any open market position, plus every
+  /// fixed-income asset that has transactions (its CDI/Selic/IPCA series is
+  /// needed even when buys and redemptions net its quantity to zero).
+  Set<String> _heldAssetIds(
+    List<Holding> holdings,
+    List<Asset> assets,
+    List<AssetTransaction> txns,
+  ) {
+    final assetsById = {for (final a in assets) a.id: a};
+    final ids = <String>{
+      for (final h in holdings)
+        if (h.quantity > 0) h.assetId,
+    };
+    for (final tx in txns) {
+      if (assetsById[tx.assetId]?.kind == AssetKind.fixedIncome) {
+        ids.add(tx.assetId);
+      }
+    }
+    return ids;
   }
 
   DateTime? _earliestBuyForAsset(String assetId, List<AssetTransaction> txns) {

@@ -277,23 +277,21 @@ void main() {
     expect(result.marketValueBase.major, closeTo(10054.65, 0.1));
   });
 
-  test('each contribution accrues from its own date (per-lot)', () {
+  test('each deposit accrues from its own date (per cash flow)', () {
     final result = service.valuateHolding(
       ValuationInput(
-        // Two R$10k deposits → R$20k invested.
-        holding:
-            holdingFactory(quantity: 1, avgCost: const Money(2000000, brl)),
+        holding: holdingFactory(),
         asset: assetFactory(kind: AssetKind.fixedIncome),
         fxToBase: 1,
         fixedIncome: fixedIncomeTermsFactory(
-          lots: [
-            FixedIncomeLot(
+          cashFlows: [
+            FixedIncomeCashFlow(
               date: DateTime(2026, 5, 4),
-              principal: const Money(1000000, brl),
+              amount: const Money(1000000, brl),
             ),
-            FixedIncomeLot(
+            FixedIncomeCashFlow(
               date: DateTime(2026, 5, 6),
-              principal: const Money(1000000, brl),
+              amount: const Money(1000000, brl),
             ),
           ],
           series: [
@@ -306,10 +304,45 @@ void main() {
       now: now,
     );
 
-    // Lot A (05-04) catches all 3 days: 10000 * 1.01^3 = 10303.01.
-    // Lot B (05-06) catches only the last: 10000 * 1.01 = 10100.
+    // Deposit A (05-04) catches all 3 days: 10000 * 1.01^3 = 10303.01.
+    // Deposit B (05-06) catches only the last: 10000 * 1.01 = 10100.
     expect(result.marketValueBase.major, closeTo(20403.01, 0.02));
     expect(result.investedBase, Money.fromMajor(20000, brl));
+  });
+
+  test('a partial redemption removes value from its own date', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(),
+        asset: assetFactory(kind: AssetKind.fixedIncome),
+        fxToBase: 1,
+        fixedIncome: fixedIncomeTermsFactory(
+          cashFlows: [
+            // +10000 on 05-04, then −5000 withdrawn on 05-06.
+            FixedIncomeCashFlow(
+              date: DateTime(2026, 5, 4),
+              amount: const Money(1000000, brl),
+            ),
+            FixedIncomeCashFlow(
+              date: DateTime(2026, 5, 6),
+              amount: const Money(-500000, brl),
+            ),
+          ],
+          series: [
+            indexPointFactory(date: DateTime(2026, 5, 4)),
+            indexPointFactory(date: DateTime(2026, 5, 5)),
+            indexPointFactory(date: DateTime(2026, 5, 6)),
+          ],
+        ),
+      ),
+      now: now,
+    );
+
+    // +10000 * 1.01^3 = 10303.01 ; −5000 * 1.01 = −5050 → 5253.01.
+    // Net invested = 10000 − 5000 = 5000.
+    expect(result.marketValueBase.major, closeTo(5253.01, 0.02));
+    expect(result.investedBase, Money.fromMajor(5000, brl));
+    expect(result.unrealizedPL.major, closeTo(253.01, 0.02));
   });
 
   test('a present quote takes precedence over fixed-income terms', () {

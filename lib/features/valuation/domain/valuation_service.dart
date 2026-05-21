@@ -68,6 +68,14 @@ class ValuationService {
     }
     final rate = fx ?? 1.0;
 
+    // Fixed income with no market quote is valued from its cash flows (deposits
+    // and redemptions), not the share/average-cost model — partial redemptions
+    // make quantity meaningless. See `docs/specs/valuation.md` §2.
+    final terms = input.fixedIncome;
+    if (input.quote == null && terms != null && terms.cashFlows.isNotEmpty) {
+      return _valuateFixedIncome(input, terms, rate, now, base);
+    }
+
     final investedBase = _toBase(holding.investedCost, rate, base);
     final (marketValueBase, unrealizedPL, stale) =
         _price(input, investedBase, rate, now, base, staleThreshold);
@@ -170,8 +178,9 @@ class ValuationService {
     );
   }
 
-  /// `(marketValueBase, unrealizedPL, stale)` for a holding: from a live quote
-  /// if present, else fixed-income accrual, else cost basis (flagged stale).
+  /// `(marketValueBase, unrealizedPL, stale)` for a market-priced holding: from
+  /// a live quote if present, else cost basis (flagged stale). Fixed income is
+  /// valued separately in [_valuateFixedIncome].
   (Money, Money, bool) _price(
     ValuationInput input,
     Money investedBase,
@@ -192,13 +201,49 @@ class ValuationService {
       final stale = now.difference(quote.fetchedAt) > staleThreshold;
       return (marketValueBase, marketValueBase - investedBase, stale);
     }
-    final terms = input.fixedIncome;
-    if (terms != null && terms.lots.isNotEmpty) {
-      final accruedNative = _accrue(terms, input.asset.currency, now);
-      final marketValueBase = _toBase(accruedNative, rate, base);
-      return (marketValueBase, marketValueBase - investedBase, false);
-    }
     return (investedBase, Money.zero(base), true);
+  }
+
+  /// Values a fixed-income holding from its dated cash flows. Both market value
+  /// and invested basis come from the flows (deposits − redemptions), so the
+  /// share/average-cost model and any "realized P/L" from sell transactions are
+  /// bypassed. By linearity of daily accrual, the value today is the sum of each
+  /// flow grown from its date: `Σ amount × accrualFactor(date → now)`.
+  HoldingValuation _valuateFixedIncome(
+    ValuationInput input,
+    FixedIncomeTerms terms,
+    double rate,
+    DateTime now,
+    Currency base,
+  ) {
+    final currency = input.asset.currency;
+    var marketNative = Money.zero(currency);
+    var investedNative = Money.zero(currency);
+    for (final flow in terms.cashFlows) {
+      marketNative += flow.amount * _accrualFactor(terms, flow.date, now);
+      investedNative += flow.amount;
+    }
+
+    final marketValueBase = _toBase(marketNative, rate, base);
+    final investedBase = _toBase(investedNative, rate, base);
+    final unrealizedPL = marketValueBase - investedBase;
+    final returnPct = investedBase.minorUnits == 0
+        ? 0.0
+        : unrealizedPL.minorUnits / investedBase.minorUnits;
+
+    return HoldingValuation(
+      assetId: input.holding.assetId,
+      institutionId: input.holding.institutionId,
+      assetKind: input.asset.kind,
+      quantity: input.holding.quantity,
+      marketValueBase: marketValueBase,
+      investedBase: investedBase,
+      unrealizedPL: unrealizedPL,
+      totalPL: unrealizedPL,
+      returnPct: returnPct,
+      dayChangeBase: Money.zero(base),
+      priceStale: false,
+    );
   }
 
   Money _dayChange(Quote? quote, double quantity, double fx, Currency base) {
@@ -217,19 +262,8 @@ class ValuationService {
     return Money((amount.minorUnits * fx).round(), base);
   }
 
-  /// Accrued current value (native): each lot grown from its own date and
-  /// summed. Lots sum to the invested cost, so a single lot reproduces the old
-  /// `principal × factor`. See `docs/specs/valuation.md` §2.
-  Money _accrue(FixedIncomeTerms terms, Currency currency, DateTime now) {
-    var total = Money.zero(currency);
-    for (final lot in terms.lots) {
-      total += lot.principal * _accrualFactor(terms, lot.date, now);
-    }
-    return total;
-  }
-
-  /// Multiplier applied to one lot's principal to reach its current value,
-  /// accruing from [since]. See `docs/specs/valuation.md` §2.
+  /// Multiplier applied to one cash flow to reach its current value, accruing
+  /// from [since]. See `docs/specs/valuation.md` §2.
   double _accrualFactor(FixedIncomeTerms terms, DateTime since, DateTime now) {
     return switch (terms.basis) {
       FixedIncomeBasis.cdi ||

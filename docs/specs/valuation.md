@@ -11,7 +11,7 @@ class ValuationInput {
   final Asset asset;
   final Quote? quote;                  // null when price unavailable
   final double fxToBase;               // 1.0 when same currency
-  final FixedIncomeTerms? fixedIncome; // basis + rate + per-date lots + index series
+  final FixedIncomeTerms? fixedIncome; // basis + rate + dated cash flows + index series
 }
 
 class HoldingValuation {
@@ -32,22 +32,23 @@ class HoldingValuation {
 ## Rules (mirror overview §6)
 
 1. **Market value (native)** = `quantity * quote.unitPrice`.
-2. **Fixed income** (no market quote): `currentValue = Σ lot.principal * accrualFactor(lot.date)`
-   over the holding's contribution **lots**, each accruing from its own date — so
-   recurring deposits aren't all compounded from the first one. The lots are the
-   net `holding.investedCost` split across the buy dates, weighted by each buy's
-   gross amount, so they sum back to the invested cost (a single buy ⇒ one lot ⇒
-   the old `principal * factor`). `accrualFactor` follows `basis`; `ratePercent`
-   meaning: CDI/Selic → percent **of** the index (110 = 110% of CDI); prefixed →
-   annual rate; IPCA+ → annual spread.
-   - CDI: `∏(1 + (dailyCdi_d/100) * (ratePercent/100))` over each series day ≥ the lot date.
+2. **Fixed income** (no market quote): valued from dated **cash flows** — a buy is
+   a deposit (aplicação, positive), a sell a redemption (resgate, negative). By
+   linearity of daily accrual, `currentValue = Σ amount * accrualFactor(flow.date)`
+   and `invested = Σ amount` (net contributions); both come from the flows, not
+   the share/average-cost model — so partial redemptions are handled natively and
+   a sell's "realized P/L" is never double counted (`totalPL = unrealizedPL`). A
+   single deposit reproduces the old `principal * factor`. `accrualFactor` follows
+   `basis`; `ratePercent` meaning: CDI/Selic → percent **of** the index (110 =
+   110% of CDI); prefixed → annual rate; IPCA+ → annual spread.
+   - CDI: `∏(1 + (dailyCdi_d/100) * (ratePercent/100))` over each series day ≥ the flow date.
    - Selic: same shape with the Selic daily series.
    - Prefixed: `(1 + ratePercent/100)^(businessDays/252)`.
    - IPCA+: `(∏(1 + ipca_m/100)) * (1 + ratePercent/100)^(businessDays/252)`.
-   `businessDays` counts weekdays since the lot date (bank holidays ignored — the
+   `businessDays` counts weekdays since the flow date (bank holidays ignored — the
    BCB series already excludes them for index bonds; only prefixed/IPCA+ are
    slightly affected). Falls back to cost + `priceStale` only when `fixedIncome`
-   is absent or has no lots.
+   is absent or has no cash flows.
 3. **Base conversion**: `valueBase = marketValueNative * fxToBase` (fxToBase = 1 when
    currency == base).
 4. **Unrealized P/L** = `marketValueBase - investedBase`.
