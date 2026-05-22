@@ -90,6 +90,16 @@ low-value free-tier keys belong here; true secrecy would need a backend proxy.
 abstract class QuoteRepository {
   Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds); // cached read (Drift); Left(CacheFailure) on error
   Future<Either<Failure, List<Quote>>> refresh(List<Asset> assets);      // fetch + cache
+  Future<DateTime?> lastFetchedAt(List<String> assetIds);                // newest cached fetchedAt → freshness signal
+}
+
+/// Durable last-known FX + index cache (Drift), so a cold start can value
+/// foreign holdings and accrue fixed income before any network refresh lands.
+abstract class MarketCacheStore {
+  Future<double?> lastFxRate(Currency from, Currency to);
+  Future<void> saveFxRate(Currency from, Currency to, double rate);
+  Future<Map<EconomicIndex, List<IndexPoint>>> allIndexSeries();
+  Future<void> saveIndexSeries(EconomicIndex index, List<IndexPoint> points);
 }
 ```
 
@@ -98,11 +108,23 @@ Rules:
 2. A registry routes each asset to the first `QuoteDataSource` whose `supports()` is true.
 3. Batch by source (one brapi call for all BR tickers; one Finnhub call per US symbol).
 4. On fetch failure, keep the previous cached quote and mark it **stale** (`fetchedAt` age).
-5. FX and indices cached with their own TTL (FX: minutes; indices: daily) —
-   `CachingFxDataSource` / `CachingIndexDataSource` decorate the real sources with
-   an in-memory TTL cache (10 min / 12 h), shared via DI so repeated refreshes and
-   the dashboard + allocation cubits reuse a fetch. *(In-memory only — not
-   persisted across restarts; `quotes` remains the one Drift-backed cache.)*
+5. FX and indices have an **in-memory** TTL (FX 10 min, indices 12 h) via
+   `CachingFxDataSource` / `CachingIndexDataSource` (shared singletons, so the
+   dashboard + allocation cubits reuse a fetch in-session) **and** a **durable**
+   copy in Drift via `MarketCacheStore` (`fx_rates`, `index_points`), written
+   through after each successful refresh.
+6. **Warm start (cold-start correctness).** `quotes`, `fx_rates` and
+   `index_points` survive restarts and are preserved by a cloud sync. On
+   creation each portfolio cubit *warm-starts*: it seeds the FX rate and index
+   series from `MarketCacheStore` before the first paint, so a reopened app
+   consolidates foreign holdings and accrues fixed income from the **previous**
+   known values immediately — instead of excluding foreign holdings (no FX) and
+   showing cost (no series) until the network responds.
+7. **Freshness guard.** A background refresh is skipped when the held assets'
+   newest `quotes.fetchedAt` is within `quoteFreshness` (15 min). Both portfolio
+   screens dedupe against this shared Drift signal, so opening the second one
+   right after the first refreshed does **not** re-hit the APIs. Manual refresh /
+   pull-to-refresh pass `force: true` to bypass it.
 
 ## Edge cases
 

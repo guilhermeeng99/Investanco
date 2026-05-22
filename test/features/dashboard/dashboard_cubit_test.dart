@@ -10,6 +10,7 @@ import 'package:investanco/features/dashboard/presentation/cubit/dashboard_cubit
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
+import 'package:investanco/features/quotes/data/market_cache_store_impl.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:investanco/features/snapshots/domain/entities/snapshot.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -79,6 +80,7 @@ void main() {
         const ValuationService(),
         snapshotRepository,
         indexDataSource,
+        DriftMarketCacheStore(db),
       );
 
   test('builds a priced portfolio from local data + quote + FX', () async {
@@ -93,6 +95,8 @@ void main() {
         .thenAnswer((_) async => Right([quote]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => Right([quote]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(5));
     when(() => snapshotRepository.range(any(), any()))
@@ -152,6 +156,8 @@ void main() {
         .thenAnswer((_) async => const Right(<Quote>[]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => const Right([]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(5));
     when(() => indexDataSource.series(any(), any())).thenAnswer(
@@ -221,6 +227,8 @@ void main() {
         .thenAnswer((_) async => const Right(<Quote>[]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(5));
     when(() => snapshotRepository.range(any(), any()))
@@ -289,6 +297,132 @@ void main() {
           (s) => s is DashboardLoaded && s.institutionFilter == null,
         ),
       ),
+    );
+  });
+
+  test('warm start values a foreign holding from persisted FX, no FX fetch',
+      () async {
+    // Persist a last-known rate (as a prior session would) and serve a cached
+    // quote; mark quotes fresh so the auto-refresh is skipped — only the
+    // warm-started cache values the holding.
+    await DriftMarketCacheStore(db).saveFxRate(Currency.usd, Currency.brl, 5);
+    final quote = quoteFactory(
+      unitPrice: Money.fromMajor(100, Currency.usd),
+      fetchedAt: DateTime.now(),
+      source: QuoteSource.finnhub,
+    );
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => Right([quote]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => DateTime.now());
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    // 2 * US$100 * 5 = R$1000, consolidated via the persisted rate alone.
+    await expectLater(
+      cubit.stream,
+      emitsThrough(
+        predicate<DashboardState>((s) {
+          if (s is! DashboardLoaded || s.portfolio.holdings.isEmpty) {
+            return false;
+          }
+          final h = s.portfolio.holdings.first;
+          return !h.fxMissing &&
+              h.marketValueBase == Money.fromMajor(1000, Currency.brl);
+        }),
+      ),
+    );
+    verifyNever(() => fxDataSource.rate(Currency.usd, Currency.brl));
+  });
+
+  test('skips the network refresh when cached quotes are fresh', () async {
+    when(() => quoteRepository.getCached(any())).thenAnswer(
+      (_) async => Right([
+        quoteFactory(
+          unitPrice: Money.fromMajor(100, Currency.usd),
+          source: QuoteSource.finnhub,
+        ),
+      ]),
+    );
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => DateTime.now());
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    await cubit.stream.firstWhere((s) => s is DashboardLoaded);
+    await pumpEventQueue(); // let the auto-refresh attempt run
+
+    verifyNever(() => quoteRepository.refresh(any()));
+  });
+
+  test('force refresh fetches even when cached quotes are fresh', () async {
+    final quote = quoteFactory(
+      unitPrice: Money.fromMajor(100, Currency.usd),
+      fetchedAt: DateTime.now(),
+      source: QuoteSource.finnhub,
+    );
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => Right([quote]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => DateTime.now()); // fresh → auto-refresh skips
+    when(() => quoteRepository.refresh(any()))
+        .thenAnswer((_) async => Right([quote]));
+    when(() => fxDataSource.rate(Currency.usd, Currency.brl))
+        .thenAnswer((_) async => const Right<Failure, double>(5));
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+    when(
+      () => snapshotRepository.upsertToday(
+        totalValue: any(named: 'totalValue'),
+        totalInvested: any(named: 'totalInvested'),
+        totalPL: any(named: 'totalPL'),
+      ),
+    ).thenAnswer((_) async => const Right(unit));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+    await cubit.stream.firstWhere((s) => s is DashboardLoaded);
+
+    await cubit.refresh(force: true);
+
+    verify(() => quoteRepository.refresh(any())).called(1);
+  });
+
+  test('clears isRefreshing even when a source throws (no infinite spinner)',
+      () async {
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
+    when(() => quoteRepository.refresh(any())).thenThrow(Exception('boom'));
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    // Goes refreshing, then settles back to a non-refreshing Loaded — the
+    // refresh indicator never spins forever.
+    await expectLater(
+      cubit.stream,
+      emitsInOrder([
+        emitsThrough(
+          predicate<DashboardState>(
+            (s) => s is DashboardLoaded && s.isRefreshing,
+          ),
+        ),
+        emitsThrough(
+          predicate<DashboardState>(
+            (s) => s is DashboardLoaded && !s.isRefreshing,
+          ),
+        ),
+      ]),
     );
   });
 }

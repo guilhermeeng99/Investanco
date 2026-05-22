@@ -49,7 +49,7 @@ class _DashboardView extends StatelessWidget {
                 icon: FontAwesomeIcons.arrowsRotate,
                 tooltip: t.dashboard.refresh,
                 busy: refreshing,
-                onPressed: () => context.read<DashboardCubit>().refresh(),
+                onPressed: () => context.read<DashboardCubit>().refresh(force: true),
               );
             },
           ),
@@ -61,7 +61,7 @@ class _DashboardView extends StatelessWidget {
             DashboardLoading() => const LoadingShimmerList(itemHeight: 120),
             DashboardError() => ErrorView(
                 message: t.dashboard.loadError,
-                onRetry: () => context.read<DashboardCubit>().refresh(),
+                onRetry: () => context.read<DashboardCubit>().refresh(force: true),
               ),
             DashboardLoaded() => state.hasHoldings
                 ? _LoadedView(state: state)
@@ -86,7 +86,7 @@ class _LoadedView extends StatelessWidget {
     final showFilter = state.filterableInstitutionIds.length > 1;
 
     return RefreshIndicator(
-      onRefresh: () => context.read<DashboardCubit>().refresh(),
+      onRefresh: () => context.read<DashboardCubit>().refresh(force: true),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
         children: [

@@ -3404,6 +3404,537 @@ class AssetClassesCompanion extends UpdateCompanion<AssetClassRow> {
   }
 }
 
+class $FxRatesTable extends FxRates with TableInfo<$FxRatesTable, FxRateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FxRatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _pairMeta = const VerificationMeta('pair');
+  @override
+  late final GeneratedColumn<String> pair = GeneratedColumn<String>(
+    'pair',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rateMeta = const VerificationMeta('rate');
+  @override
+  late final GeneratedColumn<double> rate = GeneratedColumn<double>(
+    'rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [pair, rate, fetchedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fx_rates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FxRateRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('pair')) {
+      context.handle(
+        _pairMeta,
+        pair.isAcceptableOrUnknown(data['pair']!, _pairMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pairMeta);
+    }
+    if (data.containsKey('rate')) {
+      context.handle(
+        _rateMeta,
+        rate.isAcceptableOrUnknown(data['rate']!, _rateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rateMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {pair};
+  @override
+  FxRateRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FxRateRow(
+      pair: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pair'],
+      )!,
+      rate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}rate'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $FxRatesTable createAlias(String alias) {
+    return $FxRatesTable(attachedDatabase, alias);
+  }
+}
+
+class FxRateRow extends DataClass implements Insertable<FxRateRow> {
+  /// Conversion pair key, `"${from.code}->${to.code}"` (e.g. `USD->BRL`).
+  final String pair;
+
+  /// Multiplier converting `from` into `to`.
+  final double rate;
+
+  /// When we cached it.
+  final DateTime fetchedAt;
+  const FxRateRow({
+    required this.pair,
+    required this.rate,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['pair'] = Variable<String>(pair);
+    map['rate'] = Variable<double>(rate);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  FxRatesCompanion toCompanion(bool nullToAbsent) {
+    return FxRatesCompanion(
+      pair: Value(pair),
+      rate: Value(rate),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory FxRateRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FxRateRow(
+      pair: serializer.fromJson<String>(json['pair']),
+      rate: serializer.fromJson<double>(json['rate']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'pair': serializer.toJson<String>(pair),
+      'rate': serializer.toJson<double>(rate),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  FxRateRow copyWith({String? pair, double? rate, DateTime? fetchedAt}) =>
+      FxRateRow(
+        pair: pair ?? this.pair,
+        rate: rate ?? this.rate,
+        fetchedAt: fetchedAt ?? this.fetchedAt,
+      );
+  FxRateRow copyWithCompanion(FxRatesCompanion data) {
+    return FxRateRow(
+      pair: data.pair.present ? data.pair.value : this.pair,
+      rate: data.rate.present ? data.rate.value : this.rate,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FxRateRow(')
+          ..write('pair: $pair, ')
+          ..write('rate: $rate, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(pair, rate, fetchedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FxRateRow &&
+          other.pair == this.pair &&
+          other.rate == this.rate &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class FxRatesCompanion extends UpdateCompanion<FxRateRow> {
+  final Value<String> pair;
+  final Value<double> rate;
+  final Value<DateTime> fetchedAt;
+  final Value<int> rowid;
+  const FxRatesCompanion({
+    this.pair = const Value.absent(),
+    this.rate = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FxRatesCompanion.insert({
+    required String pair,
+    required double rate,
+    required DateTime fetchedAt,
+    this.rowid = const Value.absent(),
+  }) : pair = Value(pair),
+       rate = Value(rate),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<FxRateRow> custom({
+    Expression<String>? pair,
+    Expression<double>? rate,
+    Expression<DateTime>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (pair != null) 'pair': pair,
+      if (rate != null) 'rate': rate,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FxRatesCompanion copyWith({
+    Value<String>? pair,
+    Value<double>? rate,
+    Value<DateTime>? fetchedAt,
+    Value<int>? rowid,
+  }) {
+    return FxRatesCompanion(
+      pair: pair ?? this.pair,
+      rate: rate ?? this.rate,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (pair.present) {
+      map['pair'] = Variable<String>(pair.value);
+    }
+    if (rate.present) {
+      map['rate'] = Variable<double>(rate.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FxRatesCompanion(')
+          ..write('pair: $pair, ')
+          ..write('rate: $rate, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IndexPointsTable extends IndexPoints
+    with TableInfo<$IndexPointsTable, IndexPointRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IndexPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+  @override
+  late final GeneratedColumn<String> index = GeneratedColumn<String>(
+    'index',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rateMeta = const VerificationMeta('rate');
+  @override
+  late final GeneratedColumn<double> rate = GeneratedColumn<double>(
+    'rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [index, date, rate];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'index_points';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IndexPointRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('index')) {
+      context.handle(
+        _indexMeta,
+        index.isAcceptableOrUnknown(data['index']!, _indexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_indexMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('rate')) {
+      context.handle(
+        _rateMeta,
+        rate.isAcceptableOrUnknown(data['rate']!, _rateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {index, date};
+  @override
+  IndexPointRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IndexPointRow(
+      index: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}index'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      rate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}rate'],
+      )!,
+    );
+  }
+
+  @override
+  $IndexPointsTable createAlias(String alias) {
+    return $IndexPointsTable(attachedDatabase, alias);
+  }
+}
+
+class IndexPointRow extends DataClass implements Insertable<IndexPointRow> {
+  /// `EconomicIndex` name (`cdi`/`selic`/`ipca`).
+  final String index;
+
+  /// Observation date.
+  final DateTime date;
+
+  /// Period rate in percent, exactly as published.
+  final double rate;
+  const IndexPointRow({
+    required this.index,
+    required this.date,
+    required this.rate,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['index'] = Variable<String>(index);
+    map['date'] = Variable<DateTime>(date);
+    map['rate'] = Variable<double>(rate);
+    return map;
+  }
+
+  IndexPointsCompanion toCompanion(bool nullToAbsent) {
+    return IndexPointsCompanion(
+      index: Value(index),
+      date: Value(date),
+      rate: Value(rate),
+    );
+  }
+
+  factory IndexPointRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IndexPointRow(
+      index: serializer.fromJson<String>(json['index']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      rate: serializer.fromJson<double>(json['rate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'index': serializer.toJson<String>(index),
+      'date': serializer.toJson<DateTime>(date),
+      'rate': serializer.toJson<double>(rate),
+    };
+  }
+
+  IndexPointRow copyWith({String? index, DateTime? date, double? rate}) =>
+      IndexPointRow(
+        index: index ?? this.index,
+        date: date ?? this.date,
+        rate: rate ?? this.rate,
+      );
+  IndexPointRow copyWithCompanion(IndexPointsCompanion data) {
+    return IndexPointRow(
+      index: data.index.present ? data.index.value : this.index,
+      date: data.date.present ? data.date.value : this.date,
+      rate: data.rate.present ? data.rate.value : this.rate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IndexPointRow(')
+          ..write('index: $index, ')
+          ..write('date: $date, ')
+          ..write('rate: $rate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(index, date, rate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IndexPointRow &&
+          other.index == this.index &&
+          other.date == this.date &&
+          other.rate == this.rate);
+}
+
+class IndexPointsCompanion extends UpdateCompanion<IndexPointRow> {
+  final Value<String> index;
+  final Value<DateTime> date;
+  final Value<double> rate;
+  final Value<int> rowid;
+  const IndexPointsCompanion({
+    this.index = const Value.absent(),
+    this.date = const Value.absent(),
+    this.rate = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  IndexPointsCompanion.insert({
+    required String index,
+    required DateTime date,
+    required double rate,
+    this.rowid = const Value.absent(),
+  }) : index = Value(index),
+       date = Value(date),
+       rate = Value(rate);
+  static Insertable<IndexPointRow> custom({
+    Expression<String>? index,
+    Expression<DateTime>? date,
+    Expression<double>? rate,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (index != null) 'index': index,
+      if (date != null) 'date': date,
+      if (rate != null) 'rate': rate,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  IndexPointsCompanion copyWith({
+    Value<String>? index,
+    Value<DateTime>? date,
+    Value<double>? rate,
+    Value<int>? rowid,
+  }) {
+    return IndexPointsCompanion(
+      index: index ?? this.index,
+      date: date ?? this.date,
+      rate: rate ?? this.rate,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (index.present) {
+      map['index'] = Variable<String>(index.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (rate.present) {
+      map['rate'] = Variable<double>(rate.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IndexPointsCompanion(')
+          ..write('index: $index, ')
+          ..write('date: $date, ')
+          ..write('rate: $rate, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3414,6 +3945,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SnapshotsTable snapshots = $SnapshotsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
   late final $AssetClassesTable assetClasses = $AssetClassesTable(this);
+  late final $FxRatesTable fxRates = $FxRatesTable(this);
+  late final $IndexPointsTable indexPoints = $IndexPointsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3426,6 +3959,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     snapshots,
     settings,
     assetClasses,
+    fxRates,
+    indexPoints,
   ];
 }
 
@@ -5117,6 +5652,324 @@ typedef $$AssetClassesTableProcessedTableManager =
       AssetClassRow,
       PrefetchHooks Function()
     >;
+typedef $$FxRatesTableCreateCompanionBuilder =
+    FxRatesCompanion Function({
+      required String pair,
+      required double rate,
+      required DateTime fetchedAt,
+      Value<int> rowid,
+    });
+typedef $$FxRatesTableUpdateCompanionBuilder =
+    FxRatesCompanion Function({
+      Value<String> pair,
+      Value<double> rate,
+      Value<DateTime> fetchedAt,
+      Value<int> rowid,
+    });
+
+class $$FxRatesTableFilterComposer
+    extends Composer<_$AppDatabase, $FxRatesTable> {
+  $$FxRatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get pair => $composableBuilder(
+    column: $table.pair,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FxRatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FxRatesTable> {
+  $$FxRatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get pair => $composableBuilder(
+    column: $table.pair,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FxRatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FxRatesTable> {
+  $$FxRatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get pair =>
+      $composableBuilder(column: $table.pair, builder: (column) => column);
+
+  GeneratedColumn<double> get rate =>
+      $composableBuilder(column: $table.rate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$FxRatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FxRatesTable,
+          FxRateRow,
+          $$FxRatesTableFilterComposer,
+          $$FxRatesTableOrderingComposer,
+          $$FxRatesTableAnnotationComposer,
+          $$FxRatesTableCreateCompanionBuilder,
+          $$FxRatesTableUpdateCompanionBuilder,
+          (FxRateRow, BaseReferences<_$AppDatabase, $FxRatesTable, FxRateRow>),
+          FxRateRow,
+          PrefetchHooks Function()
+        > {
+  $$FxRatesTableTableManager(_$AppDatabase db, $FxRatesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FxRatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FxRatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FxRatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> pair = const Value.absent(),
+                Value<double> rate = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FxRatesCompanion(
+                pair: pair,
+                rate: rate,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String pair,
+                required double rate,
+                required DateTime fetchedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => FxRatesCompanion.insert(
+                pair: pair,
+                rate: rate,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FxRatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FxRatesTable,
+      FxRateRow,
+      $$FxRatesTableFilterComposer,
+      $$FxRatesTableOrderingComposer,
+      $$FxRatesTableAnnotationComposer,
+      $$FxRatesTableCreateCompanionBuilder,
+      $$FxRatesTableUpdateCompanionBuilder,
+      (FxRateRow, BaseReferences<_$AppDatabase, $FxRatesTable, FxRateRow>),
+      FxRateRow,
+      PrefetchHooks Function()
+    >;
+typedef $$IndexPointsTableCreateCompanionBuilder =
+    IndexPointsCompanion Function({
+      required String index,
+      required DateTime date,
+      required double rate,
+      Value<int> rowid,
+    });
+typedef $$IndexPointsTableUpdateCompanionBuilder =
+    IndexPointsCompanion Function({
+      Value<String> index,
+      Value<DateTime> date,
+      Value<double> rate,
+      Value<int> rowid,
+    });
+
+class $$IndexPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $IndexPointsTable> {
+  $$IndexPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get index => $composableBuilder(
+    column: $table.index,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$IndexPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $IndexPointsTable> {
+  $$IndexPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get index => $composableBuilder(
+    column: $table.index,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$IndexPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IndexPointsTable> {
+  $$IndexPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get index =>
+      $composableBuilder(column: $table.index, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<double> get rate =>
+      $composableBuilder(column: $table.rate, builder: (column) => column);
+}
+
+class $$IndexPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IndexPointsTable,
+          IndexPointRow,
+          $$IndexPointsTableFilterComposer,
+          $$IndexPointsTableOrderingComposer,
+          $$IndexPointsTableAnnotationComposer,
+          $$IndexPointsTableCreateCompanionBuilder,
+          $$IndexPointsTableUpdateCompanionBuilder,
+          (
+            IndexPointRow,
+            BaseReferences<_$AppDatabase, $IndexPointsTable, IndexPointRow>,
+          ),
+          IndexPointRow,
+          PrefetchHooks Function()
+        > {
+  $$IndexPointsTableTableManager(_$AppDatabase db, $IndexPointsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IndexPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IndexPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IndexPointsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> index = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<double> rate = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => IndexPointsCompanion(
+                index: index,
+                date: date,
+                rate: rate,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String index,
+                required DateTime date,
+                required double rate,
+                Value<int> rowid = const Value.absent(),
+              }) => IndexPointsCompanion.insert(
+                index: index,
+                date: date,
+                rate: rate,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$IndexPointsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IndexPointsTable,
+      IndexPointRow,
+      $$IndexPointsTableFilterComposer,
+      $$IndexPointsTableOrderingComposer,
+      $$IndexPointsTableAnnotationComposer,
+      $$IndexPointsTableCreateCompanionBuilder,
+      $$IndexPointsTableUpdateCompanionBuilder,
+      (
+        IndexPointRow,
+        BaseReferences<_$AppDatabase, $IndexPointsTable, IndexPointRow>,
+      ),
+      IndexPointRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5135,4 +5988,8 @@ class $AppDatabaseManager {
       $$SettingsTableTableManager(_db, _db.settings);
   $$AssetClassesTableTableManager get assetClasses =>
       $$AssetClassesTableTableManager(_db, _db.assetClasses);
+  $$FxRatesTableTableManager get fxRates =>
+      $$FxRatesTableTableManager(_db, _db.fxRates);
+  $$IndexPointsTableTableManager get indexPoints =>
+      $$IndexPointsTableTableManager(_db, _db.indexPoints);
 }

@@ -43,9 +43,11 @@ import 'package:investanco/features/quotes/data/datasources/caching_index_data_s
 import 'package:investanco/features/quotes/data/datasources/coingecko_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/finnhub_quote_data_source.dart';
 import 'package:investanco/features/quotes/data/datasources/tesouro_direto_data_source.dart';
+import 'package:investanco/features/quotes/data/market_cache_store_impl.dart';
 import 'package:investanco/features/quotes/data/repositories/quote_repository_impl.dart';
 import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
+import 'package:investanco/features/quotes/domain/market_cache_store.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
@@ -223,6 +225,11 @@ void _initQuotes() {
         FinnhubQuoteDataSource(sl()),
         TesouroDiretoDataSource(sl()),
       ]),
+    )
+    // Durable last-known FX + index cache so a cold start values foreign
+    // holdings and fixed income immediately (see quotes.md).
+    ..registerLazySingleton<MarketCacheStore>(
+      () => DriftMarketCacheStore(sl<AppDatabase>()),
     );
 }
 
@@ -232,7 +239,18 @@ void _initDashboard() {
       () => SnapshotRepositoryImpl(sl(), sl()),
     )
     ..registerFactory<DashboardCubit>(
-      () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()),
+      () => DashboardCubit(
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+      ),
     );
 }
 
@@ -246,6 +264,7 @@ void _initAllocation() {
     )
     ..registerFactory<AllocationCubit>(
       () => AllocationCubit(
+        sl(),
         sl(),
         sl(),
         sl(),

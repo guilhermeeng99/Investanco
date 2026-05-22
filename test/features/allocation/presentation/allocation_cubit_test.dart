@@ -15,6 +15,7 @@ import 'package:investanco/features/assets/data/repositories/asset_repository_im
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
+import 'package:investanco/features/quotes/data/market_cache_store_impl.dart';
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -49,6 +50,8 @@ void main() {
         .thenAnswer((_) async => const Right(<Quote>[]));
     when(() => quoteRepository.refresh(any()))
         .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
     when(() => fxDataSource.rate(Currency.usd, Currency.brl))
         .thenAnswer((_) async => const Right<Failure, double>(1));
     when(() => indexDataSource.series(any(), any()))
@@ -65,6 +68,7 @@ void main() {
         fxDataSource,
         const ValuationService(),
         indexDataSource,
+        DriftMarketCacheStore(db),
         const FakeIdGenerator('new-class'),
       );
 
@@ -178,6 +182,48 @@ void main() {
     verify(() => quoteRepository.refresh(any())).called(1);
   });
 
+  test('skips the network refresh when cached quotes are fresh', () async {
+    await seedBrPosition();
+    stubNetworkEmpty();
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => DateTime.now());
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+    await cubit.stream.firstWhere((s) => s is AllocationLoaded);
+    await pumpEventQueue(); // let the auto-refresh attempt run
+
+    verifyNever(() => quoteRepository.refresh(any()));
+  });
+
+  test('clears isRefreshing even when a source throws (no infinite spinner)',
+      () async {
+    await seedBrPosition();
+    stubNetworkEmpty();
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
+    when(() => quoteRepository.refresh(any())).thenThrow(Exception('boom'));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    await expectLater(
+      cubit.stream,
+      emitsInOrder([
+        emitsThrough(
+          predicate<AllocationState>(
+            (s) => s is AllocationLoaded && s.isRefreshing,
+          ),
+        ),
+        emitsThrough(
+          predicate<AllocationState>(
+            (s) => s is AllocationLoaded && !s.isRefreshing,
+          ),
+        ),
+      ]),
+    );
+  });
+
   test('emits AllocationError when a backing stream fails', () async {
     final txRepo = MockTransactionRepository();
     final assetRepo = MockAssetRepository();
@@ -188,6 +234,11 @@ void main() {
     when(classRepo.watchAll)
         .thenAnswer((_) => const Stream<List<AssetClass>>.empty());
     stubNetworkEmpty();
+    final marketCache = MockMarketCacheStore();
+    when(() => marketCache.lastFxRate(Currency.usd, Currency.brl))
+        .thenAnswer((_) async => null);
+    when(marketCache.allIndexSeries)
+        .thenAnswer((_) async => <EconomicIndex, List<IndexPoint>>{});
 
     final cubit = AllocationCubit(
       txRepo,
@@ -199,6 +250,7 @@ void main() {
       fxDataSource,
       const ValuationService(),
       indexDataSource,
+      marketCache,
       const FakeIdGenerator(),
     );
     addTearDown(cubit.close);

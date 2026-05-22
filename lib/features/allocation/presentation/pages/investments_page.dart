@@ -55,7 +55,7 @@ class _InvestmentsView extends StatelessWidget {
                 icon: FontAwesomeIcons.arrowsRotate,
                 tooltip: t.allocation.refresh,
                 busy: refreshing,
-                onPressed: () => context.read<AllocationCubit>().refresh(),
+                onPressed: () => context.read<AllocationCubit>().refresh(force: true),
               );
             },
           ),
@@ -77,7 +77,7 @@ class _InvestmentsView extends StatelessWidget {
             AllocationLoading() => const LoadingShimmerList(itemHeight: 96),
             AllocationError() => ErrorView(
                 message: t.allocation.loadError,
-                onRetry: () => context.read<AllocationCubit>().refresh(),
+                onRetry: () => context.read<AllocationCubit>().refresh(force: true),
               ),
             AllocationLoaded() => _LoadedView(state: state),
           };
@@ -103,7 +103,7 @@ class _LoadedView extends StatelessWidget {
 
     final colors = context.appColors;
     return RefreshIndicator(
-      onRefresh: () => context.read<AllocationCubit>().refresh(),
+      onRefresh: () => context.read<AllocationCubit>().refresh(force: true),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
         children: [

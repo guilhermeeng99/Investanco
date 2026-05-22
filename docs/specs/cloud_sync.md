@@ -17,8 +17,10 @@ reflected. Mirrors the reference project `financo`. Not to be confused with
 
 Mirrored (user-owned): `institutions`, `assets`, `transactions`, `snapshots`,
 `asset_classes` (allocation classes — see `allocation.md`).
-Not mirrored: `quotes` (derived cache, refreshed from market APIs) and `settings`
-(device-local). Both are preserved across an authoritative sync.
+Not mirrored: `quotes`, `fx_rates`, `index_points` (derived market-data caches,
+refreshed from public APIs — see `quotes.md`) and `settings` (device-local). All
+are preserved across an authoritative sync; the derived caches are dropped only by
+"clear my data" / sign-out (`clearUserData`).
 
 ## Firestore layout
 
@@ -85,8 +87,8 @@ Authoritative pull, `sync(userId)`:
 
 1. Fetch every mirrored collection from Firestore.
 2. `replaceMirroredData`: in one transaction, delete the local mirrored tables
-   (children before parents) and re-insert the fetched rows. `quotes` and
-   `settings` are left untouched.
+   (children before parents) and re-insert the fetched rows. The derived caches
+   (`quotes`, `fx_rates`, `index_points`) and `settings` are left untouched.
 
 The local cache ends identical to the cloud. Deletes propagate for free (a row
 absent from Firestore is absent locally after the rebuild); no tombstones needed.

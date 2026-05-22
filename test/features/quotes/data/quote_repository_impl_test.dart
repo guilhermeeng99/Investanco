@@ -48,4 +48,20 @@ void main() {
       isEmpty,
     );
   });
+
+  test('lastFetchedAt returns the newest fetchedAt among the given ids',
+      () async {
+    final repository = QuoteRepositoryImpl(db, [
+      FakeQuoteDataSource([
+        quoteFactory(assetId: 'a1', fetchedAt: DateTime(2026, 5, 1)),
+        quoteFactory(assetId: 'a2', fetchedAt: DateTime(2026, 5, 10)),
+      ]),
+    ]);
+    await repository.refresh([assetFactory()]);
+
+    expect(await repository.lastFetchedAt(['a1', 'a2']), DateTime(2026, 5, 10));
+    expect(await repository.lastFetchedAt(['a1']), DateTime(2026, 5, 1));
+    expect(await repository.lastFetchedAt(['nope']), isNull);
+    expect(await repository.lastFetchedAt([]), isNull);
+  });
 }

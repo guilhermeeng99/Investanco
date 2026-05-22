@@ -212,6 +212,45 @@ class AssetClasses extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// Persisted FX-rate cache (e.g. USD→BRL). Survives restarts so the app can
+/// consolidate foreign holdings to base from the last known rate on the first
+/// frame, instead of excluding them until a network refresh lands. A derived
+/// cache like [Quotes] — not mirrored to Firestore. See `docs/specs/quotes.md`.
+@DataClassName('FxRateRow')
+class FxRates extends Table {
+  /// Conversion pair key, `"${from.code}->${to.code}"` (e.g. `USD->BRL`).
+  TextColumn get pair => text()();
+
+  /// Multiplier converting `from` into `to`.
+  RealColumn get rate => real()();
+
+  /// When we cached it.
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {pair};
+}
+
+/// Persisted economic-index observations (CDI/Selic/IPCA), one row per
+/// (index, date). Survives restarts so fixed income accrues from the last known
+/// series on the first frame instead of showing cost until a network refresh
+/// lands. A derived cache like [Quotes] — not mirrored to Firestore. See
+/// `docs/specs/quotes.md`.
+@DataClassName('IndexPointRow')
+class IndexPoints extends Table {
+  /// `EconomicIndex` name (`cdi`/`selic`/`ipca`).
+  TextColumn get index => text()();
+
+  /// Observation date.
+  DateTimeColumn get date => dateTime()();
+
+  /// Period rate in percent, exactly as published.
+  RealColumn get rate => real()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {index, date};
+}
+
 @DriftDatabase(
   tables: [
     Institutions,
@@ -221,6 +260,8 @@ class AssetClasses extends Table {
     Snapshots,
     Settings,
     AssetClasses,
+    FxRates,
+    IndexPoints,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -239,7 +280,7 @@ class AppDatabase extends _$AppDatabase {
         );
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -257,6 +298,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 7) await m.addColumn(snapshots, snapshots.byInstitutionJson);
           // v8 adds user-defined allocation classes (see allocation.md).
           if (from < 8) await m.createTable(assetClasses);
+          // v9 persists the FX + economic-index caches so a cold start values
+          // foreign holdings and fixed income from last-known data instead of
+          // excluding/zeroing them until a refresh lands (see quotes.md).
+          if (from < 9) {
+            await m.createTable(fxRates);
+            await m.createTable(indexPoints);
+          }
         },
       );
 
@@ -266,6 +314,8 @@ class AppDatabase extends _$AppDatabase {
   Future<void> clearUserData() => transaction(() async {
         await delete(transactions).go();
         await delete(quotes).go();
+        await delete(fxRates).go();
+        await delete(indexPoints).go();
         await delete(snapshots).go();
         await delete(assetClasses).go();
         await delete(assets).go();

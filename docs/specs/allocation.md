@@ -91,7 +91,7 @@ abstract class AssetClassRepository {
 ```
 
 Firestore-mirrored (`asset_classes` collection), Drift-cached, write-through like
-the other repos. Drift table `AssetClasses` (schemaVersion 8). The asset→class link
+the other repos. Drift table `AssetClasses` (added in schemaVersion 8). The asset→class link
 lives in `assets.metadata` (no Assets schema change). Deleting a class leaves its
 assets pointing at a missing id → they fall back to **não alocado** automatically.
 
@@ -115,9 +115,14 @@ AllocationLoaded(overview, classes, assets, isRefreshing)
 AllocationError()
 ```
 
-`refresh()` fetches fresh quotes/FX/indices then recomputes. `createClass` /
-`saveClass` / `deleteClass` manage classes; the asset→class link is written by the
-asset form (assets feature) via `assets.metadata`.
+On creation the cubit **warm-starts** FX + index series from the durable
+`MarketCacheStore`, so a reopened app values foreign holdings + fixed income from
+last-known data on the first frame. `refresh({force})` fetches fresh
+quotes/FX/indices then recomputes, but skips the network when the held quotes are
+within `quoteFreshness`; manual refresh / pull-to-refresh pass `force: true` (see
+`quotes.md` rules 6–7). `createClass` / `saveClass` / `deleteClass` manage
+classes; the asset→class link is written by the asset form (assets feature) via
+`assets.metadata`.
 
 ## Edge cases
 

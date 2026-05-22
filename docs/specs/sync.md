@@ -24,8 +24,16 @@ writing the daily snapshot.
 6. `_writeSnapshot()` — upsert today's snapshot when at least one position is
    fresh-priced (`snapshots.md`).
 
-Triggers that exist: first dashboard load (auto, once) + manual pull-to-refresh.
-The UI always renders cached data first; refresh never blanks the screen.
+Triggers that exist: first screen load (auto, once per cubit) + manual
+pull-to-refresh / refresh button (`force: true`). The UI always renders cached
+data first; refresh never blanks the screen.
+
+Two refinements keep cold start correct and avoid double work (see `quotes.md`
+rules 6–7): each cubit **warm-starts** FX + index series from the durable
+`MarketCacheStore` so a reopened app values everything from last-known data on
+the first frame; and the auto-refresh is **skipped** when the held quotes are
+fresher than `quoteFreshness` (15 min), so the dashboard and allocation screens
+don't both re-fetch. `force` (manual refresh) always fetches.
 
 ## Deferred design (future `SyncBloc`)
 

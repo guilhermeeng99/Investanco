@@ -16,6 +16,8 @@ import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
+import 'package:investanco/features/quotes/domain/market_cache_store.dart';
+import 'package:investanco/features/quotes/domain/quote_freshness.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
@@ -37,9 +39,11 @@ class AllocationCubit extends Cubit<AllocationState> {
     this._fxDataSource,
     this._valuationService,
     this._indexDataSource,
+    this._marketCacheStore,
     this._idGenerator, [
     this._inputsBuilder = const PortfolioInputsBuilder(),
   ]) : super(const AllocationLoading()) {
+    unawaited(_warmStart());
     _transactionSub = _transactionRepository.watchAll().listen(
       (value) {
         _transactions = value;
@@ -72,6 +76,7 @@ class AllocationCubit extends Cubit<AllocationState> {
   final FxDataSource _fxDataSource;
   final ValuationService _valuationService;
   final IndexDataSource _indexDataSource;
+  final MarketCacheStore _marketCacheStore;
   final IdGenerator _idGenerator;
   final PortfolioInputsBuilder _inputsBuilder;
 
@@ -119,31 +124,64 @@ class AllocationCubit extends Cubit<AllocationState> {
   Future<Either<Failure, Unit>> deleteClass(String id) =>
       _assetClassRepository.delete(id);
 
-  /// Fetches fresh quotes, FX and indices, then recomputes.
-  Future<void> refresh() async {
+  /// Seeds FX + index series from the durable cache so the first paint already
+  /// consolidates foreign holdings and accrues fixed income from last-known
+  /// data — a closed-then-reopened app shows the previous values instead of a
+  /// wrong total until the network responds. See `docs/specs/quotes.md`.
+  Future<void> _warmStart() async {
+    final fx = await _marketCacheStore.lastFxRate(Currency.usd, Currency.brl);
+    if (fx != null) {
+      _fxUsdToBrl = fx;
+      _fxLoaded = true;
+    }
+    _indexSeries.addAll(await _marketCacheStore.allIndexSeries());
+    await _recompute();
+  }
+
+  /// Fetches fresh quotes, FX and indices, persists them, then recomputes.
+  /// Skips the network when the cached quotes are still fresh, unless [force]
+  /// (manual refresh / pull-to-refresh), so opening this screen right after the
+  /// dashboard refreshed does not re-fetch.
+  Future<void> refresh({bool force = false}) async {
     final assets = _assets;
     final transactions = _transactions;
     if (assets == null || transactions == null) return;
-
-    _refreshing = true;
-    await _recompute();
 
     final holdings = _calculator.derive(transactions);
     final heldIds = _inputsBuilder.heldAssetIds(holdings, assets, transactions);
     final heldAssets = assets.where((a) => heldIds.contains(a.id)).toList();
 
-    await _quoteRepository.refresh(heldAssets);
-    await _refreshIndices(heldAssets, transactions);
-    if (heldAssets.any((a) => a.currency != Currency.brl)) {
-      final fx = await _fxDataSource.rate(Currency.usd, Currency.brl);
-      fx.fold((_) {}, (rate) {
-        _fxUsdToBrl = rate;
-        _fxLoaded = true;
-      });
-    }
+    if (!force && await _quotesAreFresh(heldIds)) return;
 
-    _refreshing = false;
+    _refreshing = true;
     await _recompute();
+    try {
+      await _quoteRepository.refresh(heldAssets);
+      await _refreshIndices(heldAssets, transactions);
+      if (heldAssets.any((a) => a.currency != Currency.brl)) {
+        final fx = await _fxDataSource.rate(Currency.usd, Currency.brl);
+        await fx.fold((_) async {}, (rate) async {
+          _fxUsdToBrl = rate;
+          _fxLoaded = true;
+          await _marketCacheStore.saveFxRate(Currency.usd, Currency.brl, rate);
+        });
+      }
+    } on Object catch (_) {
+      // Best-effort: a network/persist failure keeps the cached values on
+      // screen and must never leave the refresh indicator spinning forever.
+    } finally {
+      _refreshing = false;
+      await _recompute();
+    }
+  }
+
+  /// True when the held assets' newest cached quote is within [quoteFreshness]
+  /// (or nothing is held). Shares the freshness signal with the dashboard via
+  /// `quotes.fetchedAt`, so the two screens don't double-fetch.
+  Future<bool> _quotesAreFresh(Set<String> heldIds) async {
+    if (heldIds.isEmpty) return true;
+    final last = await _quoteRepository.lastFetchedAt(heldIds.toList());
+    return last != null && DateTime.now().difference(last) < quoteFreshness;
   }
 
   Future<void> _recompute() async {
@@ -203,7 +241,10 @@ class AllocationCubit extends Cubit<AllocationState> {
         _inputsBuilder.earliestIndexDates(heldAssets, transactions);
     for (final entry in earliestByIndex.entries) {
       final result = await _indexDataSource.series(entry.key, entry.value);
-      result.fold((_) {}, (points) => _indexSeries[entry.key] = points);
+      await result.fold((_) async {}, (points) async {
+        _indexSeries[entry.key] = points;
+        await _marketCacheStore.saveIndexSeries(entry.key, points);
+      });
     }
   }
 

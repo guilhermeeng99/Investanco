@@ -22,6 +22,7 @@ import 'package:investanco/features/quotes/domain/datasources/index_data_source.
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
+import 'package:investanco/features/quotes/domain/market_cache_store.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
@@ -61,6 +62,8 @@ class MockFxDataSource extends Mock implements FxDataSource {}
 class MockIndexDataSource extends Mock implements IndexDataSource {}
 
 class MockQuoteDataSource extends Mock implements QuoteDataSource {}
+
+class MockMarketCacheStore extends Mock implements MarketCacheStore {}
 
 // ── Services / blocs / cubits ───────────────────────────────────────────────
 class MockSyncService extends Mock implements SyncService {}

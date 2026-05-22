@@ -36,8 +36,13 @@ via `PortfolioValuation.forInstitution`, which re-aggregates totals/allocation f
 the matching holdings. Snapshots are always written from the full `portfolio`.
 
 Rules:
-1. On first stream data → emit `Loaded` from cache immediately, then auto-trigger one
-   background `refresh()` (guarded by `_autoRefreshed`).
+1. On creation the cubit **warm-starts** FX + index series from the durable
+   `MarketCacheStore`, then on first stream data emits `Loaded` from cache
+   immediately and auto-triggers one background `refresh()` (guarded by
+   `_autoRefreshed`). `refresh({force})` skips the network when the held quotes
+   are within `quoteFreshness`; the refresh button / pull-to-refresh pass
+   `force: true`. So a reopened app shows the previous values at once, and the
+   dashboard + allocation screens don't both re-fetch (see `quotes.md` rules 6–7).
 2. During refresh, keep `Loaded` with `isRefreshing = true` (never blank the screen).
 3. A failing refresh keeps the last `Loaded` (cached data stays on screen).
 4. The allocation by-class / by-institution toggle is **presentation-only**: both

@@ -52,6 +52,16 @@ class QuoteRepositoryImpl implements QuoteRepository {
     return Right(collected);
   }
 
+  @override
+  Future<DateTime?> lastFetchedAt(List<String> assetIds) async {
+    if (assetIds.isEmpty) return null;
+    final rows = await (_db.select(_db.quotes)
+          ..where((t) => t.assetId.isIn(assetIds)))
+        .get();
+    if (rows.isEmpty) return null;
+    return rows.map((r) => r.fetchedAt).reduce((a, b) => a.isAfter(b) ? a : b);
+  }
+
   Future<void> _cache(List<Quote> quotes) async {
     await _db.batch((batch) {
       for (final quote in quotes) {
