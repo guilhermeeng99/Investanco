@@ -18,28 +18,12 @@ import 'package:investanco/features/assets/presentation/widgets/asset_form_sheet
 import 'package:investanco/features/portfolio_import/presentation/widgets/assets_csv_import_dialog.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
-/// Manage assets (PETR4, AAPL, …). See `docs/specs/assets.md`.
-class AssetsPage extends StatelessWidget {
-  /// Creates the page.
-  const AssetsPage({super.key});
-
-  /// Route path.
-  static const String routePath = '/assets';
-
-  /// Route name.
-  static const String routeName = 'assets';
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider<AssetsCubit>(
-      create: (_) => sl<AssetsCubit>(),
-      child: const _AssetsView(),
-    );
-  }
-}
-
-class _AssetsView extends StatelessWidget {
-  const _AssetsView();
+/// The Assets list body — embeddable (no Scaffold) so the unified records tab can
+/// host it in a `PageView`. Expects an [AssetsCubit] above it in the tree (the
+/// records page provides one). See `docs/specs/assets.md` and `records.md`.
+class AssetsView extends StatelessWidget {
+  /// Creates the view.
+  const AssetsView({super.key});
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -57,36 +41,27 @@ class _AssetsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<AssetsCubit>();
-    return Scaffold(
-      appBar: InvestancoAppBar(title: t.assets.title),
-      floatingActionButton: ImportAddFab(
-        heroPrefix: 'assets',
-        addTooltip: t.assets.add,
-        importTooltip: t.importAssets.title,
-        onAdd: () => AssetFormSheet.show(context, cubit),
-        onImport: () => showAssetsCsvImportDialog(context),
-      ),
-      body: StreamBuilder<List<AssetClass>>(
-        stream: sl<AssetClassRepository>().watchAll(),
-        builder: (context, snapshot) {
-          final classesById = {
-            for (final c in snapshot.data ?? const <AssetClass>[]) c.id: c,
-          };
-          return BlocBuilder<AssetsCubit, AssetsState>(
-            builder: (context, state) {
-              return switch (state) {
-                AssetsLoading() => const LoadingShimmerList(),
-                AssetsError() => ErrorView(
+    return StreamBuilder<List<AssetClass>>(
+      stream: sl<AssetClassRepository>().watchAll(),
+      builder: (context, snapshot) {
+        final classesById = {
+          for (final c in snapshot.data ?? const <AssetClass>[]) c.id: c,
+        };
+        return BlocBuilder<AssetsCubit, AssetsState>(
+          builder: (context, state) {
+            return switch (state) {
+              AssetsLoading() => const LoadingShimmerList(),
+              AssetsError() => ErrorView(
                   message: t.assets.saveError,
                 ),
-                AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
+              AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
                   icon: FontAwesomeIcons.coins,
                   title: t.assets.title,
                   message: t.assets.empty,
                   actionLabel: t.assets.add,
                   onAction: () => AssetFormSheet.show(context, cubit),
                 ),
-                AssetsLoaded(:final assets) => EntityListView(
+              AssetsLoaded(:final assets) => EntityListView(
                   itemCount: assets.length,
                   itemBuilder: (context, index) => _AssetTile(
                     asset: assets[index],
@@ -96,15 +71,33 @@ class _AssetsView extends StatelessWidget {
                       cubit,
                       existing: assets[index],
                     ),
-                    onDelete: () =>
-                        _confirmDelete(context, cubit, assets[index]),
+                    onDelete: () => _confirmDelete(context, cubit, assets[index]),
                   ),
                 ),
-              };
-            },
-          );
-        },
-      ),
+            };
+          },
+        );
+      },
+    );
+  }
+}
+
+/// The Assets add/import FAB stack — split from [AssetsView] so the records tab
+/// can mount it in `Scaffold.floatingActionButton`. Expects an [AssetsCubit]
+/// above it in the tree.
+class AssetsFab extends StatelessWidget {
+  /// Creates the FAB stack.
+  const AssetsFab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<AssetsCubit>();
+    return ImportAddFab(
+      heroPrefix: 'assets',
+      addTooltip: t.assets.add,
+      importTooltip: t.importAssets.title,
+      onAdd: () => AssetFormSheet.show(context, cubit),
+      onImport: () => showAssetsCsvImportDialog(context),
     );
   }
 }

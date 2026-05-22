@@ -51,18 +51,11 @@ class _InvestmentsView extends StatelessWidget {
           BlocBuilder<AllocationCubit, AllocationState>(
             builder: (context, state) {
               final refreshing = state is AllocationLoaded && state.isRefreshing;
-              return IconButton(
+              return InvestancoSoftIconButton(
+                icon: FontAwesomeIcons.arrowsRotate,
                 tooltip: t.allocation.refresh,
-                onPressed: refreshing
-                    ? null
-                    : () => context.read<AllocationCubit>().refresh(),
-                icon: refreshing
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
+                busy: refreshing,
+                onPressed: () => context.read<AllocationCubit>().refresh(),
               );
             },
           ),

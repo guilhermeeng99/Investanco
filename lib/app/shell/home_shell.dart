@@ -31,7 +31,7 @@ class HomeShell extends StatelessWidget {
   static const double _wideBreakpoint = 900;
 
   /// Index of the profile branch (last shell branch).
-  static const int profileIndex = 4;
+  static const int profileIndex = 3;
 
   void _goBranch(int index) {
     navigationShell.goBranch(
@@ -75,12 +75,13 @@ class _NavSpec {
   final String label;
 }
 
-/// The four primary sections (indices 0–3). Profile (index 4) is rendered
-/// separately — as a user tile in the rail, a user-icon pill in the bottom bar.
-/// Institutions is reached from Profile, not a primary tab (see `app_router.dart`).
+/// The three primary sections (indices 0–2), in tab order: Investimentos (the
+/// landing tab), Carteira, then the unified Registros tab (Assets + Transactions,
+/// see `records.md`). Profile (index 3) is rendered separately — a user tile in
+/// the rail, a user-icon pill in the bottom bar. Institutions is reached from
+/// Profile, not a primary tab (see `app_router.dart`).
 List<_NavSpec> _mainDestinations() => [
-      _NavSpec(FontAwesomeIcons.chartPie, t.nav.dashboard),
-      _NavSpec(FontAwesomeIcons.coins, t.nav.assets),
-      _NavSpec(FontAwesomeIcons.rightLeft, t.nav.transactions),
       _NavSpec(FontAwesomeIcons.scaleBalanced, t.nav.allocation),
+      _NavSpec(FontAwesomeIcons.chartPie, t.nav.dashboard),
+      _NavSpec(FontAwesomeIcons.layerGroup, t.nav.records),
     ];

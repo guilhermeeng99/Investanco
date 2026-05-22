@@ -8,7 +8,8 @@ mirrors it to the user's Firestore (`cloud_sync.md`).
 ## Goal
 
 Firebase Auth + Google Sign-In as the entry gate, mirroring financo's flow:
-splash → (signed out) login carousel → (signed in) sync → dashboard.
+splash → (signed out) login carousel → (signed in) sync → Investimentos (the
+landing tab).
 
 ## Entity (`AuthUser`)
 

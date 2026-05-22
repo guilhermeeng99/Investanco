@@ -7,13 +7,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:investanco/core/error/failure_message.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/features/allocation/presentation/pages/investments_page.dart';
 import 'package:investanco/features/auth/presentation/pages/login_page.dart';
-import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:investanco/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
-/// Splash + auth gate. Runs [StartupCubit.initialize] on mount and routes to the
-/// dashboard (signed in + synced) or the login carousel (signed out). See
+/// Splash + auth gate. Runs [StartupCubit.initialize] on mount and routes to
+/// Investimentos (signed in + synced) or the login carousel (signed out). See
 /// `docs/specs/startup.md`.
 class StartupPage extends StatefulWidget {
   /// Creates the page.
@@ -39,7 +39,7 @@ class _StartupPageState extends State<StartupPage> {
     return BlocListener<StartupCubit, StartupState>(
       listener: (context, state) {
         if (state is StartupAuthenticated) {
-          context.go(DashboardPage.routePath);
+          context.go(InvestmentsPage.routePath);
         } else if (state is StartupUnauthenticated) {
           context.go(LoginPage.routePath);
         }

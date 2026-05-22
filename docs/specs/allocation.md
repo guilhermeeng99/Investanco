@@ -128,7 +128,8 @@ asset form (assets feature) via `assets.metadata`.
 
 ## UI
 
-- **Investimentos tab** (nav): donut (by class) + class list (icon, "X% de Y%",
+- **Investimentos tab** (nav; the app's landing tab — see `records.md`): donut
+  (by class) + class list (icon, "X% de Y%",
   value, progress bar current/target, "R$ Z abaixo/acima") + Rebalanceamento card
   (allocate-pending line + per-class buy/sell rows). FAB adds a class.
 - **Class detail** (nested under the tab, so the nav shell + a back chip stay):
@@ -136,7 +137,7 @@ asset form (assets feature) via `assets.metadata`.
   value, "% de %", suggested aporte/reduzir; tap to edit the asset) + "Adicionar
   ativo" (opens the asset form pre-linked to this class) + edit/delete class.
 - **Class form**: name, target %, icon, color.
-- **Asset form** (assets tab): adds an allocation-class picker + a target-% field,
+- **Asset form** (Registros tab → Ativos): adds an allocation-class picker + a target-% field,
   so the link is set at asset creation/edit.
 
 Above/below/on-target colors: under → `warning`, over → `negative`, on → `positive`.

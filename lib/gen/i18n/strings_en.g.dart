@@ -112,6 +112,7 @@ class _TranslationsNavEn implements TranslationsNavPt {
 	@override String get assets => 'Assets';
 	@override String get transactions => 'Transactions';
 	@override String get allocation => 'Investments';
+	@override String get records => 'Records';
 	@override String get profile => 'Profile';
 }
 
@@ -528,6 +529,7 @@ extension on TranslationsEn {
 			'nav.assets' => 'Assets',
 			'nav.transactions' => 'Transactions',
 			'nav.allocation' => 'Investments',
+			'nav.records' => 'Records',
 			'nav.profile' => 'Profile',
 			'allocation.heroTitle' => 'INVESTED NET WORTH',
 			'allocation.loadError' => 'Could not load the allocation.',

@@ -29,6 +29,7 @@
     "assets": "Assets",
     "transactions": "Transactions",
     "allocation": "Investments",
+    "records": "Records",
     "profile": "Profile"
   },
   "allocation": {

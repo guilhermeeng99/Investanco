@@ -22,6 +22,7 @@ export 'investanco_icon_disc.dart';
 export 'investanco_picker_field.dart';
 export 'investanco_pill_toggle.dart';
 export 'investanco_section_header.dart';
+export 'investanco_soft_icon_button.dart';
 export 'investanco_submit_bar.dart';
 export 'investanco_text_field.dart';
 export 'lifted_fab.dart';

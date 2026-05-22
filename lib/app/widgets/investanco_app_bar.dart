@@ -79,7 +79,9 @@ class InvestancoAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ],
       ),
-      actions: actions,
+      // Inset trailing actions from the screen edge so they align with the
+      // content gutter instead of hugging the corner on wide layouts.
+      actions: actions == null ? null : [...actions!, const SizedBox(width: 12)],
     );
   }
 }

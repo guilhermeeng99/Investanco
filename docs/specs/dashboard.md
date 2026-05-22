@@ -54,8 +54,9 @@ Rules:
 1. Values come from `ValuationService` (`valuation.md`); the dashboard never does math.
 2. Empty portfolio → onboarding empty state whose CTA targets the next missing
    step via `DashboardLoaded.nextSetupStep`: no institution → "add institution"
-   (pushes Institutions); has institutions but no asset → "new asset" (Assets
-   tab); has both but no open position → "new transaction" (Transactions tab).
+   (pushes Institutions); has institutions but no asset → "new asset" (Registros
+   tab → Ativos, `/records?tab=assets`); has both but no open position → "new
+   transaction" (Registros tab → Lançamentos, `/records?tab=transactions`).
 3. Currency formatting via `formatCurrency()`; all labels via slang.
 
 ## Edge cases

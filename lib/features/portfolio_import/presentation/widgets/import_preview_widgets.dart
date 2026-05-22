@@ -215,7 +215,7 @@ class ImportNewBadge extends StatelessWidget {
   }
 }
 
-/// Circular error-tinted button to drop a row from the import.
+/// Error-tinted soft-square button to drop a row from the import.
 class ImportRemoveButton extends StatelessWidget {
   /// Creates the remove button.
   const ImportRemoveButton({required this.onPressed, super.key});
@@ -225,28 +225,13 @@ class ImportRemoveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Tooltip(
-      message: t.importCsv.previewRemoveRow,
-      child: Material(
-        color: colors.error.withValues(alpha: 0.1),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(
-              child: FaIcon(
-                FontAwesomeIcons.trashCan,
-                size: 13,
-                color: colors.error,
-              ),
-            ),
-          ),
-        ),
-      ),
+    return InvestancoSoftIconButton(
+      icon: FontAwesomeIcons.trashCan,
+      tooltip: t.importCsv.previewRemoveRow,
+      color: context.appColors.error,
+      onPressed: onPressed,
+      size: 36,
+      iconSize: 13,
     );
   }
 }

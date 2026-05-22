@@ -163,6 +163,9 @@ class TranslationsNavPt {
 	/// pt: 'Investimentos'
 	String get allocation => 'Investimentos';
 
+	/// pt: 'Registros'
+	String get records => 'Registros';
+
 	/// pt: 'Perfil'
 	String get profile => 'Perfil';
 }
@@ -1032,6 +1035,7 @@ extension on Translations {
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
 			'nav.allocation' => 'Investimentos',
+			'nav.records' => 'Registros',
 			'nav.profile' => 'Perfil',
 			'allocation.heroTitle' => 'PATRIMÔNIO INVESTIDO',
 			'allocation.loadError' => 'Não foi possível carregar a alocação.',

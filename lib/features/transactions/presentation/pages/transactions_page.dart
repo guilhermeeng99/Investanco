@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/date_formatter.dart';
@@ -17,51 +16,63 @@ import 'package:investanco/features/transactions/presentation/transaction_visual
 import 'package:investanco/features/transactions/presentation/widgets/transaction_form_sheet.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
-/// Manage transactions (buy/sell/dividend). See `docs/specs/transactions.md`.
-class TransactionsPage extends StatelessWidget {
-  /// Creates the page.
-  const TransactionsPage({super.key});
+/// Opens the transaction form for create/edit. Shared by [TransactionsFab] (add)
+/// and the list tiles (edit); shows a snackbar when prerequisites (an asset and an
+/// institution) are missing instead of an unusable empty form.
+void openTransactionForm(
+  BuildContext context,
+  TransactionsCubit cubit,
+  TransactionsLoaded state, {
+  AssetTransaction? existing,
+}) {
+  if (state.assets.isEmpty || state.institutions.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.transactions.needPrereqs)),
+    );
+    return;
+  }
+  unawaited(
+    TransactionFormSheet.show(
+      context,
+      cubit,
+      assets: state.assets,
+      institutions: state.institutions,
+      existing: existing,
+    ),
+  );
+}
 
-  /// Route path.
-  static const String routePath = '/transactions';
-
-  /// Route name.
-  static const String routeName = 'transactions';
+/// The Transactions add/import FAB stack — split from [TransactionsView] so the
+/// records tab can mount it in `Scaffold.floatingActionButton`. Expects a
+/// [TransactionsCubit] above it in the tree.
+class TransactionsFab extends StatelessWidget {
+  /// Creates the FAB stack.
+  const TransactionsFab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<TransactionsCubit>(
-      create: (_) => sl<TransactionsCubit>(),
-      child: const _TransactionsView(),
+    final cubit = context.read<TransactionsCubit>();
+    return ImportAddFab(
+      heroPrefix: 'transactions',
+      addTooltip: t.transactions.add,
+      importTooltip: t.importTransactions.title,
+      onAdd: () {
+        final state = cubit.state;
+        if (state is TransactionsLoaded) {
+          openTransactionForm(context, cubit, state);
+        }
+      },
+      onImport: () => showTransactionsCsvImportDialog(context),
     );
   }
 }
 
-class _TransactionsView extends StatelessWidget {
-  const _TransactionsView();
-
-  void _openForm(
-    BuildContext context,
-    TransactionsCubit cubit,
-    TransactionsLoaded state, {
-    AssetTransaction? existing,
-  }) {
-    if (state.assets.isEmpty || state.institutions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.transactions.needPrereqs)),
-      );
-      return;
-    }
-    unawaited(
-      TransactionFormSheet.show(
-        context,
-        cubit,
-        assets: state.assets,
-        institutions: state.institutions,
-        existing: existing,
-      ),
-    );
-  }
+/// The Transactions list body — embeddable (no Scaffold) so the unified records
+/// tab can host it in a `PageView`. Expects a [TransactionsCubit] above it in the
+/// tree. See `docs/specs/transactions.md` and `records.md`.
+class TransactionsView extends StatelessWidget {
+  /// Creates the view.
+  const TransactionsView({super.key});
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -78,38 +89,26 @@ class _TransactionsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<TransactionsCubit>();
-    return Scaffold(
-      appBar: InvestancoAppBar(title: t.transactions.title),
-      floatingActionButton: ImportAddFab(
-        heroPrefix: 'transactions',
-        addTooltip: t.transactions.add,
-        importTooltip: t.importTransactions.title,
-        onAdd: () {
-          final state = cubit.state;
-          if (state is TransactionsLoaded) _openForm(context, cubit, state);
-        },
-        onImport: () => showTransactionsCsvImportDialog(context),
-      ),
-      body: BlocBuilder<TransactionsCubit, TransactionsState>(
-        builder: (context, state) {
-          return switch (state) {
-            TransactionsLoading() => const LoadingShimmerList(),
-            TransactionsError() => ErrorView(
-                message: t.transactions.saveError,
-              ),
-            TransactionsLoaded(:final transactions) when transactions.isEmpty =>
-              _EmptyState(
-                onAdd: () => _openForm(context, cubit, state),
-              ),
-            TransactionsLoaded() => _LoadedBody(
-                state: state,
-                onFilter: cubit.setInstitutionFilter,
-                onTap: (tx) => _openForm(context, cubit, state, existing: tx),
-                onDelete: (id) => _confirmDelete(context, cubit, id),
-              ),
-          };
-        },
-      ),
+    return BlocBuilder<TransactionsCubit, TransactionsState>(
+      builder: (context, state) {
+        return switch (state) {
+          TransactionsLoading() => const LoadingShimmerList(),
+          TransactionsError() => ErrorView(
+              message: t.transactions.saveError,
+            ),
+          TransactionsLoaded(:final transactions) when transactions.isEmpty =>
+            _EmptyState(
+              onAdd: () => openTransactionForm(context, cubit, state),
+            ),
+          TransactionsLoaded() => _LoadedBody(
+              state: state,
+              onFilter: cubit.setInstitutionFilter,
+              onTap: (tx) =>
+                  openTransactionForm(context, cubit, state, existing: tx),
+              onDelete: (id) => _confirmDelete(context, cubit, id),
+            ),
+        };
+      },
     );
   }
 }
@@ -313,6 +312,7 @@ class _TransactionTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SignedAmount(money: signed, fontSize: 14),
+          const SizedBox(width: 8),
           EntityDeleteButton(onPressed: onDelete),
         ],
       ),

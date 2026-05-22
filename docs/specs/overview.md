@@ -89,8 +89,8 @@ Institution 1───* Transaction *───1 Asset
 
 Detailed entity contracts live in each feature spec:
 `institutions.md`, `assets.md`, `transactions.md`, `holdings.md`,
-`quotes.md`, `valuation.md`, `dashboard.md`, `snapshots.md`, `sync.md`,
-`profile.md`, `auth.md`, `startup.md`.
+`quotes.md`, `valuation.md`, `dashboard.md`, `records.md`, `snapshots.md`,
+`sync.md`, `profile.md`, `auth.md`, `startup.md`.
 
 ---
 

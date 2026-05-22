@@ -26,7 +26,8 @@ copy, so the page maps it to a localized label (`t.startup.*`) and tests assert
 the step, not the wording.
 
 Rules:
-1. `StartupAuthenticated` → the page routes to `/dashboard`.
+1. `StartupAuthenticated` → the page routes to `/allocation` (the Investimentos
+   landing tab; see `records.md` for the full tab order).
 2. `StartupUnauthenticated` → the page routes to `/login`.
 3. The cubit blocks on `SyncService.sync(userId)` before `StartupAuthenticated`
    (financo-faithful: data is mirrored before the user enters). A sync failure
@@ -41,4 +42,4 @@ Rules:
   keeps the user on `/startup`.
 - Sync fails (offline / permission) → `StartupError`; local Drift data is intact,
   retry re-runs the sync.
-- Authenticated cold start → `/startup` runs once, syncs, then `/dashboard`.
+- Authenticated cold start → `/startup` runs once, syncs, then `/allocation`.

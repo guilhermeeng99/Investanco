@@ -45,18 +45,11 @@ class _DashboardView extends StatelessWidget {
           BlocBuilder<DashboardCubit, DashboardState>(
             builder: (context, state) {
               final refreshing = state is DashboardLoaded && state.isRefreshing;
-              return IconButton(
+              return InvestancoSoftIconButton(
+                icon: FontAwesomeIcons.arrowsRotate,
                 tooltip: t.dashboard.refresh,
-                onPressed: refreshing
-                    ? null
-                    : () => context.read<DashboardCubit>().refresh(),
-                icon: refreshing
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
+                busy: refreshing,
+                onPressed: () => context.read<DashboardCubit>().refresh(),
               );
             },
           ),
@@ -212,11 +205,11 @@ class _EmptyState extends StatelessWidget {
         ),
       PortfolioSetupStep.asset => _cta(
           t.assets.add,
-          () => context.go('/assets'),
+          () => context.go('/records?tab=assets'),
         ),
       PortfolioSetupStep.transaction => _cta(
           t.transactions.add,
-          () => context.go('/transactions'),
+          () => context.go('/records?tab=transactions'),
         ),
     };
   }

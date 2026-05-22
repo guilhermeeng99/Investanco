@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:investanco/app/shell/home_shell.dart';
 import 'package:investanco/features/allocation/presentation/pages/asset_class_detail_page.dart';
 import 'package:investanco/features/allocation/presentation/pages/investments_page.dart';
-import 'package:investanco/features/assets/presentation/pages/assets_page.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/auth/presentation/pages/login_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -15,8 +14,8 @@ import 'package:investanco/features/portfolio_import/domain/transaction_import_m
 import 'package:investanco/features/portfolio_import/presentation/pages/assets_import_preview_page.dart';
 import 'package:investanco/features/portfolio_import/presentation/pages/transactions_import_preview_page.dart';
 import 'package:investanco/features/profile/presentation/pages/profile_page.dart';
+import 'package:investanco/features/records/presentation/pages/records_page.dart';
 import 'package:investanco/features/startup/presentation/pages/startup_page.dart';
-import 'package:investanco/features/transactions/presentation/pages/transactions_page.dart';
 
 /// Declarative route table gated behind Google sign-in. A redirect (driven by
 /// [AuthBloc]) keeps unauthenticated users on the startup/login screens; once
@@ -78,34 +77,15 @@ class AppRouter {
           );
         },
       ),
+      // Tab order (must match `_mainDestinations()` in `home_shell.dart`):
+      // Investimentos is the landing tab (cold start → `/allocation`, see
+      // `startup.md`); Carteira is second; the unified Registros tab merges the
+      // former Assets + Transactions tabs (see `records.md`).
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
         branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: DashboardPage.routePath,
-                builder: (context, state) => const DashboardPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AssetsPage.routePath,
-                builder: (context, state) => const AssetsPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: TransactionsPage.routePath,
-                builder: (context, state) => const TransactionsPage(),
-              ),
-            ],
-          ),
+          // 0 — Investimentos (allocation home + nested class detail).
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -127,6 +107,30 @@ class AppRouter {
               ),
             ],
           ),
+          // 1 — Carteira (consolidated portfolio).
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: DashboardPage.routePath,
+                builder: (context, state) => const DashboardPage(),
+              ),
+            ],
+          ),
+          // 2 — Registros (unified Assets + Transactions). The `tab` query param
+          // deep-links to a sub-view (dashboard onboarding CTAs use it).
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RecordsPage.routePath,
+                builder: (context, state) => RecordsPage(
+                  initialTab: recordsTabFromQuery(
+                    state.uri.queryParameters['tab'],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // 3 — Profile.
           StatefulShellBranch(
             routes: [
               GoRoute(
