@@ -41,21 +41,21 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
       });
 
   @override
-  Future<Either<Failure, Unit>> delete(String id) async {
-    try {
-      final referencing = await (_db.select(_db.transactions)
-            ..where((t) => t.institutionId.equals(id))
-            ..limit(1))
-          .get();
-      if (referencing.isNotEmpty) return const Left(InUseFailure());
-
-      await _mirror.delete(_collection, id);
-      await (_db.delete(_db.institutions)..where((t) => t.id.equals(id))).go();
-      return const Right(unit);
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  Future<Either<Failure, Unit>> delete(String id) =>
+      guardedDeleteIfUnreferenced(
+        isReferenced: () async {
+          final referencing = await (_db.select(_db.transactions)
+                ..where((t) => t.institutionId.equals(id))
+                ..limit(1))
+              .get();
+          return referencing.isNotEmpty;
+        },
+        delete: () async {
+          await _mirror.delete(_collection, id);
+          await (_db.delete(_db.institutions)..where((t) => t.id.equals(id)))
+              .go();
+        },
+      );
 
   Institution _toEntity(InstitutionRow row) {
     return Institution(

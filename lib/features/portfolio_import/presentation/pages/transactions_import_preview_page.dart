@@ -1,14 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/date_formatter.dart';
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/portfolio_import/domain/import_transactions_csv_usecase.dart';
-import 'package:investanco/features/portfolio_import/presentation/widgets/csv_import_dialog.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/csv_import_flow.dart';
 import 'package:investanco/features/portfolio_import/presentation/widgets/import_preview_widgets.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/transaction_labels.dart';
@@ -53,59 +51,29 @@ class _TransactionsImportPreviewPageState
 
   Future<void> _import() async {
     setState(() => _importing = true);
-    try {
-      final result = await sl<ImportTransactionsCsvUseCase>().importRows([
+    final popped = await commitImport(
+      context,
+      () => sl<ImportTransactionsCsvUseCase>().importRows([
         for (final r in _preview.rows) r.row,
-      ]);
-      if (!mounted) return;
-      result.fold(
-        (failure) {
-          setState(() => _importing = false);
-          unawaited(showCsvImportErrorDialog(context, failure.message));
-        },
-        (tally) => context.pop(tally),
-      );
-    } on Exception {
-      if (!mounted) return;
-      setState(() => _importing = false);
-      unawaited(showCsvImportErrorDialog(context, t.importCsv.genericError));
-    }
+      ]),
+    );
+    if (!popped && mounted) setState(() => _importing = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final isEmpty = _preview.isEmpty;
-    return PopScope(
-      canPop: !_importing,
-      child: Scaffold(
-        backgroundColor: colors.background,
-        appBar: InvestancoAppBar(
-          title: t.importTransactions.previewTitle,
-          subtitle: t.importTransactions.previewSubtitle,
-          showBack: true,
-        ),
-        body: Stack(
-          children: [
-            if (isEmpty)
-              EmptyState(
-                title: t.importCsv.previewEmptyTitle,
-                message: t.importCsv.previewEmpty,
-              )
-            else
-              _PreviewList(preview: _preview, onRemove: _removeRow),
-            if (_importing) const ImportingOverlay(),
-          ],
-        ),
-        bottomNavigationBar: InvestancoSubmitBar(
-          label: isEmpty
-              ? t.importCsv.previewNothingLeft
-              : t.importTransactions.submit(count: _preview.rows.length),
-          isLoading: _importing,
-          isEnabled: _preview.canImport,
-          onSubmit: _import,
-        ),
-      ),
+    return ImportPreviewScaffold(
+      title: t.importTransactions.previewTitle,
+      subtitle: t.importTransactions.previewSubtitle,
+      isEmpty: isEmpty,
+      isImporting: _importing,
+      canSubmit: _preview.canImport,
+      submitLabel: isEmpty
+          ? t.importCsv.previewNothingLeft
+          : t.importTransactions.submit(count: _preview.rows.length),
+      onSubmit: _import,
+      body: _PreviewList(preview: _preview, onRemove: _removeRow),
     );
   }
 }
@@ -342,9 +310,6 @@ class _TransactionRowTile extends StatelessWidget {
       return '${(row.amountMajor ?? 0).toStringAsFixed(2)}  ·  $date';
     }
     final price = row.unitPriceMajor.toStringAsFixed(2);
-    return '${_quantity(row.quantity)} × $price  ·  $date';
+    return '${formatTrimmedDouble(row.quantity)} × $price  ·  $date';
   }
-
-  String _quantity(double q) =>
-      q == q.roundToDouble() ? q.toInt().toString() : '$q';
 }

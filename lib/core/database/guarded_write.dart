@@ -17,3 +17,33 @@ Future<Either<Failure, Unit>> guardedWrite(
     return const Left(CacheFailure());
   }
 }
+
+/// Runs a local database [read], returning its value or a [CacheFailure] if it
+/// throws. The read counterpart to [guardedWrite] (same Exception-only policy).
+Future<Either<Failure, T>> guardedRead<T>(
+  Future<T> Function() read,
+) async {
+  try {
+    return Right(await read());
+  } on Exception {
+    return const Left(CacheFailure());
+  }
+}
+
+/// Deletes a parent row unless a child still references it: returns an
+/// [InUseFailure] (skipping the delete) when [isReferenced] resolves true, [unit]
+/// on success, or a [CacheFailure] if either step throws. Shared by the
+/// institution and asset repositories, whose deletes differ only in the
+/// referencing query.
+Future<Either<Failure, Unit>> guardedDeleteIfUnreferenced({
+  required Future<bool> Function() isReferenced,
+  required Future<void> Function() delete,
+}) async {
+  try {
+    if (await isReferenced()) return const Left(InUseFailure());
+    await delete();
+    return const Right(unit);
+  } on Exception {
+    return const Left(CacheFailure());
+  }
+}

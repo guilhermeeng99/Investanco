@@ -296,6 +296,7 @@ class _TranslationsProfileEn implements TranslationsProfilePt {
 	@override String get clearDataConfirmBody => 'All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.';
 	@override String get clearDataConfirmField => 'Type your email to confirm';
 	@override String get clearDataSuccess => 'Your data has been cleared.';
+	@override String get clearDataError => 'Couldn\'t clear your data. Please try again.';
 	@override String get version => 'Version';
 }
 
@@ -589,6 +590,7 @@ extension on TranslationsEn {
 			'profile.clearDataConfirmBody' => 'All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.',
 			'profile.clearDataConfirmField' => 'Type your email to confirm',
 			'profile.clearDataSuccess' => 'Your data has been cleared.',
+			'profile.clearDataError' => 'Couldn\'t clear your data. Please try again.',
 			'profile.version' => 'Version',
 			'startup.tagline' => 'Your portfolio, always up to date',
 			'startup.stepCheckingAuth' => 'Checking your account...',

@@ -197,6 +197,7 @@
     "clearDataConfirmBody": "All your institutions, assets and transactions will be permanently erased — in the cloud and on this device. This cannot be undone.",
     "clearDataConfirmField": "Type your email to confirm",
     "clearDataSuccess": "Your data has been cleared.",
+    "clearDataError": "Couldn't clear your data. Please try again.",
     "version": "Version"
   },
   "startup": {

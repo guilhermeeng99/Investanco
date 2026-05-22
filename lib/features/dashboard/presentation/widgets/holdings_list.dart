@@ -4,6 +4,7 @@ import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/currency_formatter.dart';
 import 'package:investanco/core/format/initials.dart';
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
@@ -71,7 +72,7 @@ class _HoldingTile extends StatelessWidget {
     final ticker = asset?.ticker ?? holding.assetId;
     final subtitle = [
       ?institution?.name,
-      _quantity(holding.quantity),
+      formatTrimmedDouble(holding.quantity),
     ].join('  ·  ');
 
     return Padding(
@@ -161,8 +162,4 @@ class _HoldingTile extends StatelessWidget {
       ),
     );
   }
-
-  String _quantity(double quantity) => quantity == quantity.roundToDouble()
-      ? quantity.toStringAsFixed(0)
-      : quantity.toString();
 }

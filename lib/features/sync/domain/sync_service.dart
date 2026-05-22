@@ -4,7 +4,8 @@ import 'package:investanco/core/error/failures.dart';
 /// Mirrors local Drift data to the signed-in user's Firestore and back, and can
 /// wipe it. See `docs/specs/cloud_sync.md`.
 abstract class SyncService {
-  /// Pulls remote → local, then pushes local → remote, for [userId].
+  /// Pulls remote → local, rebuilding the local cache for [userId]. There is no
+  /// push here — writes mirror to Firestore through `RemoteMirror` as they happen.
   Future<Either<Failure, Unit>> sync(String userId);
 
   /// Permanently deletes the user's mirrored data — both the Firestore

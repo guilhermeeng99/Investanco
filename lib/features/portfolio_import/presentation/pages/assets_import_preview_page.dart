@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
@@ -10,7 +7,7 @@ import 'package:investanco/core/format/initials.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/portfolio_import/domain/import_assets_csv_usecase.dart';
-import 'package:investanco/features/portfolio_import/presentation/widgets/csv_import_dialog.dart';
+import 'package:investanco/features/portfolio_import/presentation/widgets/csv_import_flow.dart';
 import 'package:investanco/features/portfolio_import/presentation/widgets/import_preview_widgets.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -50,59 +47,29 @@ class _AssetsImportPreviewPageState extends State<AssetsImportPreviewPage> {
 
   Future<void> _import() async {
     setState(() => _importing = true);
-    try {
-      final result = await sl<ImportAssetsCsvUseCase>().importRows([
+    final popped = await commitImport(
+      context,
+      () => sl<ImportAssetsCsvUseCase>().importRows([
         for (final r in _preview.rows) r.row,
-      ]);
-      if (!mounted) return;
-      result.fold(
-        (failure) {
-          setState(() => _importing = false);
-          unawaited(showCsvImportErrorDialog(context, failure.message));
-        },
-        (tally) => context.pop(tally),
-      );
-    } on Exception {
-      if (!mounted) return;
-      setState(() => _importing = false);
-      unawaited(showCsvImportErrorDialog(context, t.importCsv.genericError));
-    }
+      ]),
+    );
+    if (!popped && mounted) setState(() => _importing = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final isEmpty = _preview.isEmpty;
-    return PopScope(
-      canPop: !_importing,
-      child: Scaffold(
-        backgroundColor: colors.background,
-        appBar: InvestancoAppBar(
-          title: t.importAssets.previewTitle,
-          subtitle: t.importAssets.previewSubtitle,
-          showBack: true,
-        ),
-        body: Stack(
-          children: [
-            if (isEmpty)
-              EmptyState(
-                title: t.importCsv.previewEmptyTitle,
-                message: t.importCsv.previewEmpty,
-              )
-            else
-              _PreviewList(preview: _preview, onRemove: _removeRow),
-            if (_importing) const ImportingOverlay(),
-          ],
-        ),
-        bottomNavigationBar: InvestancoSubmitBar(
-          label: isEmpty
-              ? t.importCsv.previewNothingLeft
-              : t.importAssets.submit(count: _preview.rows.length),
-          isLoading: _importing,
-          isEnabled: !isEmpty,
-          onSubmit: _import,
-        ),
-      ),
+    return ImportPreviewScaffold(
+      title: t.importAssets.previewTitle,
+      subtitle: t.importAssets.previewSubtitle,
+      isEmpty: isEmpty,
+      isImporting: _importing,
+      canSubmit: !isEmpty,
+      submitLabel: isEmpty
+          ? t.importCsv.previewNothingLeft
+          : t.importAssets.submit(count: _preview.rows.length),
+      onSubmit: _import,
+      body: _PreviewList(preview: _preview, onRemove: _removeRow),
     );
   }
 }

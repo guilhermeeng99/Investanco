@@ -13,7 +13,7 @@ pricing source values it (see `quotes.md`).
 | `kind` | `AssetKind` | see enum below |
 | `market` | `Market` | `br`, `us`, `global` |
 | `currency` | `Currency` | native quote currency (`brl`, `usd`) |
-| `metadata` | `Map<String,String>?` | kind-specific (e.g. fixed-income rate, index) |
+| `metadata` | `Map<String,String>` | kind-specific (e.g. fixed-income rate, index); defaults to `{}` |
 | `createdAt` | DateTime | set on create |
 
 ```dart

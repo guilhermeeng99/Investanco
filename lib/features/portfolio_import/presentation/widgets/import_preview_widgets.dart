@@ -1,7 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
+
+/// The shared shell for a CSV import preview page: a back-titled app bar, the
+/// review [body] (or an empty state), a blocking overlay while importing, and a
+/// submit bar. Assets and transactions differ only in titles, the body and the
+/// submit label/enablement. See `docs/specs/csv_import.md`.
+class ImportPreviewScaffold extends StatelessWidget {
+  /// Creates the scaffold.
+  const ImportPreviewScaffold({
+    required this.title,
+    required this.subtitle,
+    required this.isEmpty,
+    required this.isImporting,
+    required this.canSubmit,
+    required this.submitLabel,
+    required this.body,
+    required this.onSubmit,
+    super.key,
+  });
+
+  /// App-bar title.
+  final String title;
+
+  /// App-bar subtitle.
+  final String subtitle;
+
+  /// Whether the review list is empty (shows the empty state instead of [body]).
+  final bool isEmpty;
+
+  /// Whether an import is running (blocks pop + shows the overlay).
+  final bool isImporting;
+
+  /// Whether the submit button is enabled.
+  final bool canSubmit;
+
+  /// Submit-button label.
+  final String submitLabel;
+
+  /// The review list, shown when not [isEmpty].
+  final Widget body;
+
+  /// Submit handler.
+  final Future<void> Function() onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: !isImporting,
+      child: Scaffold(
+        backgroundColor: context.appColors.background,
+        appBar: InvestancoAppBar(
+          title: title,
+          subtitle: subtitle,
+          showBack: true,
+        ),
+        body: Stack(
+          children: [
+            if (isEmpty)
+              EmptyState(
+                title: t.importCsv.previewEmptyTitle,
+                message: t.importCsv.previewEmpty,
+              )
+            else
+              body,
+            if (isImporting) const ImportingOverlay(),
+          ],
+        ),
+        bottomNavigationBar: InvestancoSubmitBar(
+          label: submitLabel,
+          isLoading: isImporting,
+          isEnabled: canSubmit,
+          onSubmit: onSubmit,
+        ),
+      ),
+    );
+  }
+}
 
 /// One headline figure in an import summary card (icon badge, value, label and
 /// an optional muted caption). Shared by the asset and transaction previews.

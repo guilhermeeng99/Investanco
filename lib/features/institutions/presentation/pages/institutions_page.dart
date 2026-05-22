@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
-import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/presentation/cubit/institutions_cubit.dart';
@@ -40,21 +39,14 @@ class _InstitutionsView extends StatelessWidget {
     BuildContext context,
     InstitutionsCubit cubit,
     Institution institution,
-  ) async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: institution.name,
-      message: t.institutions.deleteConfirm,
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final failure = await cubit.remove(institution.id);
-    if (failure is InUseFailure && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.institutions.inUseError)),
+  ) =>
+      confirmAndRemove(
+        context,
+        title: institution.name,
+        message: t.institutions.deleteConfirm,
+        onConfirm: () => cubit.remove(institution.id),
+        inUseError: t.institutions.inUseError,
       );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +80,8 @@ class _InstitutionsView extends StatelessWidget {
                 actionLabel: t.institutions.add,
                 onAction: () => InstitutionFormSheet.show(context, cubit),
               ),
-            InstitutionsLoaded(:final institutions) => ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+            InstitutionsLoaded(:final institutions) => EntityListView(
                 itemCount: institutions.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) => _InstitutionTile(
                   institution: institutions[index],
                   onTap: () => InstitutionFormSheet.show(
@@ -150,15 +140,7 @@ class _InstitutionTile extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            tooltip: t.common.delete,
-            icon: FaIcon(
-              FontAwesomeIcons.trashCan,
-              size: 16,
-              color: colors.onBackgroundLight,
-            ),
-            onPressed: onDelete,
-          ),
+          EntityDeleteButton(onPressed: onDelete),
         ],
       ),
     );

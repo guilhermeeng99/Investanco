@@ -8,6 +8,7 @@ import 'package:investanco/app/theme/dark_palette_cubit.dart';
 import 'package:investanco/app/theme/dark_palettes.dart';
 import 'package:investanco/app/theme/light_palette_cubit.dart';
 import 'package:investanco/app/theme/light_palettes.dart';
+import 'package:investanco/app/widgets/investanco_icon_disc.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -106,17 +107,7 @@ class _PaletteSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: FaIcon(icon, size: 15, color: colors.primary),
-              ),
-            ),
+            InvestancoIconDisc(icon: icon),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
@@ -39,7 +40,7 @@ class BrapiQuoteDataSource implements QuoteDataSource {
     if (supported.isEmpty) return const Right([]);
 
     final byTicker = {for (final a in supported) a.ticker.toUpperCase(): a};
-    try {
+    return guardedFetch(() async {
       final response = await _dio.get<Map<String, dynamic>>(
         'https://brapi.dev/api/quote/${byTicker.keys.join(',')}',
         queryParameters: token.isEmpty ? null : {'token': token},
@@ -68,10 +69,6 @@ class BrapiQuoteDataSource implements QuoteDataSource {
         );
       }
       return Right(quotes);
-    } on DioException {
-      return const Left(NetworkFailure());
-    } on Object {
-      return const Left(ParseFailure());
-    }
+    });
   }
 }

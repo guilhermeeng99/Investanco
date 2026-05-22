@@ -197,6 +197,7 @@
     "clearDataConfirmBody": "Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.",
     "clearDataConfirmField": "Digite seu e-mail para confirmar",
     "clearDataSuccess": "Seus dados foram apagados.",
+    "clearDataError": "Não foi possível apagar seus dados. Tente novamente.",
     "version": "Versão"
   },
   "startup": {

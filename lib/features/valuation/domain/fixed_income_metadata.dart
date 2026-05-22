@@ -1,3 +1,4 @@
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
 
@@ -22,7 +23,7 @@ abstract final class FixedIncomeMetadata {
   /// Metadata entries encoding [basis] and [rate], to be merged by the caller.
   static Map<String, String> write(FixedIncomeBasis basis, double rate) => {
         basisKey: basis.name,
-        rateKey: _formatRate(rate),
+        rateKey: formatTrimmedDouble(rate),
       };
 
   static FixedIncomeBasis? _basisByName(String? name) {
@@ -31,7 +32,4 @@ abstract final class FixedIncomeMetadata {
     }
     return null;
   }
-
-  static String _formatRate(double rate) =>
-      rate == rate.roundToDouble() ? rate.toStringAsFixed(0) : rate.toString();
 }

@@ -54,21 +54,18 @@ class SnapshotRepositoryImpl implements SnapshotRepository {
   Future<Either<Failure, List<Snapshot>>> range(
     DateTime from,
     DateTime to,
-  ) async {
-    try {
-      final rows = await (_db.select(_db.snapshots)
-            ..where(
-              (t) =>
-                  t.date.isBiggerOrEqualValue(from) &
-                  t.date.isSmallerOrEqualValue(to),
-            )
-            ..orderBy([(t) => OrderingTerm(expression: t.date)]))
-          .get();
-      return Right(rows.map(_toEntity).toList());
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  ) =>
+      guardedRead(() async {
+        final rows = await (_db.select(_db.snapshots)
+              ..where(
+                (t) =>
+                    t.date.isBiggerOrEqualValue(from) &
+                    t.date.isSmallerOrEqualValue(to),
+              )
+              ..orderBy([(t) => OrderingTerm(expression: t.date)]))
+            .get();
+        return rows.map(_toEntity).toList();
+      });
 
   Snapshot _toEntity(SnapshotRow row) {
     final currency = Currency.values.byName(row.currency);

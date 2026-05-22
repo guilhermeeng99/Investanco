@@ -1,6 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/format/money_input.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 
@@ -26,7 +28,7 @@ class BcbSgsIndexDataSource implements IndexDataSource {
     DateTime from,
   ) async {
     final code = seriesCode[index]!;
-    try {
+    return guardedFetch(() async {
       final response = await _dio.get<List<dynamic>>(
         'https://api.bcb.gov.br/dados/serie/bcdata.sgs.$code/dados',
         queryParameters: {'formato': 'json', 'dataInicial': _formatDate(from)},
@@ -41,11 +43,7 @@ class BcbSgsIndexDataSource implements IndexDataSource {
         points.add(IndexPoint(date: date, rate: rate));
       }
       return Right(points);
-    } on DioException {
-      return const Left(NetworkFailure());
-    } on Object {
-      return const Left(ParseFailure());
-    }
+    });
   }
 
   /// BCB expects and returns `dd/MM/yyyy`.
@@ -64,7 +62,7 @@ class BcbSgsIndexDataSource implements IndexDataSource {
 
   /// BCB sends decimals with a dot, but tolerate a comma just in case.
   double? _parseRate(String? value) =>
-      value == null ? null : double.tryParse(value.replaceAll(',', '.'));
+      value == null ? null : parseMajor(value);
 
   String _two(int n) => n.toString().padLeft(2, '0');
 }

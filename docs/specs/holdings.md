@@ -10,7 +10,7 @@ record; recomputed (and may be cached) from transactions.
 |-------|------|------------|
 | `assetId` | String | group key |
 | `institutionId` | String | group key |
-| `quantity` | Decimal | Σ buys − Σ sells |
+| `quantity` | double | Σ buys − Σ sells |
 | `avgCost` | Money (native) | weighted average incl. fees (overview §6.1) |
 | `investedCost` | Money | computed getter: `quantity * avgCost` |
 | `realizedPL` | Money | Σ realized gains/losses from sells |
@@ -41,4 +41,4 @@ abstract class HoldingCalculator {
 - Sell to exactly zero → holding closed, `avgCost` retained for the realized record.
 - Dividends on a closed holding → counted in `dividends`, holding stays closed.
 - Out-of-order transaction dates → calculator sorts by `date` then `createdAt`.
-- Fractional quantities (US/crypto) → supported via Decimal with fixed scale.
+- Fractional quantities (US/crypto) → supported via `double`.

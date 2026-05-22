@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 
 /// FX rates via AwesomeAPI (e.g. USD→BRL). See `docs/specs/quotes.md`.
@@ -17,7 +18,7 @@ class AwesomeApiFxDataSource implements FxDataSource {
 
     final pair = '${from.code}-${to.code}';
     final key = '${from.code}${to.code}';
-    try {
+    return guardedFetch(() async {
       final response = await _dio.get<Map<String, dynamic>>(
         'https://economia.awesomeapi.com.br/json/last/$pair',
       );
@@ -25,10 +26,6 @@ class AwesomeApiFxDataSource implements FxDataSource {
       final bid = double.tryParse(node?['bid'] as String? ?? '');
       if (bid == null) return const Left(ParseFailure());
       return Right(bid);
-    } on DioException {
-      return const Left(NetworkFailure());
-    } on Object {
-      return const Left(ParseFailure());
-    }
+    });
   }
 }

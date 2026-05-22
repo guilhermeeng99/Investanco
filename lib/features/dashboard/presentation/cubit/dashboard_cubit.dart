@@ -5,7 +5,6 @@ import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
-import 'package:investanco/features/holdings/domain/entities/holding.dart';
 import 'package:investanco/features/holdings/domain/holding_calculator.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
@@ -16,9 +15,7 @@ import 'package:investanco/features/quotes/domain/repositories/quote_repository.
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
-import 'package:investanco/features/valuation/domain/fixed_income_cash_flows.dart';
-import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
+import 'package:investanco/features/valuation/domain/portfolio_inputs_builder.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
 /// Builds the consolidated portfolio from local data, then refreshes quotes/FX
@@ -35,8 +32,9 @@ class DashboardCubit extends Cubit<DashboardState> {
     this._fxDataSource,
     this._valuationService,
     this._snapshotRepository,
-    this._indexDataSource,
-  ) : super(const DashboardLoading()) {
+    this._indexDataSource, [
+    this._inputsBuilder = const PortfolioInputsBuilder(),
+  ]) : super(const DashboardLoading()) {
     _transactionSub = _transactionRepository.watchAll().listen(
       (value) {
         _transactions = value;
@@ -69,6 +67,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   final ValuationService _valuationService;
   final SnapshotRepository _snapshotRepository;
   final IndexDataSource _indexDataSource;
+  final PortfolioInputsBuilder _inputsBuilder;
 
   late final StreamSubscription<List<AssetTransaction>> _transactionSub;
   late final StreamSubscription<List<Asset>> _assetSub;
@@ -131,7 +130,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     await _recompute();
 
     final holdings = _calculator.derive(transactions);
-    final heldIds = _heldAssetIds(holdings, assets, transactions);
+    final heldIds = _inputsBuilder.heldAssetIds(holdings, assets, transactions);
     final heldAssets = assets.where((a) => heldIds.contains(a.id)).toList();
 
     await _quoteRepository.refresh(heldAssets);
@@ -178,25 +177,15 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
     final quotes = cached.getOrElse(() => const []);
     final quotesById = {for (final q in quotes) q.assetId: q};
-    final cashFlowsByHolding = _cashFlowsByHolding(transactions);
 
-    final inputs = [
-      for (final holding in holdings)
-        if (assetsById[holding.assetId] case final asset?)
-          ValuationInput(
-            holding: holding,
-            asset: asset,
-            quote: quotesById[holding.assetId],
-            fxToBase: asset.currency == Currency.brl
-                ? 1.0
-                : (_fxLoaded ? _fxUsdToBrl : null),
-            fixedIncome: _termsFor(
-              asset,
-              cashFlowsByHolding[
-                  _holdingKey(holding.assetId, holding.institutionId)],
-            ),
-          ),
-    ];
+    final inputs = _inputsBuilder.build(
+      holdings: holdings,
+      assetsById: assetsById,
+      transactions: transactions,
+      quotesById: quotesById,
+      indexSeries: _indexSeries,
+      fxUsdToBrl: _fxLoaded ? _fxUsdToBrl : null,
+    );
 
     final portfolio = _valuationService.valuatePortfolio(
       inputs,
@@ -242,98 +231,13 @@ class DashboardCubit extends Cubit<DashboardState> {
     List<Asset> heldAssets,
     List<AssetTransaction> transactions,
   ) async {
-    final earliestByIndex = <EconomicIndex, DateTime>{};
-    for (final asset in heldAssets) {
-      final index = _indexFor(asset);
-      final purchase = _earliestBuyForAsset(asset.id, transactions);
-      if (index == null || purchase == null) continue;
-      final current = earliestByIndex[index];
-      if (current == null || purchase.isBefore(current)) {
-        earliestByIndex[index] = purchase;
-      }
-    }
+    final earliestByIndex =
+        _inputsBuilder.earliestIndexDates(heldAssets, transactions);
     for (final entry in earliestByIndex.entries) {
       final result = await _indexDataSource.series(entry.key, entry.value);
       result.fold((_) {}, (points) => _indexSeries[entry.key] = points);
     }
   }
-
-  /// The BCB index a fixed-income asset accrues against, or null otherwise.
-  EconomicIndex? _indexFor(Asset asset) {
-    if (asset.kind != AssetKind.fixedIncome) return null;
-    return FixedIncomeMetadata.read(asset)?.$1.economicIndex;
-  }
-
-  /// Accrual terms for a fixed-income holding, or null when not applicable.
-  FixedIncomeTerms? _termsFor(
-    Asset asset,
-    List<FixedIncomeCashFlow>? cashFlows,
-  ) {
-    if (asset.kind != AssetKind.fixedIncome) return null;
-    final parsed = FixedIncomeMetadata.read(asset);
-    if (parsed == null || cashFlows == null || cashFlows.isEmpty) return null;
-    final (basis, rate) = parsed;
-    final index = basis.economicIndex;
-    return FixedIncomeTerms(
-      basis: basis,
-      ratePercent: rate,
-      cashFlows: cashFlows,
-      series: index == null ? const [] : (_indexSeries[index] ?? const []),
-    );
-  }
-
-  /// Fixed-income cash flows per holding key (`assetId|institutionId`): deposits
-  /// (buys) and redemptions (sells), each dated, so every flow accrues from its
-  /// own date and partial redemptions are handled natively.
-  Map<String, List<FixedIncomeCashFlow>> _cashFlowsByHolding(
-    List<AssetTransaction> txns,
-  ) {
-    final byKey = <String, List<AssetTransaction>>{};
-    for (final tx in txns) {
-      byKey
-          .putIfAbsent(_holdingKey(tx.assetId, tx.institutionId), () => [])
-          .add(tx);
-    }
-    final result = <String, List<FixedIncomeCashFlow>>{};
-    for (final entry in byKey.entries) {
-      final flows = buildFixedIncomeCashFlows(entry.value);
-      if (flows.isNotEmpty) result[entry.key] = flows;
-    }
-    return result;
-  }
-
-  /// Asset ids to fetch market data for: any open market position, plus every
-  /// fixed-income asset that has transactions (its CDI/Selic/IPCA series is
-  /// needed even when buys and redemptions net its quantity to zero).
-  Set<String> _heldAssetIds(
-    List<Holding> holdings,
-    List<Asset> assets,
-    List<AssetTransaction> txns,
-  ) {
-    final assetsById = {for (final a in assets) a.id: a};
-    final ids = <String>{
-      for (final h in holdings)
-        if (h.quantity > 0) h.assetId,
-    };
-    for (final tx in txns) {
-      if (assetsById[tx.assetId]?.kind == AssetKind.fixedIncome) {
-        ids.add(tx.assetId);
-      }
-    }
-    return ids;
-  }
-
-  DateTime? _earliestBuyForAsset(String assetId, List<AssetTransaction> txns) {
-    DateTime? earliest;
-    for (final tx in txns) {
-      if (tx.kind != TransactionKind.buy || tx.assetId != assetId) continue;
-      if (earliest == null || tx.date.isBefore(earliest)) earliest = tx.date;
-    }
-    return earliest;
-  }
-
-  String _holdingKey(String assetId, String institutionId) =>
-      '$assetId|$institutionId';
 
   void _onError(Object _, StackTrace _) => emit(const DashboardError());
 

@@ -41,21 +41,20 @@ class AssetRepositoryImpl implements AssetRepository {
       });
 
   @override
-  Future<Either<Failure, Unit>> delete(String id) async {
-    try {
-      final referencing = await (_db.select(_db.transactions)
-            ..where((t) => t.assetId.equals(id))
-            ..limit(1))
-          .get();
-      if (referencing.isNotEmpty) return const Left(InUseFailure());
-
-      await _mirror.delete(_collection, id);
-      await (_db.delete(_db.assets)..where((t) => t.id.equals(id))).go();
-      return const Right(unit);
-    } on Object {
-      return const Left(CacheFailure());
-    }
-  }
+  Future<Either<Failure, Unit>> delete(String id) =>
+      guardedDeleteIfUnreferenced(
+        isReferenced: () async {
+          final referencing = await (_db.select(_db.transactions)
+                ..where((t) => t.assetId.equals(id))
+                ..limit(1))
+              .get();
+          return referencing.isNotEmpty;
+        },
+        delete: () async {
+          await _mirror.delete(_collection, id);
+          await (_db.delete(_db.assets)..where((t) => t.id.equals(id))).go();
+        },
+      );
 
   Asset _toEntity(AssetRow row) {
     final decoded = jsonDecode(row.metadata) as Map<String, dynamic>;

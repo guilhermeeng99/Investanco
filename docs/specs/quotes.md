@@ -88,7 +88,7 @@ low-value free-tier keys belong here; true secrecy would need a backend proxy.
 
 ```dart
 abstract class QuoteRepository {
-  Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds); // cached-first; folds to [] on error
+  Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds); // cached read (Drift); Left(CacheFailure) on error
   Future<Either<Failure, List<Quote>>> refresh(List<Asset> assets);      // fetch + cache
 }
 ```

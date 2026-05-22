@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
@@ -54,7 +55,7 @@ class CoinGeckoQuoteDataSource implements QuoteDataSource {
     final ids = supported.map(_coinId).toSet().join(',');
     final vsCurrencies =
         supported.map((a) => a.currency.name).toSet().join(',');
-    try {
+    return guardedFetch(() async {
       final response = await _dio.get<Map<String, dynamic>>(
         'https://api.coingecko.com/api/v3/simple/price',
         queryParameters: {
@@ -71,11 +72,7 @@ class CoinGeckoQuoteDataSource implements QuoteDataSource {
         if (quote != null) quotes.add(quote);
       }
       return Right(quotes);
-    } on DioException {
-      return const Left(NetworkFailure());
-    } on Object {
-      return const Left(ParseFailure());
-    }
+    });
   }
 
   /// CoinGecko id for [asset]: explicit metadata, then the built-in map, then

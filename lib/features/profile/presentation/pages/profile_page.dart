@@ -79,8 +79,9 @@ class _ProfileView extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     final result = await sl<SyncService>().clear(auth.user.userId);
     result.fold(
-      (failure) =>
-          messenger.showSnackBar(SnackBar(content: Text(failure.message))),
+      (_) => messenger.showSnackBar(
+        SnackBar(content: Text(t.profile.clearDataError)),
+      ),
       (_) => messenger.showSnackBar(
         SnackBar(content: Text(t.profile.clearDataSuccess)),
       ),

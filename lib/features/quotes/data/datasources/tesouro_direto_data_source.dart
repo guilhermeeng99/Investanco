@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
@@ -28,7 +29,7 @@ class TesouroDiretoDataSource implements QuoteDataSource {
     final supported = assets.where(supports).toList();
     if (supported.isEmpty) return const Right([]);
 
-    try {
+    return guardedFetch(() async {
       final response = await _dio.get<Map<String, dynamic>>(_endpoint);
       final priceByName = _redemptionPricesByName(response.data);
       final now = DateTime.now();
@@ -47,11 +48,7 @@ class TesouroDiretoDataSource implements QuoteDataSource {
         );
       }
       return Right(quotes);
-    } on DioException {
-      return const Left(NetworkFailure());
-    } on Object {
-      return const Left(ParseFailure());
-    }
+    });
   }
 
   /// Redemption unit value (`untrRedVal`) of every bond, keyed by normalized name.

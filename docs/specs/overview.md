@@ -40,7 +40,7 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - Value fixed income (CDB/RDB/LCI/LCA) by rate + index accrual.
 - Dashboard: total equity, profit, allocation, per-holding P/L.
 - Daily snapshots → portfolio evolution chart.
-- Offline-first (local DB); works with no account.
+- Offline-first reads from a local cache (Drift); writes require connectivity.
 
 ### Non-goals (v1)
 - Placing orders / trading.
@@ -101,7 +101,7 @@ boundary). Endpoints and response contracts: `quotes.md`.
 
 | Source | Base | Used for | Auth |
 |--------|------|----------|------|
-| brapi.dev | `https://brapi.dev/api` | BR equities, FII, ETF, BDR, indices | free token |
+| brapi.dev | `https://brapi.dev/api` | BR equities, FII, ETF, BDR | free token |
 | CoinGecko | `https://api.coingecko.com/api/v3` | crypto prices (BRL/USD) | none |
 | Finnhub | `https://finnhub.io/api/v1` | US equities/ETF (Avenue) | free token |
 | Tesouro Direto | `https://www.tesourodireto.com.br/json/.../treasury/getMarket` | bond prices | none |
@@ -125,7 +125,7 @@ boundary). Endpoints and response contracts: `quotes.md`.
 ## 6. Valuation math
 
 Money is stored as **integer minor units** (cents) to avoid float drift. Quantities
-may be fractional (US stocks, crypto) → stored as decimal with fixed scale.
+may be fractional (US stocks, crypto) → stored as `double`.
 
 ### 6.1 Average cost (weighted)
 On **buy**: `newAvg = (qtyOld*avgOld + qtyBuy*priceBuy + fees) / (qtyOld + qtyBuy)`
@@ -147,12 +147,13 @@ For a holding in foreign currency:
 `valueBrl = marketValue * fxRate(currency → BRL)`
 
 ### 6.5 Fixed-income accrual (CDB/RDB/LCI/LCA)
-For a position contracted at e.g. "110% of CDI":
+Valued from dated **cash flows** (a buy = deposit, a sell = redemption), not a single
+principal. By linearity of daily accrual:
 ```
-factor = ∏ (1 + dailyIndexRate_d * indexPercent)   for each business day d since purchase
-currentValue = principal * factor
+currentValue = Σ amount_f * accrualFactor(flow_f.date → today)
+factor("110% of CDI") = ∏ (1 + dailyIndexRate_d * indexPercent)  over business days d since the flow date
 ```
-IPCA-linked: `principal * (1 + ipcaAccumulated) * (1 + fixedSpread)^(years)`.
+IPCA-linked, per flow: `(1 + ipcaAccumulated) * (1 + fixedSpread)^(businessDays/252)`.
 Index series come from BCB SGS. See `valuation.md` for the precise formulas/tests.
 
 ### 6.6 Day change
@@ -171,9 +172,10 @@ converted to BRL.
 
 ## 8. Architecture
 
-Clean Architecture, feature-first (see `CLAUDE.md`). Offline-first: Drift is the
-source of truth; network only fills the **quote cache**. UI always renders cached
-data immediately, then refreshes.
+Clean Architecture, feature-first (see `CLAUDE.md`). **Firestore is the source of
+truth**; Drift is a local cache rebuilt at sign-in (writes mirror through
+`RemoteMirror`). Market data (quotes/FX/indices) fills a separate derived cache. The
+UI always renders cached data immediately, then refreshes. See `cloud_sync.md`.
 
 ---
 

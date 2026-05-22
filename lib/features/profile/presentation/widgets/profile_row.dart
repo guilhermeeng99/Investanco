@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:investanco/app/widgets/investanco_icon_disc.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 
 /// One row inside a `ProfileSection`: icon disc, title, optional subtitle, and a
@@ -64,7 +65,7 @@ class ProfileRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              _IconDisc(icon: icon, color: iconColor),
+              InvestancoIconDisc(icon: icon, color: iconColor),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -100,26 +101,6 @@ class ProfileRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _IconDisc extends StatelessWidget {
-  const _IconDisc({required this.icon, required this.color});
-
-  final FaIconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(child: FaIcon(icon, size: 15, color: color)),
     );
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
-import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/initials.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
@@ -42,21 +41,14 @@ class _AssetsView extends StatelessWidget {
     BuildContext context,
     AssetsCubit cubit,
     Asset asset,
-  ) async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: asset.ticker,
-      message: t.assets.deleteConfirm,
-    );
-    if (!confirmed || !context.mounted) return;
-
-    final failure = await cubit.remove(asset.id);
-    if (failure is InUseFailure && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.assets.inUseError)),
+  ) =>
+      confirmAndRemove(
+        context,
+        title: asset.ticker,
+        message: t.assets.deleteConfirm,
+        onConfirm: () => cubit.remove(asset.id),
+        inUseError: t.assets.inUseError,
       );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +77,8 @@ class _AssetsView extends StatelessWidget {
               actionLabel: t.assets.add,
               onAction: () => AssetFormSheet.show(context, cubit),
             ),
-            AssetsLoaded(:final assets) => ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+            AssetsLoaded(:final assets) => EntityListView(
               itemCount: assets.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) => _AssetTile(
                 asset: assets[index],
                 onTap: () => AssetFormSheet.show(
@@ -167,15 +157,7 @@ class _AssetTile extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            tooltip: t.common.delete,
-            icon: FaIcon(
-              FontAwesomeIcons.trashCan,
-              size: 16,
-              color: colors.onBackgroundLight,
-            ),
-            onPressed: onDelete,
-          ),
+          EntityDeleteButton(onPressed: onDelete),
         ],
       ),
     );

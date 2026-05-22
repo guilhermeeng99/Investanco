@@ -67,14 +67,13 @@ class _TransactionsView extends StatelessWidget {
     BuildContext context,
     TransactionsCubit cubit,
     String id,
-  ) async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: t.transactions.title,
-      message: t.transactions.deleteConfirm,
-    );
-    if (confirmed) await cubit.remove(id);
-  }
+  ) =>
+      confirmAndRemove(
+        context,
+        title: t.transactions.title,
+        message: t.transactions.deleteConfirm,
+        onConfirm: () => cubit.remove(id),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -231,10 +230,8 @@ class _TransactionsList extends StatelessWidget {
     final institutionById = {for (final i in state.institutions) i.id: i};
     final transactions = state.visibleTransactions;
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+    return EntityListView(
       itemCount: transactions.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = transactions[index];
         return _TransactionTile(
@@ -317,15 +314,7 @@ class _TransactionTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SignedAmount(money: signed, fontSize: 14),
-          IconButton(
-            tooltip: t.common.delete,
-            icon: FaIcon(
-              FontAwesomeIcons.trashCan,
-              size: 16,
-              color: colors.onBackgroundLight,
-            ),
-            onPressed: onDelete,
-          ),
+          EntityDeleteButton(onPressed: onDelete),
         ],
       ),
     );

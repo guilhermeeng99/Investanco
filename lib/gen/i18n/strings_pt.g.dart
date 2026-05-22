@@ -587,6 +587,9 @@ class TranslationsProfilePt {
 	/// pt: 'Seus dados foram apagados.'
 	String get clearDataSuccess => 'Seus dados foram apagados.';
 
+	/// pt: 'Não foi possível apagar seus dados. Tente novamente.'
+	String get clearDataError => 'Não foi possível apagar seus dados. Tente novamente.';
+
 	/// pt: 'Versão'
 	String get version => 'Versão';
 }
@@ -967,6 +970,7 @@ extension on Translations {
 			'profile.clearDataConfirmBody' => 'Todas as suas instituições, ativos e lançamentos serão apagados permanentemente — na nuvem e neste dispositivo. Não há como desfazer.',
 			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
 			'profile.clearDataSuccess' => 'Seus dados foram apagados.',
+			'profile.clearDataError' => 'Não foi possível apagar seus dados. Tente novamente.',
 			'profile.version' => 'Versão',
 			'startup.tagline' => 'Sua carteira, sempre atualizada',
 			'startup.stepCheckingAuth' => 'Verificando sua conta...',

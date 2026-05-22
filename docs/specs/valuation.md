@@ -10,7 +10,7 @@ class ValuationInput {
   final Holding holding;
   final Asset asset;
   final Quote? quote;                  // null when price unavailable
-  final double fxToBase;               // 1.0 when same currency
+  final double? fxToBase;              // 1.0 when same currency; null = FX unavailable (foreign holding excluded)
   final FixedIncomeTerms? fixedIncome; // basis + rate + dated cash flows + index series
 }
 
@@ -27,6 +27,7 @@ class HoldingValuation {
   final double returnPct;        // guard: 0 when invested == 0
   final Money dayChangeBase;
   final bool priceStale;         // quote missing or old
+  final bool fxMissing;          // foreign holding with no FX → excluded from totals
 }
 ```
 

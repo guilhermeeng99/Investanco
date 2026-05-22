@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/format/money_input.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/assets/domain/asset_kind_defaults.dart';
@@ -179,8 +180,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   }
 
   void _applyFixedIncome(Map<String, String> metadata) {
-    final rate =
-        double.tryParse(_fiRateController.text.trim().replaceAll(',', '.'));
+    final rate = parseMajor(_fiRateController.text);
     if (_kind == AssetKind.fixedIncome && rate != null) {
       metadata.addAll(FixedIncomeMetadata.write(_fiBasis, rate));
     } else {
