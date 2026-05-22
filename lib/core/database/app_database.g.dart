@@ -2228,6 +2228,18 @@ class $SnapshotsTable extends Snapshots
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _byInstitutionJsonMeta = const VerificationMeta(
+    'byInstitutionJson',
+  );
+  @override
+  late final GeneratedColumn<String> byInstitutionJson =
+      GeneratedColumn<String>(
+        'by_institution_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2236,6 +2248,7 @@ class $SnapshotsTable extends Snapshots
     totalInvestedMinor,
     totalPlMinor,
     currency,
+    byInstitutionJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2303,6 +2316,15 @@ class $SnapshotsTable extends Snapshots
     } else if (isInserting) {
       context.missing(_currencyMeta);
     }
+    if (data.containsKey('by_institution_json')) {
+      context.handle(
+        _byInstitutionJsonMeta,
+        byInstitutionJson.isAcceptableOrUnknown(
+          data['by_institution_json']!,
+          _byInstitutionJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2336,6 +2358,10 @@ class $SnapshotsTable extends Snapshots
         DriftSqlType.string,
         data['${effectivePrefix}currency'],
       )!,
+      byInstitutionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}by_institution_json'],
+      ),
     );
   }
 
@@ -2363,6 +2389,11 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
 
   /// `Currency` name (base).
   final String currency;
+
+  /// Reserved (currently unwritten): JSON map of per-institution base-currency
+  /// slices. Kept as a nullable column so databases already migrated to v7 don't
+  /// need a downgrade; safe to drop via a future migration if never used.
+  final String? byInstitutionJson;
   const SnapshotRow({
     required this.id,
     required this.date,
@@ -2370,6 +2401,7 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
     required this.totalInvestedMinor,
     required this.totalPlMinor,
     required this.currency,
+    this.byInstitutionJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2380,6 +2412,9 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
     map['total_invested_minor'] = Variable<int>(totalInvestedMinor);
     map['total_pl_minor'] = Variable<int>(totalPlMinor);
     map['currency'] = Variable<String>(currency);
+    if (!nullToAbsent || byInstitutionJson != null) {
+      map['by_institution_json'] = Variable<String>(byInstitutionJson);
+    }
     return map;
   }
 
@@ -2391,6 +2426,9 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
       totalInvestedMinor: Value(totalInvestedMinor),
       totalPlMinor: Value(totalPlMinor),
       currency: Value(currency),
+      byInstitutionJson: byInstitutionJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(byInstitutionJson),
     );
   }
 
@@ -2406,6 +2444,9 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
       totalInvestedMinor: serializer.fromJson<int>(json['totalInvestedMinor']),
       totalPlMinor: serializer.fromJson<int>(json['totalPlMinor']),
       currency: serializer.fromJson<String>(json['currency']),
+      byInstitutionJson: serializer.fromJson<String?>(
+        json['byInstitutionJson'],
+      ),
     );
   }
   @override
@@ -2418,6 +2459,7 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
       'totalInvestedMinor': serializer.toJson<int>(totalInvestedMinor),
       'totalPlMinor': serializer.toJson<int>(totalPlMinor),
       'currency': serializer.toJson<String>(currency),
+      'byInstitutionJson': serializer.toJson<String?>(byInstitutionJson),
     };
   }
 
@@ -2428,6 +2470,7 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
     int? totalInvestedMinor,
     int? totalPlMinor,
     String? currency,
+    Value<String?> byInstitutionJson = const Value.absent(),
   }) => SnapshotRow(
     id: id ?? this.id,
     date: date ?? this.date,
@@ -2435,6 +2478,9 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
     totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
     totalPlMinor: totalPlMinor ?? this.totalPlMinor,
     currency: currency ?? this.currency,
+    byInstitutionJson: byInstitutionJson.present
+        ? byInstitutionJson.value
+        : this.byInstitutionJson,
   );
   SnapshotRow copyWithCompanion(SnapshotsCompanion data) {
     return SnapshotRow(
@@ -2450,6 +2496,9 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
           ? data.totalPlMinor.value
           : this.totalPlMinor,
       currency: data.currency.present ? data.currency.value : this.currency,
+      byInstitutionJson: data.byInstitutionJson.present
+          ? data.byInstitutionJson.value
+          : this.byInstitutionJson,
     );
   }
 
@@ -2461,7 +2510,8 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
           ..write('totalValueMinor: $totalValueMinor, ')
           ..write('totalInvestedMinor: $totalInvestedMinor, ')
           ..write('totalPlMinor: $totalPlMinor, ')
-          ..write('currency: $currency')
+          ..write('currency: $currency, ')
+          ..write('byInstitutionJson: $byInstitutionJson')
           ..write(')'))
         .toString();
   }
@@ -2474,6 +2524,7 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
     totalInvestedMinor,
     totalPlMinor,
     currency,
+    byInstitutionJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -2484,7 +2535,8 @@ class SnapshotRow extends DataClass implements Insertable<SnapshotRow> {
           other.totalValueMinor == this.totalValueMinor &&
           other.totalInvestedMinor == this.totalInvestedMinor &&
           other.totalPlMinor == this.totalPlMinor &&
-          other.currency == this.currency);
+          other.currency == this.currency &&
+          other.byInstitutionJson == this.byInstitutionJson);
 }
 
 class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
@@ -2494,6 +2546,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
   final Value<int> totalInvestedMinor;
   final Value<int> totalPlMinor;
   final Value<String> currency;
+  final Value<String?> byInstitutionJson;
   final Value<int> rowid;
   const SnapshotsCompanion({
     this.id = const Value.absent(),
@@ -2502,6 +2555,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
     this.totalInvestedMinor = const Value.absent(),
     this.totalPlMinor = const Value.absent(),
     this.currency = const Value.absent(),
+    this.byInstitutionJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SnapshotsCompanion.insert({
@@ -2511,6 +2565,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
     required int totalInvestedMinor,
     required int totalPlMinor,
     required String currency,
+    this.byInstitutionJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        date = Value(date),
@@ -2525,6 +2580,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
     Expression<int>? totalInvestedMinor,
     Expression<int>? totalPlMinor,
     Expression<String>? currency,
+    Expression<String>? byInstitutionJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2535,6 +2591,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
         'total_invested_minor': totalInvestedMinor,
       if (totalPlMinor != null) 'total_pl_minor': totalPlMinor,
       if (currency != null) 'currency': currency,
+      if (byInstitutionJson != null) 'by_institution_json': byInstitutionJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2546,6 +2603,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
     Value<int>? totalInvestedMinor,
     Value<int>? totalPlMinor,
     Value<String>? currency,
+    Value<String?>? byInstitutionJson,
     Value<int>? rowid,
   }) {
     return SnapshotsCompanion(
@@ -2555,6 +2613,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
       totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
       totalPlMinor: totalPlMinor ?? this.totalPlMinor,
       currency: currency ?? this.currency,
+      byInstitutionJson: byInstitutionJson ?? this.byInstitutionJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2580,6 +2639,9 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
     if (currency.present) {
       map['currency'] = Variable<String>(currency.value);
     }
+    if (byInstitutionJson.present) {
+      map['by_institution_json'] = Variable<String>(byInstitutionJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2595,6 +2657,7 @@ class SnapshotsCompanion extends UpdateCompanion<SnapshotRow> {
           ..write('totalInvestedMinor: $totalInvestedMinor, ')
           ..write('totalPlMinor: $totalPlMinor, ')
           ..write('currency: $currency, ')
+          ..write('byInstitutionJson: $byInstitutionJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2858,6 +2921,489 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
   }
 }
 
+class $AssetClassesTable extends AssetClasses
+    with TableInfo<$AssetClassesTable, AssetClassRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AssetClassesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconKeyMeta = const VerificationMeta(
+    'iconKey',
+  );
+  @override
+  late final GeneratedColumn<String> iconKey = GeneratedColumn<String>(
+    'icon_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorValueMeta = const VerificationMeta(
+    'colorValue',
+  );
+  @override
+  late final GeneratedColumn<int> colorValue = GeneratedColumn<int>(
+    'color_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetPercentMeta = const VerificationMeta(
+    'targetPercent',
+  );
+  @override
+  late final GeneratedColumn<double> targetPercent = GeneratedColumn<double>(
+    'target_percent',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _parentIdMeta = const VerificationMeta(
+    'parentId',
+  );
+  @override
+  late final GeneratedColumn<String> parentId = GeneratedColumn<String>(
+    'parent_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    iconKey,
+    colorValue,
+    targetPercent,
+    parentId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'asset_classes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AssetClassRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon_key')) {
+      context.handle(
+        _iconKeyMeta,
+        iconKey.isAcceptableOrUnknown(data['icon_key']!, _iconKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iconKeyMeta);
+    }
+    if (data.containsKey('color_value')) {
+      context.handle(
+        _colorValueMeta,
+        colorValue.isAcceptableOrUnknown(data['color_value']!, _colorValueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorValueMeta);
+    }
+    if (data.containsKey('target_percent')) {
+      context.handle(
+        _targetPercentMeta,
+        targetPercent.isAcceptableOrUnknown(
+          data['target_percent']!,
+          _targetPercentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPercentMeta);
+    }
+    if (data.containsKey('parent_id')) {
+      context.handle(
+        _parentIdMeta,
+        parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AssetClassRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AssetClassRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      iconKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_key'],
+      )!,
+      colorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_value'],
+      )!,
+      targetPercent: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}target_percent'],
+      )!,
+      parentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AssetClassesTable createAlias(String alias) {
+    return $AssetClassesTable(attachedDatabase, alias);
+  }
+}
+
+class AssetClassRow extends DataClass implements Insertable<AssetClassRow> {
+  /// Stable unique id.
+  final String id;
+
+  /// Display name.
+  final String name;
+
+  /// Icon key into the presentation icon map.
+  final String iconKey;
+
+  /// ARGB color value.
+  final int colorValue;
+
+  /// Target share in percent (root: of total; subclass: of parent).
+  final double targetPercent;
+
+  /// Parent class id, or null for a root class.
+  final String? parentId;
+
+  /// Creation timestamp.
+  final DateTime createdAt;
+  const AssetClassRow({
+    required this.id,
+    required this.name,
+    required this.iconKey,
+    required this.colorValue,
+    required this.targetPercent,
+    this.parentId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['icon_key'] = Variable<String>(iconKey);
+    map['color_value'] = Variable<int>(colorValue);
+    map['target_percent'] = Variable<double>(targetPercent);
+    if (!nullToAbsent || parentId != null) {
+      map['parent_id'] = Variable<String>(parentId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AssetClassesCompanion toCompanion(bool nullToAbsent) {
+    return AssetClassesCompanion(
+      id: Value(id),
+      name: Value(name),
+      iconKey: Value(iconKey),
+      colorValue: Value(colorValue),
+      targetPercent: Value(targetPercent),
+      parentId: parentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AssetClassRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AssetClassRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      iconKey: serializer.fromJson<String>(json['iconKey']),
+      colorValue: serializer.fromJson<int>(json['colorValue']),
+      targetPercent: serializer.fromJson<double>(json['targetPercent']),
+      parentId: serializer.fromJson<String?>(json['parentId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'iconKey': serializer.toJson<String>(iconKey),
+      'colorValue': serializer.toJson<int>(colorValue),
+      'targetPercent': serializer.toJson<double>(targetPercent),
+      'parentId': serializer.toJson<String?>(parentId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AssetClassRow copyWith({
+    String? id,
+    String? name,
+    String? iconKey,
+    int? colorValue,
+    double? targetPercent,
+    Value<String?> parentId = const Value.absent(),
+    DateTime? createdAt,
+  }) => AssetClassRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    iconKey: iconKey ?? this.iconKey,
+    colorValue: colorValue ?? this.colorValue,
+    targetPercent: targetPercent ?? this.targetPercent,
+    parentId: parentId.present ? parentId.value : this.parentId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AssetClassRow copyWithCompanion(AssetClassesCompanion data) {
+    return AssetClassRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      iconKey: data.iconKey.present ? data.iconKey.value : this.iconKey,
+      colorValue: data.colorValue.present
+          ? data.colorValue.value
+          : this.colorValue,
+      targetPercent: data.targetPercent.present
+          ? data.targetPercent.value
+          : this.targetPercent,
+      parentId: data.parentId.present ? data.parentId.value : this.parentId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssetClassRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('targetPercent: $targetPercent, ')
+          ..write('parentId: $parentId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    iconKey,
+    colorValue,
+    targetPercent,
+    parentId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AssetClassRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.iconKey == this.iconKey &&
+          other.colorValue == this.colorValue &&
+          other.targetPercent == this.targetPercent &&
+          other.parentId == this.parentId &&
+          other.createdAt == this.createdAt);
+}
+
+class AssetClassesCompanion extends UpdateCompanion<AssetClassRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> iconKey;
+  final Value<int> colorValue;
+  final Value<double> targetPercent;
+  final Value<String?> parentId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const AssetClassesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.iconKey = const Value.absent(),
+    this.colorValue = const Value.absent(),
+    this.targetPercent = const Value.absent(),
+    this.parentId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AssetClassesCompanion.insert({
+    required String id,
+    required String name,
+    required String iconKey,
+    required int colorValue,
+    required double targetPercent,
+    this.parentId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       iconKey = Value(iconKey),
+       colorValue = Value(colorValue),
+       targetPercent = Value(targetPercent),
+       createdAt = Value(createdAt);
+  static Insertable<AssetClassRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? iconKey,
+    Expression<int>? colorValue,
+    Expression<double>? targetPercent,
+    Expression<String>? parentId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (iconKey != null) 'icon_key': iconKey,
+      if (colorValue != null) 'color_value': colorValue,
+      if (targetPercent != null) 'target_percent': targetPercent,
+      if (parentId != null) 'parent_id': parentId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AssetClassesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? iconKey,
+    Value<int>? colorValue,
+    Value<double>? targetPercent,
+    Value<String?>? parentId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return AssetClassesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      iconKey: iconKey ?? this.iconKey,
+      colorValue: colorValue ?? this.colorValue,
+      targetPercent: targetPercent ?? this.targetPercent,
+      parentId: parentId ?? this.parentId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (iconKey.present) {
+      map['icon_key'] = Variable<String>(iconKey.value);
+    }
+    if (colorValue.present) {
+      map['color_value'] = Variable<int>(colorValue.value);
+    }
+    if (targetPercent.present) {
+      map['target_percent'] = Variable<double>(targetPercent.value);
+    }
+    if (parentId.present) {
+      map['parent_id'] = Variable<String>(parentId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssetClassesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('targetPercent: $targetPercent, ')
+          ..write('parentId: $parentId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2867,6 +3413,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $QuotesTable quotes = $QuotesTable(this);
   late final $SnapshotsTable snapshots = $SnapshotsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $AssetClassesTable assetClasses = $AssetClassesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2878,6 +3425,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     quotes,
     snapshots,
     settings,
+    assetClasses,
   ];
 }
 
@@ -3934,6 +4482,7 @@ typedef $$SnapshotsTableCreateCompanionBuilder =
       required int totalInvestedMinor,
       required int totalPlMinor,
       required String currency,
+      Value<String?> byInstitutionJson,
       Value<int> rowid,
     });
 typedef $$SnapshotsTableUpdateCompanionBuilder =
@@ -3944,6 +4493,7 @@ typedef $$SnapshotsTableUpdateCompanionBuilder =
       Value<int> totalInvestedMinor,
       Value<int> totalPlMinor,
       Value<String> currency,
+      Value<String?> byInstitutionJson,
       Value<int> rowid,
     });
 
@@ -3983,6 +4533,11 @@ class $$SnapshotsTableFilterComposer
 
   ColumnFilters<String> get currency => $composableBuilder(
     column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get byInstitutionJson => $composableBuilder(
+    column: $table.byInstitutionJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4025,6 +4580,11 @@ class $$SnapshotsTableOrderingComposer
     column: $table.currency,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get byInstitutionJson => $composableBuilder(
+    column: $table.byInstitutionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SnapshotsTableAnnotationComposer
@@ -4059,6 +4619,11 @@ class $$SnapshotsTableAnnotationComposer
 
   GeneratedColumn<String> get currency =>
       $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<String> get byInstitutionJson => $composableBuilder(
+    column: $table.byInstitutionJson,
+    builder: (column) => column,
+  );
 }
 
 class $$SnapshotsTableTableManager
@@ -4098,6 +4663,7 @@ class $$SnapshotsTableTableManager
                 Value<int> totalInvestedMinor = const Value.absent(),
                 Value<int> totalPlMinor = const Value.absent(),
                 Value<String> currency = const Value.absent(),
+                Value<String?> byInstitutionJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SnapshotsCompanion(
                 id: id,
@@ -4106,6 +4672,7 @@ class $$SnapshotsTableTableManager
                 totalInvestedMinor: totalInvestedMinor,
                 totalPlMinor: totalPlMinor,
                 currency: currency,
+                byInstitutionJson: byInstitutionJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4116,6 +4683,7 @@ class $$SnapshotsTableTableManager
                 required int totalInvestedMinor,
                 required int totalPlMinor,
                 required String currency,
+                Value<String?> byInstitutionJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SnapshotsCompanion.insert(
                 id: id,
@@ -4124,6 +4692,7 @@ class $$SnapshotsTableTableManager
                 totalInvestedMinor: totalInvestedMinor,
                 totalPlMinor: totalPlMinor,
                 currency: currency,
+                byInstitutionJson: byInstitutionJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4306,6 +4875,248 @@ typedef $$SettingsTableProcessedTableManager =
       SettingsRow,
       PrefetchHooks Function()
     >;
+typedef $$AssetClassesTableCreateCompanionBuilder =
+    AssetClassesCompanion Function({
+      required String id,
+      required String name,
+      required String iconKey,
+      required int colorValue,
+      required double targetPercent,
+      Value<String?> parentId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$AssetClassesTableUpdateCompanionBuilder =
+    AssetClassesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> iconKey,
+      Value<int> colorValue,
+      Value<double> targetPercent,
+      Value<String?> parentId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$AssetClassesTableFilterComposer
+    extends Composer<_$AppDatabase, $AssetClassesTable> {
+  $$AssetClassesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AssetClassesTableOrderingComposer
+    extends Composer<_$AppDatabase, $AssetClassesTable> {
+  $$AssetClassesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AssetClassesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AssetClassesTable> {
+  $$AssetClassesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get iconKey =>
+      $composableBuilder(column: $table.iconKey, builder: (column) => column);
+
+  GeneratedColumn<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parentId =>
+      $composableBuilder(column: $table.parentId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$AssetClassesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AssetClassesTable,
+          AssetClassRow,
+          $$AssetClassesTableFilterComposer,
+          $$AssetClassesTableOrderingComposer,
+          $$AssetClassesTableAnnotationComposer,
+          $$AssetClassesTableCreateCompanionBuilder,
+          $$AssetClassesTableUpdateCompanionBuilder,
+          (
+            AssetClassRow,
+            BaseReferences<_$AppDatabase, $AssetClassesTable, AssetClassRow>,
+          ),
+          AssetClassRow,
+          PrefetchHooks Function()
+        > {
+  $$AssetClassesTableTableManager(_$AppDatabase db, $AssetClassesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AssetClassesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AssetClassesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AssetClassesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> iconKey = const Value.absent(),
+                Value<int> colorValue = const Value.absent(),
+                Value<double> targetPercent = const Value.absent(),
+                Value<String?> parentId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AssetClassesCompanion(
+                id: id,
+                name: name,
+                iconKey: iconKey,
+                colorValue: colorValue,
+                targetPercent: targetPercent,
+                parentId: parentId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String iconKey,
+                required int colorValue,
+                required double targetPercent,
+                Value<String?> parentId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AssetClassesCompanion.insert(
+                id: id,
+                name: name,
+                iconKey: iconKey,
+                colorValue: colorValue,
+                targetPercent: targetPercent,
+                parentId: parentId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AssetClassesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AssetClassesTable,
+      AssetClassRow,
+      $$AssetClassesTableFilterComposer,
+      $$AssetClassesTableOrderingComposer,
+      $$AssetClassesTableAnnotationComposer,
+      $$AssetClassesTableCreateCompanionBuilder,
+      $$AssetClassesTableUpdateCompanionBuilder,
+      (
+        AssetClassRow,
+        BaseReferences<_$AppDatabase, $AssetClassesTable, AssetClassRow>,
+      ),
+      AssetClassRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4322,4 +5133,6 @@ class $AppDatabaseManager {
       $$SnapshotsTableTableManager(_db, _db.snapshots);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$AssetClassesTableTableManager get assetClasses =>
+      $$AssetClassesTableTableManager(_db, _db.assetClasses);
 }

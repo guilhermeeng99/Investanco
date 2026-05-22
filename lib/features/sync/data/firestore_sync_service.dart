@@ -23,6 +23,7 @@ class FirestoreSyncService implements SyncService {
     'assets',
     'transactions',
     'snapshots',
+    'asset_classes',
   ];
 
   @override
@@ -45,6 +46,11 @@ class FirestoreSyncService implements SyncService {
         'snapshots',
         SnapshotRow.fromJson,
       );
+      final assetClasses = await _fetchRows(
+        userId,
+        'asset_classes',
+        AssetClassRow.fromJson,
+      );
 
       // Phase 2 — rebuild the local cache to match the cloud exactly.
       await _db.replaceMirroredData(
@@ -52,6 +58,7 @@ class FirestoreSyncService implements SyncService {
         assets: assets,
         transactions: transactions,
         snapshots: snapshots,
+        assetClasses: assetClasses,
       );
       return const Right(unit);
     } on Object {

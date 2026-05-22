@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/money_input.dart';
 import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/features/allocation/domain/asset_allocation.dart';
+import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
+import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
+import 'package:investanco/features/allocation/presentation/allocation_visuals.dart';
 import 'package:investanco/features/assets/domain/asset_kind_defaults.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
@@ -16,7 +24,12 @@ import 'package:investanco/gen/i18n/strings.g.dart';
 /// Bottom sheet to add or edit an [Asset].
 class AssetFormSheet extends StatefulWidget {
   /// Creates the form, optionally pre-filled with [existing] for editing.
-  const AssetFormSheet({required this.cubit, this.existing, super.key});
+  const AssetFormSheet({
+    required this.cubit,
+    this.existing,
+    this.presetAllocationClassId,
+    super.key,
+  });
 
   /// Cubit used to persist the asset.
   final AssetsCubit cubit;
@@ -24,16 +37,25 @@ class AssetFormSheet extends StatefulWidget {
   /// When non-null, the sheet edits this asset instead of creating one.
   final Asset? existing;
 
+  /// When set (e.g. opened from a class detail), pre-selects the allocation
+  /// class for a new asset.
+  final String? presetAllocationClassId;
+
   /// Opens the sheet as a modal bottom sheet.
   static Future<void> show(
     BuildContext context,
     AssetsCubit cubit, {
     Asset? existing,
+    String? presetAllocationClassId,
   }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => AssetFormSheet(cubit: cubit, existing: existing),
+      builder: (_) => AssetFormSheet(
+        cubit: cubit,
+        existing: existing,
+        presetAllocationClassId: presetAllocationClassId,
+      ),
     );
   }
 
@@ -51,6 +73,9 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   late FixedIncomeBasis _fiBasis;
   late Market _market;
   late Currency _currency;
+  late final TextEditingController _allocationTargetController;
+  String? _allocationClassId;
+  List<AssetClass> _allocationClasses = const [];
 
   @override
   void initState() {
@@ -74,6 +99,21 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _kind = existing?.kind ?? defaultKind;
     _market = existing?.market ?? defaultMarket;
     _currency = existing?.currency ?? defaultCurrency;
+
+    _allocationClassId = existing == null
+        ? widget.presetAllocationClassId
+        : allocationClassIdOf(existing);
+    _allocationTargetController = TextEditingController(
+      text: existing == null
+          ? ''
+          : (existing.metadata[allocationTargetKey] ?? ''),
+    );
+    unawaited(_loadAllocationClasses());
+  }
+
+  Future<void> _loadAllocationClasses() async {
+    final classes = await sl<AssetClassRepository>().watchAll().first;
+    if (mounted) setState(() => _allocationClasses = classes);
   }
 
   @override
@@ -82,7 +122,16 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _nameController.dispose();
     _tesouroNameController.dispose();
     _fiRateController.dispose();
+    _allocationTargetController.dispose();
     super.dispose();
+  }
+
+  AssetClass? _classOf(String? id) {
+    if (id == null) return null;
+    for (final c in _allocationClasses) {
+      if (c.id == id) return c;
+    }
+    return null;
   }
 
   /// Picking a kind pre-fills market and currency to the usual pairing
@@ -161,13 +210,46 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     if (picked != null) setState(() => _fiBasis = picked);
   }
 
+  void _noop() {}
+
+  Future<void> _pickAllocationClass(FormFieldState<String> field) async {
+    final picked = await showOptionPicker<String>(
+      context,
+      title: t.assets.allocationClass,
+      selected: _allocationClassId ?? '',
+      items: [
+        for (final c in _allocationClasses)
+          OptionPickerItem(
+            value: c.id,
+            label: c.name,
+            leading: BrandAvatar(
+              size: 32,
+              background: Color(c.colorValue),
+              icon: allocationIcon(c.iconKey),
+            ),
+          ),
+      ],
+    );
+    if (picked == null) return;
+    setState(() => _allocationClassId = picked);
+    field.didChange(picked);
+  }
+
   /// Carries kind-specific metadata. Each block is dropped when the kind no
   /// longer matches so stale keys don't linger after a kind change.
   Map<String, String> _buildMetadata() {
     final metadata = Map<String, String>.from(widget.existing?.metadata ?? {});
     _applyTesouroName(metadata);
     _applyFixedIncome(metadata);
-    return metadata;
+    final target = double.tryParse(
+          _allocationTargetController.text.trim().replaceAll(',', '.'),
+        ) ??
+        0;
+    return applyAllocation(
+      metadata,
+      classId: _allocationClassId,
+      targetPercent: target,
+    );
   }
 
   void _applyTesouroName(Map<String, String> metadata) {
@@ -269,6 +351,65 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 12),
+        FormField<String>(
+          initialValue: _allocationClassId,
+          validator: (v) =>
+              (_allocationClasses.isNotEmpty && (v == null || v.isEmpty))
+                  ? t.assets.allocationClassRequired
+                  : null,
+          builder: (field) {
+            final selected = _classOf(field.value);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InvestancoPickerField(
+                  label: t.assets.allocationClass,
+                  value: selected?.name ?? '',
+                  placeholder: _allocationClasses.isEmpty
+                      ? t.assets.allocationNoClasses
+                      : t.assets.allocationClassPlaceholder,
+                  isError: field.hasError,
+                  leading: selected == null
+                      ? null
+                      : BrandAvatar(
+                          size: 32,
+                          background: Color(selected.colorValue),
+                          icon: allocationIcon(selected.iconKey),
+                        ),
+                  onTap: _allocationClasses.isEmpty
+                      ? _noop
+                      : () => _pickAllocationClass(field),
+                ),
+                if (field.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, left: 4),
+                    child: Text(
+                      field.errorText!,
+                      style: context.textTheme.bodySmall
+                          ?.copyWith(color: context.appColors.error),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        InvestancoTextField(
+          label: t.assets.allocationTarget,
+          controller: _allocationTargetController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          suffixText: '%',
+          helperText: t.assets.allocationTargetHelp,
+          validator: (v) {
+            if (_allocationClassId == null) return null;
+            final parsed = double.tryParse((v ?? '').replaceAll(',', '.'));
+            if (parsed == null || parsed <= 0) {
+              return t.assets.allocationTargetRequired;
+            }
+            return null;
+          },
         ),
         if (_kind == AssetKind.treasury) ...[
           const SizedBox(height: 12),

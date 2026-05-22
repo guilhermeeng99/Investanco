@@ -156,6 +156,11 @@ class Snapshots extends Table {
   /// `Currency` name (base).
   TextColumn get currency => text()();
 
+  /// Reserved (currently unwritten): JSON map of per-institution base-currency
+  /// slices. Kept as a nullable column so databases already migrated to v7 don't
+  /// need a downgrade; safe to drop via a future migration if never used.
+  TextColumn get byInstitutionJson => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -177,8 +182,46 @@ class Settings extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// User-defined allocation classes and subclasses (target percentages). Row
+/// class renamed to avoid clashing with the `AssetClass` entity. See
+/// `docs/specs/allocation.md`.
+@DataClassName('AssetClassRow')
+class AssetClasses extends Table {
+  /// Stable unique id.
+  TextColumn get id => text()();
+
+  /// Display name.
+  TextColumn get name => text()();
+
+  /// Icon key into the presentation icon map.
+  TextColumn get iconKey => text()();
+
+  /// ARGB color value.
+  IntColumn get colorValue => integer()();
+
+  /// Target share in percent (root: of total; subclass: of parent).
+  RealColumn get targetPercent => real()();
+
+  /// Parent class id, or null for a root class.
+  TextColumn get parentId => text().nullable()();
+
+  /// Creation timestamp.
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
-  tables: [Institutions, Assets, Transactions, Quotes, Snapshots, Settings],
+  tables: [
+    Institutions,
+    Assets,
+    Transactions,
+    Quotes,
+    Snapshots,
+    Settings,
+    AssetClasses,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   /// Opens the on-device database, or uses [executor] (e.g. an in-memory
@@ -196,7 +239,7 @@ class AppDatabase extends _$AppDatabase {
         );
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -209,6 +252,11 @@ class AppDatabase extends _$AppDatabase {
           // (tokens are now build-time dart-define). Recreate the settings
           // table to the new shape, preserving theme + base currency.
           if (from < 6) await m.alterTable(TableMigration(settings));
+          // v7 adds the per-institution breakdown to snapshots (nullable, so old
+          // rows stay valid and just lack a scoped curve until rewritten).
+          if (from < 7) await m.addColumn(snapshots, snapshots.byInstitutionJson);
+          // v8 adds user-defined allocation classes (see allocation.md).
+          if (from < 8) await m.createTable(assetClasses);
         },
       );
 
@@ -219,6 +267,7 @@ class AppDatabase extends _$AppDatabase {
         await delete(transactions).go();
         await delete(quotes).go();
         await delete(snapshots).go();
+        await delete(assetClasses).go();
         await delete(assets).go();
         await delete(institutions).go();
       });
@@ -233,10 +282,12 @@ class AppDatabase extends _$AppDatabase {
     required List<AssetRow> assets,
     required List<TransactionRow> transactions,
     required List<SnapshotRow> snapshots,
+    required List<AssetClassRow> assetClasses,
   }) =>
       transaction(() async {
         await delete(this.transactions).go();
         await delete(this.snapshots).go();
+        await delete(this.assetClasses).go();
         await delete(this.assets).go();
         await delete(this.institutions).go();
         await batch((b) {
@@ -244,7 +295,8 @@ class AppDatabase extends _$AppDatabase {
             ..insertAll(this.institutions, institutions)
             ..insertAll(this.assets, assets)
             ..insertAll(this.transactions, transactions)
-            ..insertAll(this.snapshots, snapshots);
+            ..insertAll(this.snapshots, snapshots)
+            ..insertAll(this.assetClasses, assetClasses);
         });
       });
 }

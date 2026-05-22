@@ -41,6 +41,7 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 	@override late final _TranslationsCommonEn common = _TranslationsCommonEn._(_root);
 	@override late final _TranslationsCurrenciesEn currencies = _TranslationsCurrenciesEn._(_root);
 	@override late final _TranslationsNavEn nav = _TranslationsNavEn._(_root);
+	@override late final _TranslationsAllocationEn allocation = _TranslationsAllocationEn._(_root);
 	@override late final _TranslationsDashboardEn dashboard = _TranslationsDashboardEn._(_root);
 	@override late final _TranslationsInstitutionsEn institutions = _TranslationsInstitutionsEn._(_root);
 	@override late final _TranslationsAssetsEn assets = _TranslationsAssetsEn._(_root);
@@ -93,7 +94,57 @@ class _TranslationsNavEn implements TranslationsNavPt {
 	@override String get dashboard => 'Portfolio';
 	@override String get assets => 'Assets';
 	@override String get transactions => 'Transactions';
+	@override String get allocation => 'Investments';
 	@override String get profile => 'Profile';
+}
+
+// Path: allocation
+class _TranslationsAllocationEn implements TranslationsAllocationPt {
+	_TranslationsAllocationEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get heroTitle => 'INVESTED NET WORTH';
+	@override String get loadError => 'Could not load the allocation.';
+	@override String get refresh => 'Refresh';
+	@override String get sectionClasses => 'Classes';
+	@override String get sectionRebalance => 'Rebalancing';
+	@override String classRowSubtitle({required Object actual, required Object target}) => '${actual} of ${target}';
+	@override String get classRowOnTarget => 'on target';
+	@override String classRowUnderTarget({required Object amount}) => '${amount} below';
+	@override String classRowOverTarget({required Object amount}) => '${amount} above';
+	@override String rebalanceAllocatePending({required Object amount}) => 'Allocate ${amount} unassigned';
+	@override String rebalanceBuy({required Object amount, required Object className}) => 'Add ${amount} to ${className}';
+	@override String rebalanceSell({required Object amount, required Object className}) => 'Trim ${amount} from ${className}';
+	@override String get rebalanceBalanced => 'Your portfolio is on target.';
+	@override String targetsBanner({required Object percent}) => 'Targets sum to ${percent}% — adjust to 100%.';
+	@override String get noClassesHint => 'Create classes and set targets to track your allocation.';
+	@override String get emptyTitle => 'Set up your allocation';
+	@override String get emptyMessage => 'Create classes (e.g. US Equities, Fixed Income), set each one\'s target %, and assign your assets so the app can help you rebalance.';
+	@override String get emptyAction => 'Create class';
+	@override String get saveError => 'Could not save.';
+	@override String get classNameLabel => 'Name';
+	@override String get classNameHint => 'e.g. US Equities';
+	@override String get targetPercentLabel => 'Target %';
+	@override String get targetHelper => 'How much of your net worth you want in this class.';
+	@override String get classIcon => 'Icon';
+	@override String get classColor => 'Color';
+	@override String get newClassTitle => 'New class';
+	@override String get editClassTitle => 'Edit class';
+	@override String get deleteClassTitle => 'Delete class';
+	@override String get deleteClassConfirm => 'The class will be removed. Linked assets become unassigned.';
+	@override String get classDetailTitle => 'Class';
+	@override String get detailAssets => 'Assets';
+	@override String get detailNoAssets => 'No assets in this class. Add an asset and set its target %.';
+	@override String detailTargetAmount({required Object amount}) => 'Target: ${amount}';
+	@override String get addAsset => 'Add asset';
+	@override String subclassDetailLine({required Object amount, required Object percent}) => '${amount} · ${percent} of class';
+	@override String subclassDetailLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}';
+	@override String subclassSuggestionAdd({required Object amount}) => 'Add ${amount} to reach the target';
+	@override String subclassSuggestionTrim({required Object amount}) => 'Trim ${amount} — above target';
+	@override String get subclassSuggestionBalanced => 'On suggested target';
+	@override String get subclassSuggestionNoTarget => 'Set a target % to see the suggestion';
 }
 
 // Path: dashboard
@@ -113,7 +164,6 @@ class _TranslationsDashboardEn implements TranslationsDashboardPt {
 	@override String get profit => 'Profit/Loss';
 	@override String get dayChange => 'Day change';
 	@override String get allocation => 'Allocation by class';
-	@override String get evolution => 'Net worth evolution';
 	@override String get holdings => 'Positions';
 	@override String get lastSync => 'Updated';
 	@override String get never => 'never';
@@ -169,6 +219,14 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get deleteConfirm => 'Delete this asset?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
+	@override String get allocationClass => 'Allocation class';
+	@override String get allocationClassPlaceholder => 'Select the class';
+	@override String get allocationNoClasses => 'Create a class first';
+	@override String get allocationClassRequired => 'Select the allocation class';
+	@override String get allocationTarget => 'Target % in class';
+	@override String get allocationTargetHelp => 'How much this asset should be within the class.';
+	@override String get allocationTargetRequired => 'Enter a target % above 0';
+	@override String get allocationUnassigned => 'No class';
 	@override late final _TranslationsAssetsKindsEn kinds = _TranslationsAssetsKindsEn._(_root);
 	@override late final _TranslationsAssetsMarketsEn markets = _TranslationsAssetsMarketsEn._(_root);
 }
@@ -438,7 +496,48 @@ extension on TranslationsEn {
 			'nav.dashboard' => 'Portfolio',
 			'nav.assets' => 'Assets',
 			'nav.transactions' => 'Transactions',
+			'nav.allocation' => 'Investments',
 			'nav.profile' => 'Profile',
+			'allocation.heroTitle' => 'INVESTED NET WORTH',
+			'allocation.loadError' => 'Could not load the allocation.',
+			'allocation.refresh' => 'Refresh',
+			'allocation.sectionClasses' => 'Classes',
+			'allocation.sectionRebalance' => 'Rebalancing',
+			'allocation.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} of ${target}',
+			'allocation.classRowOnTarget' => 'on target',
+			'allocation.classRowUnderTarget' => ({required Object amount}) => '${amount} below',
+			'allocation.classRowOverTarget' => ({required Object amount}) => '${amount} above',
+			'allocation.rebalanceAllocatePending' => ({required Object amount}) => 'Allocate ${amount} unassigned',
+			'allocation.rebalanceBuy' => ({required Object amount, required Object className}) => 'Add ${amount} to ${className}',
+			'allocation.rebalanceSell' => ({required Object amount, required Object className}) => 'Trim ${amount} from ${className}',
+			'allocation.rebalanceBalanced' => 'Your portfolio is on target.',
+			'allocation.targetsBanner' => ({required Object percent}) => 'Targets sum to ${percent}% — adjust to 100%.',
+			'allocation.noClassesHint' => 'Create classes and set targets to track your allocation.',
+			'allocation.emptyTitle' => 'Set up your allocation',
+			'allocation.emptyMessage' => 'Create classes (e.g. US Equities, Fixed Income), set each one\'s target %, and assign your assets so the app can help you rebalance.',
+			'allocation.emptyAction' => 'Create class',
+			'allocation.saveError' => 'Could not save.',
+			'allocation.classNameLabel' => 'Name',
+			'allocation.classNameHint' => 'e.g. US Equities',
+			'allocation.targetPercentLabel' => 'Target %',
+			'allocation.targetHelper' => 'How much of your net worth you want in this class.',
+			'allocation.classIcon' => 'Icon',
+			'allocation.classColor' => 'Color',
+			'allocation.newClassTitle' => 'New class',
+			'allocation.editClassTitle' => 'Edit class',
+			'allocation.deleteClassTitle' => 'Delete class',
+			'allocation.deleteClassConfirm' => 'The class will be removed. Linked assets become unassigned.',
+			'allocation.classDetailTitle' => 'Class',
+			'allocation.detailAssets' => 'Assets',
+			'allocation.detailNoAssets' => 'No assets in this class. Add an asset and set its target %.',
+			'allocation.detailTargetAmount' => ({required Object amount}) => 'Target: ${amount}',
+			'allocation.addAsset' => 'Add asset',
+			'allocation.subclassDetailLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent} of class',
+			'allocation.subclassDetailLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}',
+			'allocation.subclassSuggestionAdd' => ({required Object amount}) => 'Add ${amount} to reach the target',
+			'allocation.subclassSuggestionTrim' => ({required Object amount}) => 'Trim ${amount} — above target',
+			'allocation.subclassSuggestionBalanced' => 'On suggested target',
+			'allocation.subclassSuggestionNoTarget' => 'Set a target % to see the suggestion',
 			'dashboard.title' => 'Portfolio',
 			'dashboard.empty' => 'Add an institution, an asset and a transaction to start tracking your investments.',
 			'dashboard.emptyTitle' => 'Start your portfolio',
@@ -449,7 +548,6 @@ extension on TranslationsEn {
 			'dashboard.profit' => 'Profit/Loss',
 			'dashboard.dayChange' => 'Day change',
 			'dashboard.allocation' => 'Allocation by class',
-			'dashboard.evolution' => 'Net worth evolution',
 			'dashboard.holdings' => 'Positions',
 			'dashboard.lastSync' => 'Updated',
 			'dashboard.never' => 'never',
@@ -494,6 +592,14 @@ extension on TranslationsEn {
 			'assets.deleteConfirm' => 'Delete this asset?',
 			'assets.inUseError' => 'Cannot delete: there are linked transactions.',
 			'assets.saveError' => 'Error while saving.',
+			'assets.allocationClass' => 'Allocation class',
+			'assets.allocationClassPlaceholder' => 'Select the class',
+			'assets.allocationNoClasses' => 'Create a class first',
+			'assets.allocationClassRequired' => 'Select the allocation class',
+			'assets.allocationTarget' => 'Target % in class',
+			'assets.allocationTargetHelp' => 'How much this asset should be within the class.',
+			'assets.allocationTargetRequired' => 'Enter a target % above 0',
+			'assets.allocationUnassigned' => 'No class',
 			'assets.kinds.stockBr' => 'Stock (BR)',
 			'assets.kinds.fiiBr' => 'REIT (FII)',
 			'assets.kinds.etfBr' => 'ETF (BR)',

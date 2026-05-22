@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:investanco/app/shell/home_shell.dart';
+import 'package:investanco/features/allocation/presentation/pages/asset_class_detail_page.dart';
+import 'package:investanco/features/allocation/presentation/pages/investments_page.dart';
 import 'package:investanco/features/assets/presentation/pages/assets_page.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/auth/presentation/pages/login_page.dart';
@@ -101,6 +103,27 @@ class AppRouter {
               GoRoute(
                 path: TransactionsPage.routePath,
                 builder: (context, state) => const TransactionsPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: InvestmentsPage.routePath,
+                builder: (context, state) => const InvestmentsPage(),
+                routes: [
+                  // Class detail nested under the branch so the nav shell stays
+                  // visible; the class id is passed via `extra`.
+                  GoRoute(
+                    path: AssetClassDetailPage.routePath,
+                    builder: (context, state) {
+                      final id = state.extra;
+                      return AssetClassDetailPage(
+                        classId: id is String ? id : '',
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

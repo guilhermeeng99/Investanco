@@ -14,6 +14,10 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/network/dio_client.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/core/utils/id_generator.dart';
+import 'package:investanco/features/allocation/data/repositories/asset_class_repository_impl.dart';
+import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
+import 'package:investanco/features/allocation/domain/usecases/save_asset_class_usecase.dart';
+import 'package:investanco/features/allocation/presentation/cubit/allocation_cubit.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
@@ -75,6 +79,7 @@ Future<void> init() async {
   _initPortfolioImport();
   _initQuotes();
   _initDashboard();
+  _initAllocation();
   _initProfile();
   _initPreferences();
   await _loadTheme();
@@ -220,6 +225,30 @@ void _initDashboard() {
     )
     ..registerFactory<DashboardCubit>(
       () => DashboardCubit(sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl(), sl()),
+    );
+}
+
+void _initAllocation() {
+  sl
+    ..registerLazySingleton<AssetClassRepository>(
+      () => AssetClassRepositoryImpl(sl(), sl()),
+    )
+    ..registerLazySingleton<SaveAssetClassUseCase>(
+      () => SaveAssetClassUseCase(sl()),
+    )
+    ..registerFactory<AllocationCubit>(
+      () => AllocationCubit(
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+        sl(),
+      ),
     );
 }
 

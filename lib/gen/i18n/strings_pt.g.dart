@@ -47,6 +47,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsCommonPt common = TranslationsCommonPt._(_root);
 	late final TranslationsCurrenciesPt currencies = TranslationsCurrenciesPt._(_root);
 	late final TranslationsNavPt nav = TranslationsNavPt._(_root);
+	late final TranslationsAllocationPt allocation = TranslationsAllocationPt._(_root);
 	late final TranslationsDashboardPt dashboard = TranslationsDashboardPt._(_root);
 	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
 	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
@@ -128,8 +129,140 @@ class TranslationsNavPt {
 	/// pt: 'Lançamentos'
 	String get transactions => 'Lançamentos';
 
+	/// pt: 'Investimentos'
+	String get allocation => 'Investimentos';
+
 	/// pt: 'Perfil'
 	String get profile => 'Perfil';
+}
+
+// Path: allocation
+class TranslationsAllocationPt {
+	TranslationsAllocationPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'PATRIMÔNIO INVESTIDO'
+	String get heroTitle => 'PATRIMÔNIO INVESTIDO';
+
+	/// pt: 'Não foi possível carregar a alocação.'
+	String get loadError => 'Não foi possível carregar a alocação.';
+
+	/// pt: 'Atualizar'
+	String get refresh => 'Atualizar';
+
+	/// pt: 'Classes'
+	String get sectionClasses => 'Classes';
+
+	/// pt: 'Rebalanceamento'
+	String get sectionRebalance => 'Rebalanceamento';
+
+	/// pt: '$actual de $target'
+	String classRowSubtitle({required Object actual, required Object target}) => '${actual} de ${target}';
+
+	/// pt: 'no alvo'
+	String get classRowOnTarget => 'no alvo';
+
+	/// pt: '$amount abaixo'
+	String classRowUnderTarget({required Object amount}) => '${amount} abaixo';
+
+	/// pt: '$amount acima'
+	String classRowOverTarget({required Object amount}) => '${amount} acima';
+
+	/// pt: 'Alocar $amount não alocados'
+	String rebalanceAllocatePending({required Object amount}) => 'Alocar ${amount} não alocados';
+
+	/// pt: 'Aportar $amount em $className'
+	String rebalanceBuy({required Object amount, required Object className}) => 'Aportar ${amount} em ${className}';
+
+	/// pt: 'Resgatar $amount de $className'
+	String rebalanceSell({required Object amount, required Object className}) => 'Resgatar ${amount} de ${className}';
+
+	/// pt: 'Sua carteira está no alvo.'
+	String get rebalanceBalanced => 'Sua carteira está no alvo.';
+
+	/// pt: 'Os alvos somam $percent% — ajuste para 100%.'
+	String targetsBanner({required Object percent}) => 'Os alvos somam ${percent}% — ajuste para 100%.';
+
+	/// pt: 'Crie classes e defina os alvos para acompanhar a alocação.'
+	String get noClassesHint => 'Crie classes e defina os alvos para acompanhar a alocação.';
+
+	/// pt: 'Defina sua alocação'
+	String get emptyTitle => 'Defina sua alocação';
+
+	/// pt: 'Crie classes (ex.: Ações EUA, Renda Fixa), defina o % alvo de cada uma e atribua seus ativos para o app ajudar no rebalanceamento.'
+	String get emptyMessage => 'Crie classes (ex.: Ações EUA, Renda Fixa), defina o % alvo de cada uma e atribua seus ativos para o app ajudar no rebalanceamento.';
+
+	/// pt: 'Criar classe'
+	String get emptyAction => 'Criar classe';
+
+	/// pt: 'Erro ao salvar.'
+	String get saveError => 'Erro ao salvar.';
+
+	/// pt: 'Nome'
+	String get classNameLabel => 'Nome';
+
+	/// pt: 'ex.: Ações EUA'
+	String get classNameHint => 'ex.: Ações EUA';
+
+	/// pt: '% alvo'
+	String get targetPercentLabel => '% alvo';
+
+	/// pt: 'Quanto do patrimônio você quer nesta classe.'
+	String get targetHelper => 'Quanto do patrimônio você quer nesta classe.';
+
+	/// pt: 'Ícone'
+	String get classIcon => 'Ícone';
+
+	/// pt: 'Cor'
+	String get classColor => 'Cor';
+
+	/// pt: 'Nova classe'
+	String get newClassTitle => 'Nova classe';
+
+	/// pt: 'Editar classe'
+	String get editClassTitle => 'Editar classe';
+
+	/// pt: 'Excluir classe'
+	String get deleteClassTitle => 'Excluir classe';
+
+	/// pt: 'A classe será removida. Os ativos vinculados voltam a ficar não alocados.'
+	String get deleteClassConfirm => 'A classe será removida. Os ativos vinculados voltam a ficar não alocados.';
+
+	/// pt: 'Classe'
+	String get classDetailTitle => 'Classe';
+
+	/// pt: 'Ativos'
+	String get detailAssets => 'Ativos';
+
+	/// pt: 'Nenhum ativo nesta classe. Adicione um ativo e defina seu % alvo.'
+	String get detailNoAssets => 'Nenhum ativo nesta classe. Adicione um ativo e defina seu % alvo.';
+
+	/// pt: 'Meta: $amount'
+	String detailTargetAmount({required Object amount}) => 'Meta: ${amount}';
+
+	/// pt: 'Adicionar ativo'
+	String get addAsset => 'Adicionar ativo';
+
+	/// pt: '$amount · $percent da classe'
+	String subclassDetailLine({required Object amount, required Object percent}) => '${amount} · ${percent} da classe';
+
+	/// pt: '$amount · $actual de $target'
+	String subclassDetailLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}';
+
+	/// pt: 'Aporte $amount para chegar à meta'
+	String subclassSuggestionAdd({required Object amount}) => 'Aporte ${amount} para chegar à meta';
+
+	/// pt: 'Reduza $amount — acima da meta'
+	String subclassSuggestionTrim({required Object amount}) => 'Reduza ${amount} — acima da meta';
+
+	/// pt: 'No alvo sugerido'
+	String get subclassSuggestionBalanced => 'No alvo sugerido';
+
+	/// pt: 'Defina um alvo % para ver a sugestão'
+	String get subclassSuggestionNoTarget => 'Defina um alvo % para ver a sugestão';
 }
 
 // Path: dashboard
@@ -169,9 +302,6 @@ class TranslationsDashboardPt {
 
 	/// pt: 'Alocação por classe'
 	String get allocation => 'Alocação por classe';
-
-	/// pt: 'Evolução do patrimônio'
-	String get evolution => 'Evolução do patrimônio';
 
 	/// pt: 'Posições'
 	String get holdings => 'Posições';
@@ -299,6 +429,30 @@ class TranslationsAssetsPt {
 
 	/// pt: 'Erro ao salvar.'
 	String get saveError => 'Erro ao salvar.';
+
+	/// pt: 'Classe de alocação'
+	String get allocationClass => 'Classe de alocação';
+
+	/// pt: 'Selecione a classe'
+	String get allocationClassPlaceholder => 'Selecione a classe';
+
+	/// pt: 'Crie uma classe primeiro'
+	String get allocationNoClasses => 'Crie uma classe primeiro';
+
+	/// pt: 'Selecione a classe de alocação'
+	String get allocationClassRequired => 'Selecione a classe de alocação';
+
+	/// pt: '% alvo na classe'
+	String get allocationTarget => '% alvo na classe';
+
+	/// pt: 'Quanto este ativo deve representar dentro da classe.'
+	String get allocationTargetHelp => 'Quanto este ativo deve representar dentro da classe.';
+
+	/// pt: 'Informe um % alvo maior que 0'
+	String get allocationTargetRequired => 'Informe um % alvo maior que 0';
+
+	/// pt: 'Sem classe'
+	String get allocationUnassigned => 'Sem classe';
 
 	late final TranslationsAssetsKindsPt kinds = TranslationsAssetsKindsPt._(_root);
 	late final TranslationsAssetsMarketsPt markets = TranslationsAssetsMarketsPt._(_root);
@@ -818,7 +972,48 @@ extension on Translations {
 			'nav.dashboard' => 'Carteira',
 			'nav.assets' => 'Ativos',
 			'nav.transactions' => 'Lançamentos',
+			'nav.allocation' => 'Investimentos',
 			'nav.profile' => 'Perfil',
+			'allocation.heroTitle' => 'PATRIMÔNIO INVESTIDO',
+			'allocation.loadError' => 'Não foi possível carregar a alocação.',
+			'allocation.refresh' => 'Atualizar',
+			'allocation.sectionClasses' => 'Classes',
+			'allocation.sectionRebalance' => 'Rebalanceamento',
+			'allocation.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} de ${target}',
+			'allocation.classRowOnTarget' => 'no alvo',
+			'allocation.classRowUnderTarget' => ({required Object amount}) => '${amount} abaixo',
+			'allocation.classRowOverTarget' => ({required Object amount}) => '${amount} acima',
+			'allocation.rebalanceAllocatePending' => ({required Object amount}) => 'Alocar ${amount} não alocados',
+			'allocation.rebalanceBuy' => ({required Object amount, required Object className}) => 'Aportar ${amount} em ${className}',
+			'allocation.rebalanceSell' => ({required Object amount, required Object className}) => 'Resgatar ${amount} de ${className}',
+			'allocation.rebalanceBalanced' => 'Sua carteira está no alvo.',
+			'allocation.targetsBanner' => ({required Object percent}) => 'Os alvos somam ${percent}% — ajuste para 100%.',
+			'allocation.noClassesHint' => 'Crie classes e defina os alvos para acompanhar a alocação.',
+			'allocation.emptyTitle' => 'Defina sua alocação',
+			'allocation.emptyMessage' => 'Crie classes (ex.: Ações EUA, Renda Fixa), defina o % alvo de cada uma e atribua seus ativos para o app ajudar no rebalanceamento.',
+			'allocation.emptyAction' => 'Criar classe',
+			'allocation.saveError' => 'Erro ao salvar.',
+			'allocation.classNameLabel' => 'Nome',
+			'allocation.classNameHint' => 'ex.: Ações EUA',
+			'allocation.targetPercentLabel' => '% alvo',
+			'allocation.targetHelper' => 'Quanto do patrimônio você quer nesta classe.',
+			'allocation.classIcon' => 'Ícone',
+			'allocation.classColor' => 'Cor',
+			'allocation.newClassTitle' => 'Nova classe',
+			'allocation.editClassTitle' => 'Editar classe',
+			'allocation.deleteClassTitle' => 'Excluir classe',
+			'allocation.deleteClassConfirm' => 'A classe será removida. Os ativos vinculados voltam a ficar não alocados.',
+			'allocation.classDetailTitle' => 'Classe',
+			'allocation.detailAssets' => 'Ativos',
+			'allocation.detailNoAssets' => 'Nenhum ativo nesta classe. Adicione um ativo e defina seu % alvo.',
+			'allocation.detailTargetAmount' => ({required Object amount}) => 'Meta: ${amount}',
+			'allocation.addAsset' => 'Adicionar ativo',
+			'allocation.subclassDetailLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent} da classe',
+			'allocation.subclassDetailLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}',
+			'allocation.subclassSuggestionAdd' => ({required Object amount}) => 'Aporte ${amount} para chegar à meta',
+			'allocation.subclassSuggestionTrim' => ({required Object amount}) => 'Reduza ${amount} — acima da meta',
+			'allocation.subclassSuggestionBalanced' => 'No alvo sugerido',
+			'allocation.subclassSuggestionNoTarget' => 'Defina um alvo % para ver a sugestão',
 			'dashboard.title' => 'Carteira',
 			'dashboard.empty' => 'Cadastre instituição, ativo e um lançamento para acompanhar seus investimentos.',
 			'dashboard.emptyTitle' => 'Comece sua carteira',
@@ -829,7 +1024,6 @@ extension on Translations {
 			'dashboard.profit' => 'Lucro/Prejuízo',
 			'dashboard.dayChange' => 'Variação do dia',
 			'dashboard.allocation' => 'Alocação por classe',
-			'dashboard.evolution' => 'Evolução do patrimônio',
 			'dashboard.holdings' => 'Posições',
 			'dashboard.lastSync' => 'Atualizado',
 			'dashboard.never' => 'nunca',
@@ -874,6 +1068,14 @@ extension on Translations {
 			'assets.deleteConfirm' => 'Excluir este ativo?',
 			'assets.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
 			'assets.saveError' => 'Erro ao salvar.',
+			'assets.allocationClass' => 'Classe de alocação',
+			'assets.allocationClassPlaceholder' => 'Selecione a classe',
+			'assets.allocationNoClasses' => 'Crie uma classe primeiro',
+			'assets.allocationClassRequired' => 'Selecione a classe de alocação',
+			'assets.allocationTarget' => '% alvo na classe',
+			'assets.allocationTargetHelp' => 'Quanto este ativo deve representar dentro da classe.',
+			'assets.allocationTargetRequired' => 'Informe um % alvo maior que 0',
+			'assets.allocationUnassigned' => 'Sem classe',
 			'assets.kinds.stockBr' => 'Ação (BR)',
 			'assets.kinds.fiiBr' => 'FII',
 			'assets.kinds.etfBr' => 'ETF (BR)',

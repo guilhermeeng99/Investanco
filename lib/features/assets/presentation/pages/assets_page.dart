@@ -5,6 +5,9 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/initials.dart';
+import 'package:investanco/features/allocation/domain/asset_allocation.dart';
+import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
+import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
@@ -62,34 +65,44 @@ class _AssetsView extends StatelessWidget {
         onAdd: () => AssetFormSheet.show(context, cubit),
         onImport: () => showAssetsCsvImportDialog(context),
       ),
-      body: BlocBuilder<AssetsCubit, AssetsState>(
-        builder: (context, state) {
-          return switch (state) {
-            AssetsLoading() => const LoadingShimmerList(),
-            AssetsError() => ErrorView(
-              message: t.assets.saveError,
-              onRetry: () {},
-            ),
-            AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
-              icon: FontAwesomeIcons.coins,
-              title: t.assets.title,
-              message: t.assets.empty,
-              actionLabel: t.assets.add,
-              onAction: () => AssetFormSheet.show(context, cubit),
-            ),
-            AssetsLoaded(:final assets) => EntityListView(
-              itemCount: assets.length,
-              itemBuilder: (context, index) => _AssetTile(
-                asset: assets[index],
-                onTap: () => AssetFormSheet.show(
-                  context,
-                  cubit,
-                  existing: assets[index],
-                ),
-                onDelete: () => _confirmDelete(context, cubit, assets[index]),
-              ),
-            ),
+      body: StreamBuilder<List<AssetClass>>(
+        stream: sl<AssetClassRepository>().watchAll(),
+        builder: (context, snapshot) {
+          final classesById = {
+            for (final c in snapshot.data ?? const <AssetClass>[]) c.id: c,
           };
+          return BlocBuilder<AssetsCubit, AssetsState>(
+            builder: (context, state) {
+              return switch (state) {
+                AssetsLoading() => const LoadingShimmerList(),
+                AssetsError() => ErrorView(
+                  message: t.assets.saveError,
+                  onRetry: () {},
+                ),
+                AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
+                  icon: FontAwesomeIcons.coins,
+                  title: t.assets.title,
+                  message: t.assets.empty,
+                  actionLabel: t.assets.add,
+                  onAction: () => AssetFormSheet.show(context, cubit),
+                ),
+                AssetsLoaded(:final assets) => EntityListView(
+                  itemCount: assets.length,
+                  itemBuilder: (context, index) => _AssetTile(
+                    asset: assets[index],
+                    assetClass: classesById[allocationClassIdOf(assets[index])],
+                    onTap: () => AssetFormSheet.show(
+                      context,
+                      cubit,
+                      existing: assets[index],
+                    ),
+                    onDelete: () =>
+                        _confirmDelete(context, cubit, assets[index]),
+                  ),
+                ),
+              };
+            },
+          );
         },
       ),
     );
@@ -99,13 +112,27 @@ class _AssetsView extends StatelessWidget {
 class _AssetTile extends StatelessWidget {
   const _AssetTile({
     required this.asset,
+    required this.assetClass,
     required this.onTap,
     required this.onDelete,
   });
 
   final Asset asset;
+
+  /// The allocation class this asset is assigned to, or null when unassigned.
+  final AssetClass? assetClass;
+
   final VoidCallback onTap;
   final VoidCallback onDelete;
+
+  String _allocationLabel(AssetClass cls) {
+    final target = allocationTargetOf(asset);
+    if (target <= 0) return cls.name;
+    final pct = target == target.roundToDouble()
+        ? target.toStringAsFixed(0)
+        : '$target';
+    return '${cls.name} · $pct%';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +170,7 @@ class _AssetTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 6,
+                  runSpacing: 6,
                   children: [
                     InvestancoChip(
                       label: assetKindLabel(asset.kind),
@@ -152,6 +180,16 @@ class _AssetTile extends StatelessWidget {
                       label: asset.currency.code,
                       color: colors.neutral,
                     ),
+                    if (assetClass case final cls?)
+                      InvestancoChip(
+                        label: _allocationLabel(cls),
+                        color: Color(cls.colorValue),
+                      )
+                    else
+                      InvestancoChip(
+                        label: t.assets.allocationUnassigned,
+                        color: colors.onBackgroundLight,
+                      ),
                   ],
                 ),
               ],

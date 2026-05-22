@@ -10,6 +10,7 @@ import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/core/utils/id_generator.dart';
+import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
@@ -27,6 +28,7 @@ import 'package:investanco/features/sync/domain/sync_service.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'factories/asset_class_factory.dart';
 import 'factories/asset_factory.dart';
 import 'factories/institution_factory.dart';
 import 'factories/transaction_factory.dart';
@@ -42,6 +44,8 @@ class MockInstitutionRepository extends Mock implements InstitutionRepository {}
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 
 class MockSnapshotRepository extends Mock implements SnapshotRepository {}
+
+class MockAssetClassRepository extends Mock implements AssetClassRepository {}
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
 
@@ -124,6 +128,7 @@ class FakeQuoteDataSource implements QuoteDataSource {
 /// repeats `registerFallbackValue`.
 void registerCommonFallbacks() {
   registerFallbackValue(assetFactory());
+  registerFallbackValue(assetClassFactory());
   registerFallbackValue(institutionFactory());
   registerFallbackValue(transactionFactory());
   registerFallbackValue(const AppSettings());

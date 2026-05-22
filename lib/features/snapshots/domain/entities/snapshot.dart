@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:investanco/core/money/money.dart';
 
-/// A daily record of total portfolio value (base currency), powering the
-/// evolution chart. See `docs/specs/snapshots.md`.
+/// A daily record of total portfolio value (base currency). See
+/// `docs/specs/snapshots.md`.
 class Snapshot extends Equatable {
   /// Creates a snapshot.
   const Snapshot({
