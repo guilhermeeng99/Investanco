@@ -41,9 +41,12 @@ class DashboardLoaded extends DashboardState {
     required this.isRefreshing,
     required this.snapshots,
     this.lastSyncAt,
+    this.institutionFilter,
   });
 
-  /// The valued portfolio.
+  /// The **full** valued portfolio (every institution). The header, allocation
+  /// and positions render [visiblePortfolio], which applies [institutionFilter];
+  /// snapshots are always written from this full figure.
   final PortfolioValuation portfolio;
 
   /// Historical daily snapshots (oldest first) for the evolution chart.
@@ -61,8 +64,33 @@ class DashboardLoaded extends DashboardState {
   /// Whether a background refresh is in flight.
   final bool isRefreshing;
 
-  /// Whether there is at least one open position.
+  /// Active institution filter (an institution id), or `null` for all. Affects
+  /// only what's shown ([visiblePortfolio]); the full [portfolio] is kept.
+  final String? institutionFilter;
+
+  /// The portfolio narrowed to [institutionFilter] (the full one when unset).
+  PortfolioValuation get visiblePortfolio =>
+      portfolio.forInstitution(institutionFilter);
+
+  /// Institution ids that hold value, biggest first — the filter bar's chips.
+  /// Built from the full portfolio so every bank with an open position is
+  /// offered; zero-value (fully sold) institutions are excluded.
+  List<String> get filterableInstitutionIds {
+    final entries = portfolio.byInstitution.entries
+        .where((e) => e.value.minorUnits > 0)
+        .toList()
+      ..sort((a, b) => b.value.minorUnits.compareTo(a.value.minorUnits));
+    return [for (final e in entries) e.key];
+  }
+
+  /// Whether there is at least one open position **across all institutions**
+  /// (drives the onboarding empty state — independent of the filter).
   bool get hasHoldings => portfolio.holdings.any((h) => h.quantity > 0);
+
+  /// Whether the filtered view has any open position (false → "no positions for
+  /// this institution", keeping the filter bar so the user can clear it).
+  bool get hasVisibleHoldings =>
+      visiblePortfolio.holdings.any((h) => h.quantity > 0);
 
   /// Whether any institution has been registered.
   bool get hasInstitutions => institutionsById.isNotEmpty;
@@ -87,6 +115,7 @@ class DashboardLoaded extends DashboardState {
         lastSyncAt,
         isRefreshing,
         snapshots,
+        institutionFilter,
       ];
 }
 

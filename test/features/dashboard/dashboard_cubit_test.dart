@@ -189,4 +189,106 @@ void main() {
       ),
     );
   });
+
+  /// Adds a second open position at a BR institution (Nubank), so the dashboard
+  /// has two institutions to filter between. Stubs all network sources empty.
+  Future<void> seedSecondInstitution() async {
+    await InstitutionRepositoryImpl(db).save(
+      institutionFactory(id: 'i2', name: 'Nubank'),
+    );
+    await AssetRepositoryImpl(db).save(
+      assetFactory(
+        id: 'a2',
+        ticker: 'PETR4',
+        kind: AssetKind.stockBr,
+        market: Market.br,
+        currency: Currency.brl,
+      ),
+    );
+    await TransactionRepositoryImpl(db).save(
+      transactionFactory(
+        id: 't2',
+        institutionId: 'i2',
+        assetId: 'a2',
+        quantity: 10,
+        unitPrice: Money.fromMajor(10, Currency.brl),
+        fees: const Money.zero(Currency.brl),
+        amount: Money.fromMajor(100, Currency.brl),
+      ),
+    );
+
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.refresh(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => fxDataSource.rate(Currency.usd, Currency.brl))
+        .thenAnswer((_) async => const Right<Failure, double>(5));
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+    when(
+      () => snapshotRepository.upsertToday(
+        totalValue: any(named: 'totalValue'),
+        totalInvested: any(named: 'totalInvested'),
+        totalPL: any(named: 'totalPL'),
+      ),
+    ).thenAnswer((_) async => const Right(unit));
+  }
+
+  test('setInstitutionFilter scopes the visible portfolio to one institution',
+      () async {
+    await seedSecondInstitution();
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    // Wait until FX has loaded and both institutions count toward the portfolio.
+    await expectLater(
+      cubit.stream,
+      emitsThrough(
+        predicate<DashboardState>(
+          (s) => s is DashboardLoaded && s.portfolio.byInstitution.length == 2,
+        ),
+      ),
+    );
+
+    cubit.setInstitutionFilter('i2');
+    final state = cubit.state as DashboardLoaded;
+
+    expect(state.institutionFilter, 'i2');
+    expect(state.filterableInstitutionIds.toSet(), {'i1', 'i2'});
+    expect(
+      state.visiblePortfolio.holdings
+          .where((h) => h.quantity > 0)
+          .map((h) => h.assetId),
+      ['a2'],
+    );
+    expect(state.hasVisibleHoldings, isTrue);
+  });
+
+  test('clears the filter when its institution no longer holds value', () async {
+    await seedSecondInstitution();
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    await expectLater(
+      cubit.stream,
+      emitsThrough(
+        predicate<DashboardState>(
+          (s) => s is DashboardLoaded && s.portfolio.byInstitution.length == 2,
+        ),
+      ),
+    );
+    cubit.setInstitutionFilter('i2');
+    expect((cubit.state as DashboardLoaded).institutionFilter, 'i2');
+
+    // Removing Nubank's only position drops i2 from the portfolio → reset to all.
+    await TransactionRepositoryImpl(db).delete('t2');
+    await expectLater(
+      cubit.stream,
+      emitsThrough(
+        predicate<DashboardState>(
+          (s) => s is DashboardLoaded && s.institutionFilter == null,
+        ),
+      ),
+    );
+  });
 }

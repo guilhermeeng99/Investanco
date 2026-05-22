@@ -20,6 +20,7 @@ class HoldingValuation {
   final AssetKind assetKind;     // for allocation by class
   final double quantity;         // net quantity held
   final Money marketValueBase;   // BRL (native value already × FX)
+  final Money marketValueNative; // asset's own currency (USD for an Avenue ETF)
   final Money investedBase;
   final Money unrealizedPL;
   final Money totalPL;           // unrealized + realized + dividends
@@ -69,9 +70,16 @@ class PortfolioValuation {
   final double totalReturnPct;
   final Map<AssetKind, Money> byClass;        // allocation
   final Map<String, Money> byInstitution;     // allocation
+  final Map<Currency, Money> byCurrency;      // native value per currency
   final List<HoldingValuation> holdings;
 }
 ```
+
+`PortfolioValuation.fromHoldings(holdings, base)` is the single aggregation point
+(FX-missing holdings excluded from totals, kept in `holdings`); `forInstitution(id?)`
+re-runs it over the matching subset for the dashboard's institution filter.
+`byCurrency` sums each holding's `marketValueNative` by its own currency, letting the
+UI show the dollar subtotal of dollar holdings.
 
 ## Edge cases
 

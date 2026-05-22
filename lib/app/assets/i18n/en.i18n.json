@@ -37,7 +37,10 @@
     "lastSync": "Updated",
     "never": "never",
     "refresh": "Refresh",
-    "pricesStale": "Quotes may be outdated"
+    "pricesStale": "Quotes may be outdated",
+    "filterAll": "All",
+    "noPositionsForFilter": "No positions for this institution.",
+    "inForeign": "In USD"
   },
   "institutions": {
     "title": "Institutions",
@@ -118,6 +121,8 @@
     "deleteConfirm": "Delete this transaction?",
     "saveError": "Error while saving.",
     "needPrereqs": "Add an institution and an asset first.",
+    "filterAll": "All",
+    "noFilterResults": "No transactions for this institution.",
     "kinds": {
       "buy": "Buy",
       "sell": "Sell",

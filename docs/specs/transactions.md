@@ -52,11 +52,22 @@ abstract class TransactionRepository {
 
 ## State machine (`TransactionsCubit`)
 
-`TransactionsLoading → TransactionsLoaded(transactions, assetsById, institutionsById)
+`TransactionsLoading → TransactionsLoaded(transactions, assets, institutions, institutionFilter)
 | TransactionsError(failure)`. The cubit merges three streams (transactions, assets,
 institutions) so the list can render asset/institution labels. The form is a plain
 `StatefulWidget` (`transaction_form_sheet.dart`) — there is no separate form cubit;
 it validates locally and calls `add`/`edit`, which return a `Failure?`.
+
+### Institution filter
+
+`TransactionsLoaded` carries an optional `institutionFilter` (an institution id;
+`null` = all). `setInstitutionFilter(id?)` updates it and re-emits. The state exposes
+`visibleTransactions` = `transactions` narrowed to that institution (the raw
+`transactions` stays the full list so the page can still tell "no transactions at
+all" apart from "none match the filter"). The filter survives stream re-emits.
+If the filtered institution is deleted, the filter resets to `null` (its chip would
+otherwise vanish, stranding the user on an empty list). The page only shows the
+filter bar when there is more than one institution — nothing to filter otherwise.
 
 ## Edge cases
 
@@ -64,3 +75,6 @@ it validates locally and calls `add`/`edit`, which return a `Failure?`.
 - Backdated buy that makes a later sell invalid → validation re-runs across the
   timeline; conflicting edit is rejected with the offending tx id.
 - Zero-fee, zero-price (e.g. bonus shares) → allowed.
+- Filter set to an institution that has no transactions → empty list with a
+  "no results" hint; the filter bar stays so the user can clear it.
+- Filtered institution deleted → filter resets to all (see state machine).

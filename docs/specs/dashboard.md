@@ -5,13 +5,21 @@ then refreshes quotes in the background.
 
 ## What it shows
 
-1. **Header**: total equity (BRL), total unrealized P/L (value + %), day change.
-2. **Allocation**: donut chart by asset class and a toggle by institution (fl_chart).
-3. **Holdings list**: per holding — asset, institution, quantity, current value,
-   P/L (value + %), stale badge if price old.
-4. **Evolution**: line chart of portfolio value over time (from snapshots, see
-   `snapshots.md`).
+1. **Institution filter** (top): horizontal chips — "All" + each institution that
+   holds value — scoping the whole screen (header, allocation, positions) to one
+   institution. Default "All". Shown only when more than one institution holds value.
+2. **Header**: total equity (BRL), total unrealized P/L (value + %), day change.
+   When part of the (visible) portfolio is dollar-denominated, a secondary line
+   shows that slice's value **in USD** (`byCurrency`), so the user sees the dollar
+   of what is dollar — not only the consolidated BRL.
+3. **Allocation**: donut chart by asset class and a toggle by institution (fl_chart).
+4. **Holdings list**: per holding — asset, institution, quantity, current value
+   (BRL, plus the native USD value for dollar holdings), unrealized P/L (value + %),
+   stale badge if price old. Sorted by return % descending (best performers first).
 5. **Sync status**: last refresh time, manual refresh button, error banner.
+
+Daily snapshots are still recorded (see `snapshots.md`) but not charted on the
+dashboard — there is no net-worth-evolution card.
 
 ## State machine (`DashboardCubit`)
 
@@ -22,6 +30,11 @@ DashboardLoading
 DashboardLoaded(portfolio, assetsById, institutionsById, snapshots, isRefreshing, lastSyncAt?)
 DashboardError()               // only when a source stream errors with no data
 ```
+`DashboardLoaded` also carries `institutionFilter` (an institution id; null = all).
+`portfolio` is always the **full** portfolio; `visiblePortfolio` applies the filter
+via `PortfolioValuation.forInstitution`, which re-aggregates totals/allocation from
+the matching holdings. Snapshots are always written from the full `portfolio`.
+
 Rules:
 1. On first stream data → emit `Loaded` from cache immediately, then auto-trigger one
    background `refresh()` (guarded by `_autoRefreshed`).
@@ -30,6 +43,11 @@ Rules:
 4. The allocation by-class / by-institution toggle is **presentation-only**: both
    breakdowns are precomputed in `PortfolioValuation` (`byClass`, `byInstitution`);
    the cubit does no filtering.
+5. `setInstitutionFilter(id?)` re-emits with the new filter (no recompute). A filter
+   pointing at an institution that no longer holds value resets to all (its chip is
+   gone). The onboarding empty state keys off the **full** portfolio, never the
+   filter, so filtering to a bank with no positions shows a "no positions" hint with
+   the filter bar intact — not the onboarding CTA.
 
 ## Business rules
 

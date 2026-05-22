@@ -66,9 +66,13 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     final fiBasis =
         existing == null ? null : FixedIncomeMetadata.read(existing)?.$1;
     _fiBasis = fiBasis ?? FixedIncomeBasis.cdi;
-    _kind = existing?.kind ?? AssetKind.stockBr;
-    _market = existing?.market ?? Market.br;
-    _currency = existing?.currency ?? Currency.brl;
+    // New assets default to the first selectable kind (and its usual
+    // market/currency) so the pre-filled Type is one the picker can re-select.
+    final defaultKind = AssetKind.selectableKinds.first;
+    final (defaultMarket, defaultCurrency) = assetKindDefaults(defaultKind);
+    _kind = existing?.kind ?? defaultKind;
+    _market = existing?.market ?? defaultMarket;
+    _currency = existing?.currency ?? defaultCurrency;
   }
 
   @override
@@ -88,7 +92,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
       title: t.assets.kind,
       selected: _kind,
       items: [
-        for (final kind in AssetKind.values)
+        for (final kind in AssetKind.selectableKinds)
           OptionPickerItem(
             value: kind,
             label: assetKindLabel(kind),

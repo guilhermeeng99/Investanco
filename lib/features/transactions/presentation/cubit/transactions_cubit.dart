@@ -57,17 +57,33 @@ class TransactionsCubit extends Cubit<TransactionsState> {
   List<AssetTransaction>? _transactions;
   List<Asset>? _assets;
   List<Institution>? _institutions;
+  String? _institutionFilter;
+
+  /// Restricts the list to one institution (`null` clears the filter). Persists
+  /// across stream re-emits until changed or the institution is deleted.
+  void setInstitutionFilter(String? institutionId) {
+    if (_institutionFilter == institutionId) return;
+    _institutionFilter = institutionId;
+    _tryEmit();
+  }
 
   void _tryEmit() {
     final transactions = _transactions;
     final assets = _assets;
     final institutions = _institutions;
     if (transactions == null || assets == null || institutions == null) return;
+    // Drop a dangling filter so a deleted institution can't strand the list on
+    // an empty result the user can no longer clear (its chip is gone).
+    if (_institutionFilter != null &&
+        !institutions.any((i) => i.id == _institutionFilter)) {
+      _institutionFilter = null;
+    }
     emit(
       TransactionsLoaded(
         transactions: transactions,
         assets: assets,
         institutions: institutions,
+        institutionFilter: _institutionFilter,
       ),
     );
   }

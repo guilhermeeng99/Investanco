@@ -21,6 +21,12 @@ enum AssetKind { stockBr, fiiBr, etfBr, bdrBr, stockUs, etfUs, crypto,
                  treasury, fixedIncome, fund, cash }
 ```
 
+The enum keeps every kind (existing assets, CSV import and valuation depend on
+them), but the asset form's Type picker only offers the kinds in active use —
+`AssetKind.selectableKinds` = `etfUs, crypto, fixedIncome`. Re-add a kind there to
+surface it again; no migration. Other kinds still deserialize and display when
+present in stored data or an imported CSV.
+
 ## Business rules
 
 1. `ticker` is required and uppercased. For `treasury`/`fixedIncome`/`fund`,

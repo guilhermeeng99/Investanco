@@ -119,6 +119,9 @@ class _TranslationsDashboardEn implements TranslationsDashboardPt {
 	@override String get never => 'never';
 	@override String get refresh => 'Refresh';
 	@override String get pricesStale => 'Quotes may be outdated';
+	@override String get filterAll => 'All';
+	@override String get noPositionsForFilter => 'No positions for this institution.';
+	@override String get inForeign => 'In USD';
 }
 
 // Path: institutions
@@ -193,6 +196,8 @@ class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
 	@override String get deleteConfirm => 'Delete this transaction?';
 	@override String get saveError => 'Error while saving.';
 	@override String get needPrereqs => 'Add an institution and an asset first.';
+	@override String get filterAll => 'All';
+	@override String get noFilterResults => 'No transactions for this institution.';
 	@override late final _TranslationsTransactionsKindsEn kinds = _TranslationsTransactionsKindsEn._(_root);
 }
 
@@ -449,6 +454,9 @@ extension on TranslationsEn {
 			'dashboard.never' => 'never',
 			'dashboard.refresh' => 'Refresh',
 			'dashboard.pricesStale' => 'Quotes may be outdated',
+			'dashboard.filterAll' => 'All',
+			'dashboard.noPositionsForFilter' => 'No positions for this institution.',
+			'dashboard.inForeign' => 'In USD',
 			'institutions.title' => 'Institutions',
 			'institutions.empty' => 'No institutions yet. Add Nubank, Avenue, etc.',
 			'institutions.add' => 'New institution',
@@ -515,6 +523,8 @@ extension on TranslationsEn {
 			'transactions.deleteConfirm' => 'Delete this transaction?',
 			'transactions.saveError' => 'Error while saving.',
 			'transactions.needPrereqs' => 'Add an institution and an asset first.',
+			'transactions.filterAll' => 'All',
+			'transactions.noFilterResults' => 'No transactions for this institution.',
 			'transactions.kinds.buy' => 'Buy',
 			'transactions.kinds.sell' => 'Sell',
 			'transactions.kinds.dividend' => 'Dividend',

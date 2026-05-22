@@ -38,6 +38,13 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final ret = portfolio.totalReturnPct;
     final up = ret >= 0;
+    // Native subtotals for the non-base (dollar) slice, so the user sees how much
+    // of the total is in dollars, in dollars.
+    final base = portfolio.totalValueBase.currency;
+    final foreign = [
+      for (final e in portfolio.byCurrency.entries)
+        if (e.key != base && e.value.minorUnits > 0) e.value,
+    ];
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -91,6 +98,15 @@ class _Hero extends StatelessWidget {
               ],
             ),
           ),
+          for (final money in foreign) ...[
+            const SizedBox(height: 12),
+            Text(
+              '${t.dashboard.inForeign}  ·  ${formatCurrency(money)}',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -7,6 +7,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/date_formatter.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/portfolio_import/presentation/widgets/transactions_csv_import_dialog.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
@@ -102,13 +103,112 @@ class _TransactionsView extends StatelessWidget {
               _EmptyState(
                 onAdd: () => _openForm(context, cubit, state),
               ),
-            TransactionsLoaded() => _TransactionsList(
+            TransactionsLoaded() => _LoadedBody(
                 state: state,
+                onFilter: cubit.setInstitutionFilter,
                 onTap: (tx) => _openForm(context, cubit, state, existing: tx),
                 onDelete: (id) => _confirmDelete(context, cubit, id),
               ),
           };
         },
+      ),
+    );
+  }
+}
+
+class _LoadedBody extends StatelessWidget {
+  const _LoadedBody({
+    required this.state,
+    required this.onFilter,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  final TransactionsLoaded state;
+  final void Function(String?) onFilter;
+  final void Function(AssetTransaction) onTap;
+  final void Function(String) onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    // Filtering by bank only makes sense with more than one bank.
+    final showFilter = state.institutions.length > 1;
+    final visible = state.visibleTransactions;
+    return Column(
+      children: [
+        if (showFilter)
+          _InstitutionFilterBar(
+            institutions: state.institutions,
+            selected: state.institutionFilter,
+            onSelect: onFilter,
+          ),
+        Expanded(
+          child: visible.isEmpty
+              ? const _NoFilterResults()
+              : _TransactionsList(
+                  state: state,
+                  onTap: onTap,
+                  onDelete: onDelete,
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InstitutionFilterBar extends StatelessWidget {
+  const _InstitutionFilterBar({
+    required this.institutions,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<Institution> institutions;
+  final String? selected;
+  final void Function(String?) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        children: [
+          InvestancoFilterChip(
+            label: t.transactions.filterAll,
+            selected: selected == null,
+            onTap: () => onSelect(null),
+          ),
+          for (final institution in institutions) ...[
+            const SizedBox(width: 8),
+            InvestancoFilterChip(
+              label: institution.name,
+              selected: selected == institution.id,
+              onTap: () => onSelect(institution.id),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _NoFilterResults extends StatelessWidget {
+  const _NoFilterResults();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          t.transactions.noFilterResults,
+          textAlign: TextAlign.center,
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.appColors.onBackgroundLight,
+          ),
+        ),
       ),
     );
   }
@@ -129,13 +229,14 @@ class _TransactionsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final assetById = {for (final a in state.assets) a.id: a};
     final institutionById = {for (final i in state.institutions) i.id: i};
+    final transactions = state.visibleTransactions;
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-      itemCount: state.transactions.length,
+      itemCount: transactions.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final tx = state.transactions[index];
+        final tx = transactions[index];
         return _TransactionTile(
           tx: tx,
           ticker: assetById[tx.assetId]?.ticker,

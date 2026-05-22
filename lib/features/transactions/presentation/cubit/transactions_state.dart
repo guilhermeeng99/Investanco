@@ -25,6 +25,7 @@ class TransactionsLoaded extends TransactionsState {
     required this.transactions,
     required this.assets,
     required this.institutions,
+    this.institutionFilter,
   });
 
   /// Transactions, newest first.
@@ -36,8 +37,24 @@ class TransactionsLoaded extends TransactionsState {
   /// All institutions (for name resolution and the form picker).
   final List<Institution> institutions;
 
+  /// Active institution filter (an institution id), or `null` for all. Kept
+  /// separate from [transactions] so the page can distinguish "no transactions
+  /// at all" from "none match the current filter".
+  final String? institutionFilter;
+
+  /// [transactions] narrowed to [institutionFilter] (newest first). Returns the
+  /// full list when no filter is active.
+  List<AssetTransaction> get visibleTransactions {
+    final filter = institutionFilter;
+    if (filter == null) return transactions;
+    return transactions
+        .where((tx) => tx.institutionId == filter)
+        .toList(growable: false);
+  }
+
   @override
-  List<Object?> get props => [transactions, assets, institutions];
+  List<Object?> get props =>
+      [transactions, assets, institutions, institutionFilter];
 }
 
 /// A backing stream failed.

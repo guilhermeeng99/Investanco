@@ -12,6 +12,7 @@ class HoldingValuation extends Equatable {
     required this.assetKind,
     required this.quantity,
     required this.marketValueBase,
+    required this.marketValueNative,
     required this.investedBase,
     required this.unrealizedPL,
     required this.totalPL,
@@ -35,6 +36,11 @@ class HoldingValuation extends Equatable {
 
   /// Current market value (base currency).
   final Money marketValueBase;
+
+  /// Current market value in the asset's **own** currency (e.g. USD for an
+  /// Avenue ETF). Equals [marketValueBase] for base-currency holdings. Lets the
+  /// UI show the native amount alongside the consolidated one.
+  final Money marketValueNative;
 
   /// Cost basis (base currency).
   final Money investedBase;
@@ -65,6 +71,7 @@ class HoldingValuation extends Equatable {
         assetKind,
         quantity,
         marketValueBase,
+        marketValueNative,
         investedBase,
         unrealizedPL,
         totalPL,

@@ -93,6 +93,34 @@ class DashboardCubit extends Cubit<DashboardState> {
   bool _refreshing = false;
   bool _autoRefreshed = false;
 
+  /// Selected institution id, or null for all. Drives the dashboard's global
+  /// filter; the underlying portfolio is always computed in full.
+  String? _institutionFilter;
+
+  /// Filters the whole dashboard (totals, allocation, positions) to one
+  /// institution, or all when null. Re-emits without recomputing — the full
+  /// portfolio is already in state.
+  void setInstitutionFilter(String? institutionId) {
+    if (_institutionFilter == institutionId) return;
+    _institutionFilter = institutionId;
+    final current = state;
+    if (current is DashboardLoaded) {
+      emit(_withFilter(current, institutionId));
+    }
+  }
+
+  DashboardLoaded _withFilter(DashboardLoaded state, String? institutionId) {
+    return DashboardLoaded(
+      portfolio: state.portfolio,
+      assetsById: state.assetsById,
+      institutionsById: state.institutionsById,
+      isRefreshing: state.isRefreshing,
+      snapshots: state.snapshots,
+      lastSyncAt: state.lastSyncAt,
+      institutionFilter: institutionId,
+    );
+  }
+
   /// Fetches fresh quotes and FX, then recomputes.
   Future<void> refresh() async {
     final assets = _assets;
@@ -181,6 +209,14 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
     final snapshots = snapshotsResult.getOrElse(() => const []);
 
+    // Drop a dangling filter so a deleted institution (or one whose positions
+    // were all closed) can't strand the view on an empty result.
+    final filteredValue = portfolio.byInstitution[_institutionFilter];
+    if (_institutionFilter != null &&
+        (filteredValue == null || filteredValue.minorUnits <= 0)) {
+      _institutionFilter = null;
+    }
+
     emit(
       DashboardLoaded(
         portfolio: portfolio,
@@ -189,6 +225,7 @@ class DashboardCubit extends Cubit<DashboardState> {
         lastSyncAt: _lastSyncAt,
         isRefreshing: _refreshing,
         snapshots: snapshots,
+        institutionFilter: _institutionFilter,
       ),
     );
 

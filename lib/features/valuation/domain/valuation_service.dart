@@ -77,7 +77,7 @@ class ValuationService {
     }
 
     final investedBase = _toBase(holding.investedCost, rate, base);
-    final (marketValueBase, unrealizedPL, stale) =
+    final (marketValueBase, marketValueNative, unrealizedPL, stale) =
         _price(input, investedBase, rate, now, base, staleThreshold);
 
     final realizedBase = _toBase(holding.realizedPL, rate, base);
@@ -95,6 +95,7 @@ class ValuationService {
       assetKind: input.asset.kind,
       quantity: holding.quantity,
       marketValueBase: marketValueBase,
+      marketValueNative: marketValueNative,
       investedBase: investedBase,
       unrealizedPL: unrealizedPL,
       totalPL: totalPL,
@@ -105,14 +106,24 @@ class ValuationService {
   }
 
   /// A foreign holding that can't be priced in base (no FX): every base figure
-  /// zeroed and `fxMissing` set, so totals exclude it and the UI can warn.
+  /// zeroed and `fxMissing` set, so totals exclude it and the UI can warn. The
+  /// native value is still known (FX only blocks the BRL conversion), so it is
+  /// kept for display.
   HoldingValuation _unvaluable(ValuationInput input, Currency base) {
+    final quote = input.quote;
+    final marketValueNative = quote != null
+        ? Money(
+            (quote.unitPrice.minorUnits * input.holding.quantity).round(),
+            quote.unitPrice.currency,
+          )
+        : input.holding.investedCost;
     return HoldingValuation(
       assetId: input.holding.assetId,
       institutionId: input.holding.institutionId,
       assetKind: input.asset.kind,
       quantity: input.holding.quantity,
       marketValueBase: Money.zero(base),
+      marketValueNative: marketValueNative,
       investedBase: Money.zero(base),
       unrealizedPL: Money.zero(base),
       totalPL: Money.zero(base),
@@ -140,48 +151,13 @@ class ValuationService {
         ),
     ];
 
-    var totalValue = Money.zero(base);
-    var totalInvested = Money.zero(base);
-    var totalUnrealized = Money.zero(base);
-    var totalDay = Money.zero(base);
-    final byClass = <AssetKind, Money>{};
-    final byInstitution = <String, Money>{};
-
-    for (final v in valuations) {
-      // Foreign holdings with no FX rate are excluded from every total (they're
-      // still returned in `holdings` so the UI can list them with a warning).
-      if (v.fxMissing) continue;
-      totalValue += v.marketValueBase;
-      totalInvested += v.investedBase;
-      totalUnrealized += v.unrealizedPL;
-      totalDay += v.dayChangeBase;
-      byClass[v.assetKind] =
-          (byClass[v.assetKind] ?? Money.zero(base)) + v.marketValueBase;
-      byInstitution[v.institutionId] =
-          (byInstitution[v.institutionId] ?? Money.zero(base)) +
-              v.marketValueBase;
-    }
-
-    final totalReturnPct = totalInvested.minorUnits == 0
-        ? 0.0
-        : totalUnrealized.minorUnits / totalInvested.minorUnits;
-
-    return PortfolioValuation(
-      totalValueBase: totalValue,
-      totalInvestedBase: totalInvested,
-      totalUnrealizedPL: totalUnrealized,
-      totalDayChangeBase: totalDay,
-      totalReturnPct: totalReturnPct,
-      byClass: byClass,
-      byInstitution: byInstitution,
-      holdings: valuations,
-    );
+    return PortfolioValuation.fromHoldings(valuations, base);
   }
 
-  /// `(marketValueBase, unrealizedPL, stale)` for a market-priced holding: from
-  /// a live quote if present, else cost basis (flagged stale). Fixed income is
-  /// valued separately in [_valuateFixedIncome].
-  (Money, Money, bool) _price(
+  /// `(marketValueBase, marketValueNative, unrealizedPL, stale)` for a
+  /// market-priced holding: from a live quote if present, else cost basis
+  /// (flagged stale). Fixed income is valued separately in [_valuateFixedIncome].
+  (Money, Money, Money, bool) _price(
     ValuationInput input,
     Money investedBase,
     double rate,
@@ -199,9 +175,11 @@ class ValuationService {
       );
       final marketValueBase = _toBase(marketNative, rate, base);
       final stale = now.difference(quote.fetchedAt) > staleThreshold;
-      return (marketValueBase, marketValueBase - investedBase, stale);
+      return (marketValueBase, marketNative, marketValueBase - investedBase, stale);
     }
-    return (investedBase, Money.zero(base), true);
+    // No quote: fall back to cost. Native cost basis carries the holding's own
+    // currency so the UI can still show a (stale) native figure.
+    return (investedBase, holding.investedCost, Money.zero(base), true);
   }
 
   /// Values a fixed-income holding from its dated cash flows. Both market value
@@ -237,6 +215,7 @@ class ValuationService {
       assetKind: input.asset.kind,
       quantity: input.holding.quantity,
       marketValueBase: marketValueBase,
+      marketValueNative: marketNative,
       investedBase: investedBase,
       unrealizedPL: unrealizedPL,
       totalPL: unrealizedPL,

@@ -37,7 +37,10 @@
     "lastSync": "Atualizado",
     "never": "nunca",
     "refresh": "Atualizar",
-    "pricesStale": "Cotações podem estar desatualizadas"
+    "pricesStale": "Cotações podem estar desatualizadas",
+    "filterAll": "Todos",
+    "noPositionsForFilter": "Nenhuma posição nesta instituição.",
+    "inForeign": "Em dólar"
   },
   "institutions": {
     "title": "Instituições",
@@ -118,6 +121,8 @@
     "deleteConfirm": "Excluir este lançamento?",
     "saveError": "Erro ao salvar.",
     "needPrereqs": "Cadastre uma instituição e um ativo antes.",
+    "filterAll": "Todas",
+    "noFilterResults": "Nenhum lançamento nesta instituição.",
     "kinds": {
       "buy": "Compra",
       "sell": "Venda",

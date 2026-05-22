@@ -73,6 +73,8 @@ void main() {
     expect(result.marketValueBase, Money.fromMajor(120, brl));
     expect(result.investedBase, Money.fromMajor(100, brl));
     expect(result.unrealizedPL, Money.fromMajor(20, brl));
+    // Native value stays in USD (12 * 2) for display alongside the BRL figure.
+    expect(result.marketValueNative, Money.fromMajor(24, usd));
   });
 
   test('a foreign holding with no FX is zeroed and flagged fxMissing', () {
@@ -192,6 +194,8 @@ void main() {
     expect(portfolio.totalUnrealizedPL, Money.fromMajor(60, brl)); // 50 + 10
     expect(portfolio.byClass[AssetKind.stockBr], Money.fromMajor(150, brl));
     expect(portfolio.byClass[AssetKind.fiiBr], Money.fromMajor(60, brl));
+    // Both holdings are BRL-native → a single BRL bucket holding the full value.
+    expect(portfolio.byCurrency[brl], Money.fromMajor(210, brl));
   });
 
   // R$10,000 principal modeled as quantity 1 × avgCost 10,000.

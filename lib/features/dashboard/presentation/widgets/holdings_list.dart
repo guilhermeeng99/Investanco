@@ -2,39 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
+import 'package:investanco/core/format/currency_formatter.dart';
 import 'package:investanco/core/format/initials.dart';
+import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
-import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/valuation/domain/entities/holding_valuation.dart';
 
-/// Per-holding rows (open positions only), sorted by value descending,
-/// grouped in a single card.
+/// Per-holding rows (open positions only), sorted by return % descending
+/// (best performers first), grouped in a single card.
 class HoldingsList extends StatelessWidget {
-  /// Creates the list.
-  const HoldingsList({required this.state, super.key});
+  /// Creates the list for the given valued [holdings] (the visible/filtered set).
+  const HoldingsList({
+    required this.holdings,
+    required this.assetsById,
+    required this.institutionsById,
+    super.key,
+  });
 
-  /// The loaded dashboard state.
-  final DashboardLoaded state;
+  /// Valued holdings to render (any quantity; closed positions are skipped here).
+  final List<HoldingValuation> holdings;
+
+  /// Assets keyed by id (for ticker/labels).
+  final Map<String, Asset> assetsById;
+
+  /// Institutions keyed by id (for the row subtitle).
+  final Map<String, Institution> institutionsById;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final holdings = state.portfolio.holdings
-        .where((h) => h.quantity > 0)
-        .toList()
-      ..sort(
-        (a, b) => b.marketValueBase.minorUnits
-            .compareTo(a.marketValueBase.minorUnits),
-      );
-    if (holdings.isEmpty) return const SizedBox.shrink();
+    final open = holdings.where((h) => h.quantity > 0).toList()
+      ..sort((a, b) => b.returnPct.compareTo(a.returnPct));
+    if (open.isEmpty) return const SizedBox.shrink();
 
     return InvestancoCard(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         children: [
-          for (var i = 0; i < holdings.length; i++) ...[
+          for (var i = 0; i < open.length; i++) ...[
             if (i > 0) Divider(height: 1, color: colors.surfaceVariant),
-            _HoldingTile(holding: holdings[i], state: state),
+            _HoldingTile(
+              holding: open[i],
+              asset: assetsById[open[i].assetId],
+              institution: institutionsById[open[i].institutionId],
+            ),
           ],
         ],
       ),
@@ -43,19 +55,22 @@ class HoldingsList extends StatelessWidget {
 }
 
 class _HoldingTile extends StatelessWidget {
-  const _HoldingTile({required this.holding, required this.state});
+  const _HoldingTile({
+    required this.holding,
+    required this.asset,
+    required this.institution,
+  });
 
   final HoldingValuation holding;
-  final DashboardLoaded state;
+  final Asset? asset;
+  final Institution? institution;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final asset = state.assetsById[holding.assetId];
-    final institution = state.institutionsById[holding.institutionId];
     final ticker = asset?.ticker ?? holding.assetId;
     final subtitle = [
-      if (institution != null) institution.name,
+      ?institution?.name,
       _quantity(holding.quantity),
     ].join('  ·  ');
 
@@ -120,8 +135,26 @@ class _HoldingTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 MoneyText(money: holding.marketValueBase, fontSize: 15),
+                // For a dollar-denominated holding, also show the native USD
+                // value beneath the consolidated BRL one.
+                if (holding.marketValueNative.currency !=
+                    holding.marketValueBase.currency) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    formatCurrency(holding.marketValueNative),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 2),
-                PercentText(ratio: holding.returnPct, fontSize: 12),
+                // Absolute unrealized P/L plus its percentage, colour-coded.
+                SignedAmount(
+                  money: holding.unrealizedPL,
+                  percent: holding.returnPct,
+                  fontSize: 12,
+                  percentFontSize: 11,
+                ),
               ],
             ),
         ],

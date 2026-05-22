@@ -187,6 +187,15 @@ class TranslationsDashboardPt {
 
 	/// pt: 'Cotações podem estar desatualizadas'
 	String get pricesStale => 'Cotações podem estar desatualizadas';
+
+	/// pt: 'Todos'
+	String get filterAll => 'Todos';
+
+	/// pt: 'Nenhuma posição nesta instituição.'
+	String get noPositionsForFilter => 'Nenhuma posição nesta instituição.';
+
+	/// pt: 'Em dólar'
+	String get inForeign => 'Em dólar';
 }
 
 // Path: institutions
@@ -350,6 +359,12 @@ class TranslationsTransactionsPt {
 
 	/// pt: 'Cadastre uma instituição e um ativo antes.'
 	String get needPrereqs => 'Cadastre uma instituição e um ativo antes.';
+
+	/// pt: 'Todas'
+	String get filterAll => 'Todas';
+
+	/// pt: 'Nenhum lançamento nesta instituição.'
+	String get noFilterResults => 'Nenhum lançamento nesta instituição.';
 
 	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
 }
@@ -817,6 +832,9 @@ extension on Translations {
 			'dashboard.never' => 'nunca',
 			'dashboard.refresh' => 'Atualizar',
 			'dashboard.pricesStale' => 'Cotações podem estar desatualizadas',
+			'dashboard.filterAll' => 'Todos',
+			'dashboard.noPositionsForFilter' => 'Nenhuma posição nesta instituição.',
+			'dashboard.inForeign' => 'Em dólar',
 			'institutions.title' => 'Instituições',
 			'institutions.empty' => 'Nenhuma instituição ainda. Adicione Nubank, Avenue, etc.',
 			'institutions.add' => 'Nova instituição',
@@ -883,6 +901,8 @@ extension on Translations {
 			'transactions.deleteConfirm' => 'Excluir este lançamento?',
 			'transactions.saveError' => 'Erro ao salvar.',
 			'transactions.needPrereqs' => 'Cadastre uma instituição e um ativo antes.',
+			'transactions.filterAll' => 'Todas',
+			'transactions.noFilterResults' => 'Nenhum lançamento nesta instituição.',
 			'transactions.kinds.buy' => 'Compra',
 			'transactions.kinds.sell' => 'Venda',
 			'transactions.kinds.dividend' => 'Dividendo',

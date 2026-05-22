@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_state.dart';
@@ -108,4 +111,86 @@ void main() {
       expect(failure, isA<CacheFailure>());
     },
   );
+
+  blocTest<TransactionsCubit, TransactionsState>(
+    'setInstitutionFilter narrows visibleTransactions to that institution',
+    build: () {
+      when(transactions.watchAll).thenAnswer(
+        (_) => Stream.value([
+          transactionFactory(id: 't1', institutionId: 'i1'),
+          transactionFactory(id: 't2', institutionId: 'i2'),
+        ]),
+      );
+      when(institutions.watchAll).thenAnswer(
+        (_) => Stream.value([
+          institutionFactory(id: 'i1'),
+          institutionFactory(id: 'i2', name: 'Avenue'),
+        ]),
+      );
+      return build();
+    },
+    act: (cubit) => cubit.setInstitutionFilter('i2'),
+    skip: 1,
+    verify: (cubit) {
+      final state = cubit.state as TransactionsLoaded;
+      expect(state.institutionFilter, 'i2');
+      expect(state.visibleTransactions.map((t) => t.id), ['t2']);
+    },
+  );
+
+  blocTest<TransactionsCubit, TransactionsState>(
+    'setInstitutionFilter(null) clears the filter and shows all',
+    build: () {
+      when(transactions.watchAll).thenAnswer(
+        (_) => Stream.value([
+          transactionFactory(id: 't1', institutionId: 'i1'),
+          transactionFactory(id: 't2', institutionId: 'i2'),
+        ]),
+      );
+      when(institutions.watchAll).thenAnswer(
+        (_) => Stream.value([
+          institutionFactory(id: 'i1'),
+          institutionFactory(id: 'i2', name: 'Avenue'),
+        ]),
+      );
+      return build();
+    },
+    act: (cubit) {
+      cubit
+        ..setInstitutionFilter('i1')
+        ..setInstitutionFilter(null);
+    },
+    verify: (cubit) {
+      final state = cubit.state as TransactionsLoaded;
+      expect(state.institutionFilter, isNull);
+      expect(state.visibleTransactions.map((t) => t.id), ['t1', 't2']);
+    },
+  );
+
+  blocTest<TransactionsCubit, TransactionsState>(
+    'filter resets to all when the filtered institution is deleted',
+    build: () {
+      final instCtrl = StreamController<List<Institution>>();
+      addTearDown(instCtrl.close);
+      when(transactions.watchAll).thenAnswer((_) => Stream.value([tx]));
+      when(institutions.watchAll).thenAnswer((_) => instCtrl.stream);
+      _institutionController = instCtrl;
+      return build();
+    },
+    act: (cubit) async {
+      _institutionController.add([institutionFactory(id: 'i1')]);
+      await Future<void>.delayed(Duration.zero);
+      cubit.setInstitutionFilter('i1');
+      _institutionController.add(<Institution>[]);
+      await Future<void>.delayed(Duration.zero);
+    },
+    verify: (cubit) {
+      final state = cubit.state as TransactionsLoaded;
+      expect(state.institutionFilter, isNull);
+      expect(state.institutions, isEmpty);
+    },
+  );
 }
+
+/// Bridges the deletion test's [StreamController] from `build` into `act`.
+late StreamController<List<Institution>> _institutionController;

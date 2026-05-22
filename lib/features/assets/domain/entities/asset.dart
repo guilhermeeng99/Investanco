@@ -13,7 +13,17 @@ enum AssetKind {
   treasury,
   fixedIncome,
   fund,
-  cash,
+  cash;
+
+  /// Kinds the asset form's Type picker offers. The enum keeps every kind so
+  /// existing assets (and CSV import) still deserialize, display and value
+  /// correctly — this only narrows what users can *create* to the kinds in
+  /// active use. Re-add a kind here to surface it again; no data migration.
+  static const List<AssetKind> selectableKinds = [
+    etfUs,
+    crypto,
+    fixedIncome,
+  ];
 }
 
 /// Trading venue / origin of an asset.

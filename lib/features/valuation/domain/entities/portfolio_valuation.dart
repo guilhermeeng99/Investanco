@@ -15,6 +15,7 @@ class PortfolioValuation extends Equatable {
     required this.totalReturnPct,
     required this.byClass,
     required this.byInstitution,
+    required this.byCurrency,
     required this.holdings,
   });
 
@@ -28,7 +29,57 @@ class PortfolioValuation extends Equatable {
       totalReturnPct: 0,
       byClass: const {},
       byInstitution: const {},
+      byCurrency: const {},
       holdings: const [],
+    );
+  }
+
+  /// Aggregates totals and allocations from already-valued [holdings]. FX-missing
+  /// holdings are excluded from every total (they're still kept in [holdings] so
+  /// the UI can list them with a warning). Single source of the aggregation math,
+  /// reused by the valuation service and by [forInstitution].
+  factory PortfolioValuation.fromHoldings(
+    List<HoldingValuation> holdings,
+    Currency base,
+  ) {
+    var totalValue = Money.zero(base);
+    var totalInvested = Money.zero(base);
+    var totalUnrealized = Money.zero(base);
+    var totalDay = Money.zero(base);
+    final byClass = <AssetKind, Money>{};
+    final byInstitution = <String, Money>{};
+    final byCurrency = <Currency, Money>{};
+
+    for (final v in holdings) {
+      if (v.fxMissing) continue;
+      totalValue += v.marketValueBase;
+      totalInvested += v.investedBase;
+      totalUnrealized += v.unrealizedPL;
+      totalDay += v.dayChangeBase;
+      byClass[v.assetKind] =
+          (byClass[v.assetKind] ?? Money.zero(base)) + v.marketValueBase;
+      byInstitution[v.institutionId] =
+          (byInstitution[v.institutionId] ?? Money.zero(base)) +
+              v.marketValueBase;
+      final native = v.marketValueNative;
+      byCurrency[native.currency] =
+          (byCurrency[native.currency] ?? Money.zero(native.currency)) + native;
+    }
+
+    final totalReturnPct = totalInvested.minorUnits == 0
+        ? 0.0
+        : totalUnrealized.minorUnits / totalInvested.minorUnits;
+
+    return PortfolioValuation(
+      totalValueBase: totalValue,
+      totalInvestedBase: totalInvested,
+      totalUnrealizedPL: totalUnrealized,
+      totalDayChangeBase: totalDay,
+      totalReturnPct: totalReturnPct,
+      byClass: byClass,
+      byInstitution: byInstitution,
+      byCurrency: byCurrency,
+      holdings: holdings,
     );
   }
 
@@ -53,8 +104,25 @@ class PortfolioValuation extends Equatable {
   /// Value allocation by institution id.
   final Map<String, Money> byInstitution;
 
+  /// Market value grouped by the holding's **native** currency (e.g. `{usd: …}`),
+  /// each summed in that currency. Lets the overview show the dollar subtotal of
+  /// dollar-denominated holdings, not only the consolidated BRL figure.
+  final Map<Currency, Money> byCurrency;
+
   /// Per-holding valuations.
   final List<HoldingValuation> holdings;
+
+  /// This portfolio narrowed to one institution, re-aggregating totals and
+  /// allocations from the matching holdings. `null` returns this unchanged.
+  PortfolioValuation forInstitution(String? institutionId) {
+    if (institutionId == null) return this;
+    final base = totalValueBase.currency;
+    final subset = [
+      for (final h in holdings)
+        if (h.institutionId == institutionId) h,
+    ];
+    return PortfolioValuation.fromHoldings(subset, base);
+  }
 
   @override
   List<Object?> get props => [
@@ -65,6 +133,7 @@ class PortfolioValuation extends Equatable {
         totalReturnPct,
         byClass,
         byInstitution,
+        byCurrency,
         holdings,
       ];
 }
