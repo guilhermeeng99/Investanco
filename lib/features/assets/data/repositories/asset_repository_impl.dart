@@ -32,13 +32,43 @@ class AssetRepositoryImpl implements AssetRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(Asset asset) => guardedWrite(() async {
-        final row = _toRow(asset);
-        // Firestore-first (write-through): persist to the authoritative cloud
-        // before caching locally, so a write that can't reach Firestore fails.
-        await _mirror.upsert(_collection, row.id, row.toJson());
-        await _db.into(_db.assets).insertOnConflictUpdate(row);
-      });
+  Future<Either<Failure, Unit>> save(Asset asset) async {
+    final invalid = await _validate(asset);
+    if (invalid != null) return Left(invalid);
+    return guardedWrite(() async {
+      final row = _toRow(asset);
+      // Firestore-first (write-through): persist to the authoritative cloud
+      // before caching locally, so a write that can't reach Firestore fails.
+      await _mirror.upsert(_collection, row.id, row.toJson());
+      await _db.into(_db.assets).insertOnConflictUpdate(row);
+    });
+  }
+
+  /// Rejects a duplicate (ticker, market) (rule 2) before any write — comparing
+  /// the ticker case-insensitively. Returns the blocking [Failure], or null when
+  /// valid. See `docs/specs/assets.md`.
+  Future<Failure?> _validate(Asset asset) async {
+    final ticker = asset.ticker.trim().toUpperCase();
+    final market = asset.market.name;
+    try {
+      final rows = await _db.select(_db.assets).get();
+      final clashes = rows.any(
+        (r) =>
+            r.id != asset.id &&
+            r.ticker.trim().toUpperCase() == ticker &&
+            r.market == market,
+      );
+      if (clashes) {
+        return const ValidationFailure(
+          'An asset with this ticker already exists in this market.',
+          ValidationCode.duplicateAsset,
+        );
+      }
+    } on Exception {
+      return const CacheFailure();
+    }
+    return null;
+  }
 
   @override
   Future<Either<Failure, Unit>> delete(String id) =>

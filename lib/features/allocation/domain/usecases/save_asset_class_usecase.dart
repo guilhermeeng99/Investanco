@@ -29,7 +29,7 @@ class SaveAssetClassUseCase {
         .where((c) => c.id != assetClass.id)
         .fold<double>(0, (sum, c) => sum + c.targetPercent);
     if (othersSum + assetClass.targetPercent > 100.01) {
-      return const Left(ValidationFailure('sum'));
+      return const Left(ValidationFailure('sum', ValidationCode.classTargetSum));
     }
 
     return _repository.save(assetClass);

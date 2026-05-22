@@ -45,6 +45,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	String get appName => 'Investanco';
 
 	late final TranslationsCommonPt common = TranslationsCommonPt._(_root);
+	late final TranslationsErrorsPt errors = TranslationsErrorsPt._(_root);
 	late final TranslationsCurrenciesPt currencies = TranslationsCurrenciesPt._(_root);
 	late final TranslationsNavPt nav = TranslationsNavPt._(_root);
 	late final TranslationsAllocationPt allocation = TranslationsAllocationPt._(_root);
@@ -95,6 +96,36 @@ class TranslationsCommonPt {
 
 	/// pt: 'Tentar novamente'
 	String get retry => 'Tentar novamente';
+}
+
+// Path: errors
+class TranslationsErrorsPt {
+	TranslationsErrorsPt._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// pt: 'Sem conexão com a internet.'
+	String get network => 'Sem conexão com a internet.';
+
+	/// pt: 'Erro no servidor. Tente novamente.'
+	String get server => 'Erro no servidor. Tente novamente.';
+
+	/// pt: 'Erro ao acessar os dados locais.'
+	String get storage => 'Erro ao acessar os dados locais.';
+
+	/// pt: 'Algo deu errado. Tente novamente.'
+	String get unexpected => 'Algo deu errado. Tente novamente.';
+
+	/// pt: 'Dados inválidos.'
+	String get invalid => 'Dados inválidos.';
+
+	/// pt: 'Registro em uso.'
+	String get inUse => 'Registro em uso.';
+
+	/// pt: 'Registro não encontrado.'
+	String get notFound => 'Registro não encontrado.';
 }
 
 // Path: currencies
@@ -200,6 +231,9 @@ class TranslationsAllocationPt {
 
 	/// pt: 'Erro ao salvar.'
 	String get saveError => 'Erro ao salvar.';
+
+	/// pt: 'A soma dos alvos das classes ultrapassa 100%.'
+	String get targetSumError => 'A soma dos alvos das classes ultrapassa 100%.';
 
 	/// pt: 'Nome'
 	String get classNameLabel => 'Nome';
@@ -366,6 +400,9 @@ class TranslationsInstitutionsPt {
 	/// pt: 'Erro ao salvar.'
 	String get saveError => 'Erro ao salvar.';
 
+	/// pt: 'Já existe uma instituição com esse nome.'
+	String get duplicateName => 'Já existe uma instituição com esse nome.';
+
 	late final TranslationsInstitutionsKindsPt kinds = TranslationsInstitutionsKindsPt._(_root);
 }
 
@@ -429,6 +466,9 @@ class TranslationsAssetsPt {
 
 	/// pt: 'Erro ao salvar.'
 	String get saveError => 'Erro ao salvar.';
+
+	/// pt: 'Já existe um ativo com esse ticker neste mercado.'
+	String get duplicateAsset => 'Já existe um ativo com esse ticker neste mercado.';
 
 	/// pt: 'Classe de alocação'
 	String get allocationClass => 'Classe de alocação';
@@ -511,6 +551,12 @@ class TranslationsTransactionsPt {
 	/// pt: 'Erro ao salvar.'
 	String get saveError => 'Erro ao salvar.';
 
+	/// pt: 'A data do lançamento não pode ser no futuro.'
+	String get futureDateError => 'A data do lançamento não pode ser no futuro.';
+
+	/// pt: 'A venda excede a quantidade disponível nessa data.'
+	String get oversellError => 'A venda excede a quantidade disponível nessa data.';
+
 	/// pt: 'Cadastre uma instituição e um ativo antes.'
 	String get needPrereqs => 'Cadastre uma instituição e um ativo antes.';
 
@@ -551,6 +597,12 @@ class TranslationsImportCsvPt {
 
 	/// pt: 'Algo deu errado. Tente novamente.'
 	String get genericError => 'Algo deu errado. Tente novamente.';
+
+	/// pt: 'Arquivo inválido. Verifique o formato e tente novamente.'
+	String get fileInvalid => 'Arquivo inválido. Verifique o formato e tente novamente.';
+
+	/// pt: 'Linha $line do arquivo está inválida. Corrija e tente novamente.'
+	String rowError({required Object line}) => 'Linha ${line} do arquivo está inválida. Corrija e tente novamente.';
 
 	/// pt: 'Itens'
 	String get previewItemsHeader => 'Itens';
@@ -967,6 +1019,13 @@ extension on Translations {
 			'common.ok' => 'OK',
 			'common.required' => 'Campo obrigatório',
 			'common.retry' => 'Tentar novamente',
+			'errors.network' => 'Sem conexão com a internet.',
+			'errors.server' => 'Erro no servidor. Tente novamente.',
+			'errors.storage' => 'Erro ao acessar os dados locais.',
+			'errors.unexpected' => 'Algo deu errado. Tente novamente.',
+			'errors.invalid' => 'Dados inválidos.',
+			'errors.inUse' => 'Registro em uso.',
+			'errors.notFound' => 'Registro não encontrado.',
 			'currencies.brl' => 'Real (BRL)',
 			'currencies.usd' => 'Dólar (USD)',
 			'nav.dashboard' => 'Carteira',
@@ -993,6 +1052,7 @@ extension on Translations {
 			'allocation.emptyMessage' => 'Crie classes (ex.: Ações EUA, Renda Fixa), defina o % alvo de cada uma e atribua seus ativos para o app ajudar no rebalanceamento.',
 			'allocation.emptyAction' => 'Criar classe',
 			'allocation.saveError' => 'Erro ao salvar.',
+			'allocation.targetSumError' => 'A soma dos alvos das classes ultrapassa 100%.',
 			'allocation.classNameLabel' => 'Nome',
 			'allocation.classNameHint' => 'ex.: Ações EUA',
 			'allocation.targetPercentLabel' => '% alvo',
@@ -1042,6 +1102,7 @@ extension on Translations {
 			'institutions.deleteConfirm' => 'Excluir esta instituição?',
 			'institutions.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
 			'institutions.saveError' => 'Erro ao salvar.',
+			'institutions.duplicateName' => 'Já existe uma instituição com esse nome.',
 			'institutions.kinds.bank' => 'Banco',
 			'institutions.kinds.broker' => 'Corretora',
 			'institutions.kinds.internationalBroker' => 'Corretora internacional',
@@ -1068,6 +1129,7 @@ extension on Translations {
 			'assets.deleteConfirm' => 'Excluir este ativo?',
 			'assets.inUseError' => 'Não é possível excluir: há lançamentos vinculados.',
 			'assets.saveError' => 'Erro ao salvar.',
+			'assets.duplicateAsset' => 'Já existe um ativo com esse ticker neste mercado.',
 			'assets.allocationClass' => 'Classe de alocação',
 			'assets.allocationClassPlaceholder' => 'Selecione a classe',
 			'assets.allocationNoClasses' => 'Crie uma classe primeiro',
@@ -1105,6 +1167,8 @@ extension on Translations {
 			'transactions.notes' => 'Observações',
 			'transactions.deleteConfirm' => 'Excluir este lançamento?',
 			'transactions.saveError' => 'Erro ao salvar.',
+			'transactions.futureDateError' => 'A data do lançamento não pode ser no futuro.',
+			'transactions.oversellError' => 'A venda excede a quantidade disponível nessa data.',
 			'transactions.needPrereqs' => 'Cadastre uma instituição e um ativo antes.',
 			'transactions.filterAll' => 'Todas',
 			'transactions.noFilterResults' => 'Nenhum lançamento nesta instituição.',
@@ -1118,6 +1182,8 @@ extension on Translations {
 			'importCsv.errorTitle' => 'Não foi possível importar',
 			'importCsv.fileError' => 'Não foi possível ler o arquivo selecionado. Verifique se é um CSV válido.',
 			'importCsv.genericError' => 'Algo deu errado. Tente novamente.',
+			'importCsv.fileInvalid' => 'Arquivo inválido. Verifique o formato e tente novamente.',
+			'importCsv.rowError' => ({required Object line}) => 'Linha ${line} do arquivo está inválida. Corrija e tente novamente.',
 			'importCsv.previewItemsHeader' => 'Itens',
 			'importCsv.previewReusedCount' => ({required Object count}) => '+${count} reaproveitados',
 			'importCsv.previewBadgeNew' => 'Novo',

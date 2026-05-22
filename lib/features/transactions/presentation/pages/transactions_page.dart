@@ -96,7 +96,6 @@ class _TransactionsView extends StatelessWidget {
             TransactionsLoading() => const LoadingShimmerList(),
             TransactionsError() => ErrorView(
                 message: t.transactions.saveError,
-                onRetry: () {},
               ),
             TransactionsLoaded(:final transactions) when transactions.isEmpty =>
               _EmptyState(

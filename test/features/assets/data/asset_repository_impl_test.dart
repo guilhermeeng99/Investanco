@@ -46,4 +46,27 @@ void main() {
 
     expect(result, const Left<Failure, Unit>(InUseFailure()));
   });
+
+  test('rejects a duplicate (ticker, market) from another asset', () async {
+    await repository.save(assetFactory(id: 'a1', ticker: 'PETR4'));
+
+    final result = await repository.save(assetFactory(id: 'a2', ticker: 'petr4'));
+
+    final failure =
+        result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
+    expect(failure.code, ValidationCode.duplicateAsset);
+    expect(await repository.watchAll().first, hasLength(1));
+  });
+
+  test('allows the same ticker in a different market', () async {
+    await repository.save(
+      assetFactory(id: 'a1', ticker: 'AAPL', market: Market.us),
+    );
+
+    final result = await repository.save(
+      assetFactory(id: 'a2', ticker: 'AAPL', market: Market.global),
+    );
+
+    expect(result, const Right<Failure, Unit>(unit));
+  });
 }

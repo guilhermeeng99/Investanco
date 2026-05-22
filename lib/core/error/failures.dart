@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
 /// Base type for all recoverable errors crossing an architecture boundary.
@@ -33,9 +34,35 @@ class ParseFailure extends Failure {
   const ParseFailure([super.message = 'Unexpected response format']);
 }
 
-/// Domain validation rejected the input (e.g. oversell, duplicate name).
+/// The specific rule a [ValidationFailure] broke, so the UI can show targeted,
+/// localized copy. Mapped to a message by `core/error/validation_message.dart`.
+enum ValidationCode {
+  /// Another institution already uses this name.
+  duplicateInstitutionName,
+
+  /// Another asset already uses this (ticker, market) pair.
+  duplicateAsset,
+
+  /// A transaction dated after today.
+  futureTransactionDate,
+
+  /// A sell exceeds the quantity held in the position on its date.
+  oversell,
+
+  /// Allocation-class targets sum to more than 100%.
+  classTargetSum,
+}
+
+/// Domain validation rejected the input (e.g. oversell, duplicate name). [code]
+/// names the specific rule so the presentation layer can localize it.
 class ValidationFailure extends Failure {
-  const ValidationFailure([super.message = 'Invalid data']);
+  const ValidationFailure([super.message = 'Invalid data', this.code]);
+
+  /// The specific rule that failed, or null for a generic rejection.
+  final ValidationCode? code;
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 /// A record cannot be deleted because it is referenced by others.
@@ -46,4 +73,12 @@ class InUseFailure extends Failure {
 /// The requested record does not exist.
 class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = 'Not found']);
+}
+
+/// Collapses a repository result to its [Failure], or null on success — for
+/// fire-and-forget writes whose only interesting outcome is the error (e.g. a
+/// cubit returning `Future<Failure?>` to the form that triggered the save).
+extension FailureOrNull<T> on Either<Failure, T> {
+  /// The [Failure] if this is a `Left`, otherwise null.
+  Failure? get failureOrNull => fold((failure) => failure, (_) => null);
 }

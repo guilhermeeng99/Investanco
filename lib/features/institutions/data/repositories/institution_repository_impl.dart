@@ -31,14 +31,39 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(Institution institution) =>
-      guardedWrite(() async {
-        final row = _toRow(institution);
-        // Firestore-first (write-through): persist to the authoritative cloud
-        // before caching locally, so a write that can't reach Firestore fails.
-        await _mirror.upsert(_collection, row.id, row.toJson());
-        await _db.into(_db.institutions).insertOnConflictUpdate(row);
-      });
+  Future<Either<Failure, Unit>> save(Institution institution) async {
+    final invalid = await _validate(institution);
+    if (invalid != null) return Left(invalid);
+    return guardedWrite(() async {
+      final row = _toRow(institution);
+      // Firestore-first (write-through): persist to the authoritative cloud
+      // before caching locally, so a write that can't reach Firestore fails.
+      await _mirror.upsert(_collection, row.id, row.toJson());
+      await _db.into(_db.institutions).insertOnConflictUpdate(row);
+    });
+  }
+
+  /// Rejects a duplicate name (case-insensitive, rule 1) before any write, so
+  /// the form and any programmatic path are both guarded. Returns the blocking
+  /// [Failure], or null when valid. See `docs/specs/institutions.md`.
+  Future<Failure?> _validate(Institution institution) async {
+    final name = institution.name.trim().toLowerCase();
+    try {
+      final rows = await _db.select(_db.institutions).get();
+      final clashes = rows.any(
+        (r) => r.id != institution.id && r.name.trim().toLowerCase() == name,
+      );
+      if (clashes) {
+        return const ValidationFailure(
+          'An institution with this name already exists.',
+          ValidationCode.duplicateInstitutionName,
+        );
+      }
+    } on Exception {
+      return const CacheFailure();
+    }
+    return null;
+  }
 
   @override
   Future<Either<Failure, Unit>> delete(String id) =>

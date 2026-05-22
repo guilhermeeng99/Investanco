@@ -22,11 +22,15 @@ dashboard empty-state CTA — not a primary nav tab, since holdings change rarel
 
 ## Business rules
 
-1. Name is required, trimmed, unique per user (case-insensitive).
+1. Name is required, trimmed and unique per user (case-insensitive) — a duplicate
+   returns `ValidationFailure(code: duplicateInstitutionName)`, enforced in
+   `InstitutionRepositoryImpl`. (Length ≤60 is enforced by the Drift column.)
 2. Deleting an institution with transactions is **blocked** — must reassign or
    delete its transactions first (return `InUseFailure`).
 3. `kind` is informational; it does not change pricing (pricing is per-asset).
-4. Seed defaults on first run: "Nubank" (`bank`, brl), "Avenue" (`internationalBroker`, usd).
+4. No seed defaults: the user adds institutions manually (the empty state suggests
+   "Nubank, Avenue, …"). *(Earlier drafts specced auto-seeding; dropped so a fresh
+   account starts clean and the user owns the list.)*
 
 ## Repository contract
 
@@ -46,6 +50,6 @@ stream re-emits the updated list.
 
 ## Edge cases
 
-- Duplicate name → `ValidationFailure`.
+- Duplicate name → `ValidationFailure` (rule 1), surfaced as a localized message.
 - Delete while referenced → `InUseFailure`, list unchanged.
 - Empty list → UI shows empty state with "add institution" CTA.

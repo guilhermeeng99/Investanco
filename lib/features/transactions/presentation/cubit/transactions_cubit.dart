@@ -127,12 +127,12 @@ class TransactionsCubit extends Cubit<TransactionsState> {
   /// Deletes a transaction.
   Future<Failure?> remove(String id) async {
     final result = await _transactionRepository.delete(id);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   Future<Failure?> _save(AssetTransaction transaction) async {
     final result = await _transactionRepository.save(transaction);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   @override

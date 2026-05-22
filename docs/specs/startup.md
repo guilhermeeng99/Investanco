@@ -18,7 +18,7 @@ StartupInitial
   → StartupLoading(step: checkingAuth, progress: 0)
   → [unauthenticated] StartupUnauthenticated
   → [authenticated]   StartupLoading(step: syncing, progress: 0.3)
-        → StartupAuthenticated(userId) | StartupError(message)
+        → StartupAuthenticated(userId) | StartupError(failure)
 ```
 
 `StartupStep` is an enum (`checkingAuth`, `syncing`) — the cubit never emits raw

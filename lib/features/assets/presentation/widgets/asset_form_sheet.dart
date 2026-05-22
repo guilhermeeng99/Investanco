@@ -241,10 +241,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     final metadata = Map<String, String>.from(widget.existing?.metadata ?? {});
     _applyTesouroName(metadata);
     _applyFixedIncome(metadata);
-    final target = double.tryParse(
-          _allocationTargetController.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    final target = parseMajor(_allocationTargetController.text) ?? 0;
     return applyAllocation(
       metadata,
       classId: _allocationClassId,
@@ -404,7 +401,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           helperText: t.assets.allocationTargetHelp,
           validator: (v) {
             if (_allocationClassId == null) return null;
-            final parsed = double.tryParse((v ?? '').replaceAll(',', '.'));
+            final parsed = parseMajor(v ?? '');
             if (parsed == null || parsed <= 0) {
               return t.assets.allocationTargetRequired;
             }

@@ -6,10 +6,12 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
+import 'package:investanco/features/portfolio_import/domain/csv_validation_failure.dart';
 import 'package:investanco/features/portfolio_import/domain/transaction_csv_parser.dart';
 import 'package:investanco/features/portfolio_import/domain/transaction_import_models.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:investanco/features/transactions/domain/transaction_amounts.dart';
 
 export 'package:investanco/features/portfolio_import/domain/transaction_import_models.dart';
 
@@ -36,7 +38,7 @@ class ImportTransactionsCsvUseCase {
     try {
       return Right(parseTransactionsCsv(csv));
     } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
+      return Left(CsvValidationFailure.fromMessage(e.message));
     }
   }
 
@@ -84,11 +86,15 @@ class ImportTransactionsCsvUseCase {
       for (final i in institutions) i.name.toLowerCase(): i,
     };
 
+    // Persist oldest-first (buys before sells on a date tie) so the repository's
+    // per-save oversell guard sees each sell's covering buys already stored.
+    final ordered = [...rows]..sort(_byDateThenBuyFirst);
+
     final now = DateTime.now();
     var transactionsCreated = 0;
     var institutionsCreated = 0;
 
-    for (final row in rows) {
+    for (final row in ordered) {
       final asset = assetByTicker[row.ticker.toLowerCase()];
       if (asset == null) {
         return Left(ValidationFailure('Asset not found: ${row.ticker}'));
@@ -137,20 +143,22 @@ class ImportTransactionsCsvUseCase {
     DateTime now,
   ) {
     final currency = asset.currency;
-    final isDividend = row.operation == TransactionKind.dividend;
-    final unitPrice = Money.fromMajor(row.unitPriceMajor, currency);
-    final amount = isDividend
-        ? Money.fromMajor(row.amountMajor ?? 0, currency)
-        : unitPrice * row.quantity;
+    final amounts = resolveTransactionAmounts(
+      kind: row.operation,
+      quantity: row.quantity,
+      unitPrice: Money.fromMajor(row.unitPriceMajor, currency),
+      amount: Money.fromMajor(row.amountMajor ?? 0, currency),
+      currency: currency,
+    );
     return AssetTransaction(
       id: _idGenerator.newId(),
       institutionId: institutionId,
       assetId: asset.id,
       kind: row.operation,
-      quantity: isDividend ? 0 : row.quantity,
-      unitPrice: isDividend ? Money.zero(currency) : unitPrice,
+      quantity: amounts.quantity,
+      unitPrice: amounts.unitPrice,
       fees: Money.fromMajor(row.feesMajor, currency),
-      amount: amount,
+      amount: amounts.amount,
       date: row.date,
       notes: row.notes,
       createdAt: now,
@@ -158,8 +166,18 @@ class ImportTransactionsCsvUseCase {
     );
   }
 
-  Future<Failure?> _save(Future<Either<Failure, Unit>> op) async {
-    final result = await op;
-    return result.fold((failure) => failure, (_) => null);
-  }
+  Future<Failure?> _save(Future<Either<Failure, Unit>> op) async =>
+      (await op).failureOrNull;
 }
+
+int _byDateThenBuyFirst(TransactionImportRow a, TransactionImportRow b) {
+  final byDate = a.date.compareTo(b.date);
+  if (byDate != 0) return byDate;
+  return _opRank(a.operation).compareTo(_opRank(b.operation));
+}
+
+int _opRank(TransactionKind kind) => switch (kind) {
+      TransactionKind.buy => 0,
+      TransactionKind.dividend => 1,
+      TransactionKind.sell => 2,
+    };

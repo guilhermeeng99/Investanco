@@ -46,12 +46,12 @@ class InstitutionsCubit extends Cubit<InstitutionsState> {
   /// Deletes an institution. Returns [InUseFailure] when it has transactions.
   Future<Failure?> remove(String id) async {
     final result = await _repository.delete(id);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   Future<Failure?> _save(Institution institution) async {
     final result = await _repository.save(institution);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   @override

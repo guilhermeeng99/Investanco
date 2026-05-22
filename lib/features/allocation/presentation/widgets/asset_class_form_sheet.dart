@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/format/money_input.dart';
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
 import 'package:investanco/features/allocation/presentation/allocation_visuals.dart';
 import 'package:investanco/features/allocation/presentation/cubit/allocation_cubit.dart';
@@ -57,7 +59,7 @@ class _AssetClassFormSheetState extends State<AssetClassFormSheet> {
     final existing = widget.existing;
     _nameController = TextEditingController(text: existing?.name ?? '');
     _targetController = TextEditingController(
-      text: existing == null ? '' : _formatTarget(existing.targetPercent),
+      text: existing == null ? '' : formatTrimmedDouble(existing.targetPercent),
     );
     _iconKey = existing?.iconKey ?? defaultAllocationIconKey;
     _colorValue = existing?.colorValue ??
@@ -70,9 +72,6 @@ class _AssetClassFormSheetState extends State<AssetClassFormSheet> {
     _targetController.dispose();
     super.dispose();
   }
-
-  String _formatTarget(double value) =>
-      value == value.roundToDouble() ? value.toStringAsFixed(0) : '$value';
 
   @override
   Widget build(BuildContext context) {
@@ -156,8 +155,7 @@ class _AssetClassFormSheetState extends State<AssetClassFormSheet> {
 
   Future<Failure?> _persist() async {
     final name = _nameController.text.trim();
-    final target =
-        double.tryParse(_targetController.text.trim().replaceAll(',', '.')) ?? 0;
+    final target = parseMajor(_targetController.text) ?? 0;
 
     final existing = widget.existing;
     final result = existing == null
@@ -175,7 +173,7 @@ class _AssetClassFormSheetState extends State<AssetClassFormSheet> {
               colorValue: _colorValue,
             ),
           );
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 }
 

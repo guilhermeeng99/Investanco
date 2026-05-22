@@ -51,12 +51,12 @@ class AssetsCubit extends Cubit<AssetsState> {
   /// Deletes an asset. Returns [InUseFailure] when it has transactions.
   Future<Failure?> remove(String id) async {
     final result = await _repository.delete(id);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   Future<Failure?> _save(Asset asset) async {
     final result = await _repository.save(asset);
-    return result.fold((failure) => failure, (_) => null);
+    return result.failureOrNull;
   }
 
   @override

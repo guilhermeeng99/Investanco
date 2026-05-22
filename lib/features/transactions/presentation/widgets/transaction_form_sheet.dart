@@ -11,6 +11,7 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
+import 'package:investanco/features/transactions/domain/transaction_amounts.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
 import 'package:investanco/features/transactions/presentation/transaction_labels.dart';
 import 'package:investanco/features/transactions/presentation/transaction_visuals.dart';
@@ -161,15 +162,16 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
 
   Future<Failure?> _persist() {
     final currency = _selectedAsset.currency;
+    final amounts = resolveTransactionAmounts(
+      kind: _kind,
+      quantity: parseMajor(_quantityController.text) ?? 0,
+      unitPrice:
+          Money.fromMajor(parseMajor(_priceController.text) ?? 0, currency),
+      amount: Money.fromMajor(parseMajor(_amountController.text) ?? 0, currency),
+      currency: currency,
+    );
     final fees =
         Money.fromMajor(parseMajor(_feesController.text) ?? 0, currency);
-    final quantity = _isDividend ? 0.0 : parseMajor(_quantityController.text)!;
-    final unitPrice = _isDividend
-        ? Money.zero(currency)
-        : Money.fromMajor(parseMajor(_priceController.text) ?? 0, currency);
-    final amount = _isDividend
-        ? Money.fromMajor(parseMajor(_amountController.text) ?? 0, currency)
-        : unitPrice * quantity;
 
     final existing = widget.existing;
     return existing == null
@@ -177,10 +179,10 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
             institutionId: _institutionId,
             assetId: _assetId,
             kind: _kind,
-            quantity: quantity,
-            unitPrice: unitPrice,
+            quantity: amounts.quantity,
+            unitPrice: amounts.unitPrice,
             fees: fees,
-            amount: amount,
+            amount: amounts.amount,
             date: _date,
             notes: _notesController.text.trim().isEmpty
                 ? null
@@ -191,10 +193,10 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
               institutionId: _institutionId,
               assetId: _assetId,
               kind: _kind,
-              quantity: quantity,
-              unitPrice: unitPrice,
+              quantity: amounts.quantity,
+              unitPrice: amounts.unitPrice,
               fees: fees,
-              amount: amount,
+              amount: amounts.amount,
               date: _date,
               notes: _notesController.text.trim(),
             ),

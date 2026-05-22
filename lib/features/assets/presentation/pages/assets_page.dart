@@ -5,6 +5,7 @@ import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/initials.dart';
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/allocation/domain/asset_allocation.dart';
 import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
 import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
@@ -77,7 +78,6 @@ class _AssetsView extends StatelessWidget {
                 AssetsLoading() => const LoadingShimmerList(),
                 AssetsError() => ErrorView(
                   message: t.assets.saveError,
-                  onRetry: () {},
                 ),
                 AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
                   icon: FontAwesomeIcons.coins,
@@ -128,10 +128,7 @@ class _AssetTile extends StatelessWidget {
   String _allocationLabel(AssetClass cls) {
     final target = allocationTargetOf(asset);
     if (target <= 0) return cls.name;
-    final pct = target == target.roundToDouble()
-        ? target.toStringAsFixed(0)
-        : '$target';
-    return '${cls.name} · $pct%';
+    return '${cls.name} · ${formatTrimmedDouble(target)}%';
   }
 
   @override

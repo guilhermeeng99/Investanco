@@ -273,10 +273,11 @@ class AppDatabase extends _$AppDatabase {
       });
 
   /// Replaces the cloud-mirrored tables with [institutions], [assets],
-  /// [transactions] and [snapshots] in a single transaction, so a startup sync
-  /// makes the local cache match Firestore exactly (creates, edits **and**
-  /// deletes from any device are reflected). Quotes (a derived cache) and
-  /// settings (device-local) are preserved. See `docs/specs/cloud_sync.md`.
+  /// [transactions], [snapshots] and [assetClasses] in a single transaction, so
+  /// a startup sync makes the local cache match Firestore exactly (creates,
+  /// edits **and** deletes from any device are reflected). Quotes (a derived
+  /// cache) and settings (device-local) are preserved. See
+  /// `docs/specs/cloud_sync.md`.
   Future<void> replaceMirroredData({
     required List<InstitutionRow> institutions,
     required List<AssetRow> assets,

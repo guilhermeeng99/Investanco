@@ -5,6 +5,7 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/portfolio_import/domain/asset_csv_parser.dart';
 import 'package:investanco/features/portfolio_import/domain/asset_import_models.dart';
+import 'package:investanco/features/portfolio_import/domain/csv_validation_failure.dart';
 
 export 'package:investanco/features/portfolio_import/domain/asset_import_models.dart';
 
@@ -23,7 +24,7 @@ class ImportAssetsCsvUseCase {
     try {
       return Right(parseAssetsCsv(csv));
     } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
+      return Left(CsvValidationFailure.fromMessage(e.message));
     }
   }
 

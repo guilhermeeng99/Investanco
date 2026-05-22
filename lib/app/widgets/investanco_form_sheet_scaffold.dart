@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:investanco/app/widgets/investanco_button.dart';
 import 'package:investanco/app/widgets/sheet_handle.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/error/validation_message.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -54,8 +55,11 @@ class _InvestancoFormSheetScaffoldState
     if (!mounted) return;
     if (failure != null) {
       setState(() => _saving = false);
+      final message =
+          (failure is ValidationFailure ? validationMessage(failure) : null) ??
+              widget.errorText;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.errorText)),
+        SnackBar(content: Text(message)),
       );
       return;
     }

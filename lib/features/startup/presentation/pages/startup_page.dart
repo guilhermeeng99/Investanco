@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:investanco/core/error/failure_message.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/features/auth/presentation/pages/login_page.dart';
 import 'package:investanco/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -193,7 +194,7 @@ class _ProgressBlock extends StatelessWidget {
     return BlocBuilder<StartupCubit, StartupState>(
       builder: (context, state) {
         if (state is StartupError) {
-          return _ErrorBlock(message: state.message)
+          return _ErrorBlock(message: failureMessage(state.failure))
               .animate()
               .fadeIn(duration: 300.ms);
         }

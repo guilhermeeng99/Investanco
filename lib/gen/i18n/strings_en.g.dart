@@ -39,6 +39,7 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 	// Translations
 	@override String get appName => 'Investanco';
 	@override late final _TranslationsCommonEn common = _TranslationsCommonEn._(_root);
+	@override late final _TranslationsErrorsEn errors = _TranslationsErrorsEn._(_root);
 	@override late final _TranslationsCurrenciesEn currencies = _TranslationsCurrenciesEn._(_root);
 	@override late final _TranslationsNavEn nav = _TranslationsNavEn._(_root);
 	@override late final _TranslationsAllocationEn allocation = _TranslationsAllocationEn._(_root);
@@ -71,6 +72,22 @@ class _TranslationsCommonEn implements TranslationsCommonPt {
 	@override String get ok => 'OK';
 	@override String get required => 'Required field';
 	@override String get retry => 'Try again';
+}
+
+// Path: errors
+class _TranslationsErrorsEn implements TranslationsErrorsPt {
+	_TranslationsErrorsEn._(this._root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get network => 'No internet connection.';
+	@override String get server => 'Server error. Please try again.';
+	@override String get storage => 'Could not access local data.';
+	@override String get unexpected => 'Something went wrong. Please try again.';
+	@override String get invalid => 'Invalid data.';
+	@override String get inUse => 'Record is in use.';
+	@override String get notFound => 'Record not found.';
 }
 
 // Path: currencies
@@ -124,6 +141,7 @@ class _TranslationsAllocationEn implements TranslationsAllocationPt {
 	@override String get emptyMessage => 'Create classes (e.g. US Equities, Fixed Income), set each one\'s target %, and assign your assets so the app can help you rebalance.';
 	@override String get emptyAction => 'Create class';
 	@override String get saveError => 'Could not save.';
+	@override String get targetSumError => 'The class targets add up to more than 100%.';
 	@override String get classNameLabel => 'Name';
 	@override String get classNameHint => 'e.g. US Equities';
 	@override String get targetPercentLabel => 'Target %';
@@ -191,6 +209,7 @@ class _TranslationsInstitutionsEn implements TranslationsInstitutionsPt {
 	@override String get deleteConfirm => 'Delete this institution?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
+	@override String get duplicateName => 'An institution with this name already exists.';
 	@override late final _TranslationsInstitutionsKindsEn kinds = _TranslationsInstitutionsKindsEn._(_root);
 }
 
@@ -219,6 +238,7 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get deleteConfirm => 'Delete this asset?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
+	@override String get duplicateAsset => 'An asset with this ticker already exists in this market.';
 	@override String get allocationClass => 'Allocation class';
 	@override String get allocationClassPlaceholder => 'Select the class';
 	@override String get allocationNoClasses => 'Create a class first';
@@ -253,6 +273,8 @@ class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
 	@override String get notes => 'Notes';
 	@override String get deleteConfirm => 'Delete this transaction?';
 	@override String get saveError => 'Error while saving.';
+	@override String get futureDateError => 'A transaction can\'t be dated in the future.';
+	@override String get oversellError => 'This sell exceeds the quantity held on that date.';
 	@override String get needPrereqs => 'Add an institution and an asset first.';
 	@override String get filterAll => 'All';
 	@override String get noFilterResults => 'No transactions for this institution.';
@@ -273,6 +295,8 @@ class _TranslationsImportCsvEn implements TranslationsImportCsvPt {
 	@override String get errorTitle => 'Could not import';
 	@override String get fileError => 'Couldn\'t read the selected file. Make sure it\'s a valid CSV.';
 	@override String get genericError => 'Something went wrong. Please try again.';
+	@override String get fileInvalid => 'Invalid file. Check the format and try again.';
+	@override String rowError({required Object line}) => 'Row ${line} of the file is invalid. Fix it and try again.';
 	@override String get previewItemsHeader => 'Items';
 	@override String previewReusedCount({required Object count}) => '+${count} reused';
 	@override String get previewBadgeNew => 'New';
@@ -491,6 +515,13 @@ extension on TranslationsEn {
 			'common.ok' => 'OK',
 			'common.required' => 'Required field',
 			'common.retry' => 'Try again',
+			'errors.network' => 'No internet connection.',
+			'errors.server' => 'Server error. Please try again.',
+			'errors.storage' => 'Could not access local data.',
+			'errors.unexpected' => 'Something went wrong. Please try again.',
+			'errors.invalid' => 'Invalid data.',
+			'errors.inUse' => 'Record is in use.',
+			'errors.notFound' => 'Record not found.',
 			'currencies.brl' => 'Real (BRL)',
 			'currencies.usd' => 'Dollar (USD)',
 			'nav.dashboard' => 'Portfolio',
@@ -517,6 +548,7 @@ extension on TranslationsEn {
 			'allocation.emptyMessage' => 'Create classes (e.g. US Equities, Fixed Income), set each one\'s target %, and assign your assets so the app can help you rebalance.',
 			'allocation.emptyAction' => 'Create class',
 			'allocation.saveError' => 'Could not save.',
+			'allocation.targetSumError' => 'The class targets add up to more than 100%.',
 			'allocation.classNameLabel' => 'Name',
 			'allocation.classNameHint' => 'e.g. US Equities',
 			'allocation.targetPercentLabel' => 'Target %',
@@ -566,6 +598,7 @@ extension on TranslationsEn {
 			'institutions.deleteConfirm' => 'Delete this institution?',
 			'institutions.inUseError' => 'Cannot delete: there are linked transactions.',
 			'institutions.saveError' => 'Error while saving.',
+			'institutions.duplicateName' => 'An institution with this name already exists.',
 			'institutions.kinds.bank' => 'Bank',
 			'institutions.kinds.broker' => 'Brokerage',
 			'institutions.kinds.internationalBroker' => 'International brokerage',
@@ -592,6 +625,7 @@ extension on TranslationsEn {
 			'assets.deleteConfirm' => 'Delete this asset?',
 			'assets.inUseError' => 'Cannot delete: there are linked transactions.',
 			'assets.saveError' => 'Error while saving.',
+			'assets.duplicateAsset' => 'An asset with this ticker already exists in this market.',
 			'assets.allocationClass' => 'Allocation class',
 			'assets.allocationClassPlaceholder' => 'Select the class',
 			'assets.allocationNoClasses' => 'Create a class first',
@@ -629,6 +663,8 @@ extension on TranslationsEn {
 			'transactions.notes' => 'Notes',
 			'transactions.deleteConfirm' => 'Delete this transaction?',
 			'transactions.saveError' => 'Error while saving.',
+			'transactions.futureDateError' => 'A transaction can\'t be dated in the future.',
+			'transactions.oversellError' => 'This sell exceeds the quantity held on that date.',
 			'transactions.needPrereqs' => 'Add an institution and an asset first.',
 			'transactions.filterAll' => 'All',
 			'transactions.noFilterResults' => 'No transactions for this institution.',
@@ -642,6 +678,8 @@ extension on TranslationsEn {
 			'importCsv.errorTitle' => 'Could not import',
 			'importCsv.fileError' => 'Couldn\'t read the selected file. Make sure it\'s a valid CSV.',
 			'importCsv.genericError' => 'Something went wrong. Please try again.',
+			'importCsv.fileInvalid' => 'Invalid file. Check the format and try again.',
+			'importCsv.rowError' => ({required Object line}) => 'Row ${line} of the file is invalid. Fix it and try again.',
 			'importCsv.previewItemsHeader' => 'Items',
 			'importCsv.previewReusedCount' => ({required Object count}) => '+${count} reused',
 			'importCsv.previewBadgeNew' => 'New',

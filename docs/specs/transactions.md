@@ -25,9 +25,14 @@ The events that build a position: buys, sells, dividends. Transactions are the
 ## Business rules
 
 1. `buy`/`sell` require `quantity > 0` and `unitPrice ≥ 0`.
-2. A `sell` cannot exceed the quantity held **at its date** → else `ValidationFailure`.
+2. A `sell` cannot exceed the quantity held **at its date** →
+   `ValidationFailure(code: oversell)`, enforced in `TransactionRepositoryImpl`
+   (so the form and the CSV import are both guarded). `oversellsTimeline` re-runs
+   the whole (asset, institution) position, so a backdated buy edit that strands a
+   later sell is caught too.
 3. `dividend` carries `amount` only; does not change quantity.
-4. `date` cannot be in the future.
+4. `date` cannot be in the future → `ValidationFailure(code: futureTransactionDate)`
+   in the repository (the form's date picker also caps `lastDate` at today).
 5. Editing/deleting a transaction re-derives the affected holding (see 6.1 in overview).
 6. Native currency is the **asset's** currency; consolidation to BRL happens at
    valuation time, not storage time.
@@ -35,9 +40,9 @@ The events that build a position: buys, sells, dividends. Transactions are the
    `sell` = redemption (resgate). Enter `quantity = 1` and `unitPrice = amount`;
    `quantity` is only a placeholder (a count) — the valuation reads each
    transaction's `amount` and `date` as a dated cash flow (see `valuation.md` §2),
-   so partial redemptions value correctly. Keeping `quantity = 1` also keeps the
-   oversell guard (rule 2) from blocking a redemption that includes accrued
-   yield.
+   so partial redemptions value correctly. Keeping `quantity = 1` also means that
+   *should* the oversell guard (rule 2) be implemented, it won't block a redemption
+   that includes accrued yield.
 
 ## Repository contract
 
@@ -69,11 +74,20 @@ If the filtered institution is deleted, the filter resets to `null` (its chip wo
 otherwise vanish, stranding the user on an empty list). The page only shows the
 filter bar when there is more than one institution — nothing to filter otherwise.
 
+## Validation
+
+Rules 2 (oversell) and 4 (future date) are enforced in `TransactionRepositoryImpl`
+before any write — `oversell_check.dart`'s `oversellsTimeline` for the former, a
+date check for the latter — returning a `ValidationFailure` with a `ValidationCode`
+(`oversell` / `futureTransactionDate`). The form maps the code to localized copy via
+`validationMessage`; the CSV import sorts rows oldest-first (buys before sells on a
+tie) so a valid file's sells always follow their covering buys.
+
 ## Edge cases
 
-- Oversell (sell > held at date) → blocked.
-- Backdated buy that makes a later sell invalid → validation re-runs across the
-  timeline; conflicting edit is rejected with the offending tx id.
+- Oversell (sell > held at date) → blocked with `ValidationFailure(oversell)`.
+- Backdated buy that makes a later sell invalid → blocked too (the whole position
+  timeline is re-validated on every buy/sell save).
 - Zero-fee, zero-price (e.g. bonus shares) → allowed.
 - Filter set to an institution that has no transactions → empty list with a
   "no results" hint; the filter bar stays so the user can clear it.

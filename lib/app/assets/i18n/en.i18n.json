@@ -11,6 +11,15 @@
     "required": "Required field",
     "retry": "Try again"
   },
+  "errors": {
+    "network": "No internet connection.",
+    "server": "Server error. Please try again.",
+    "storage": "Could not access local data.",
+    "unexpected": "Something went wrong. Please try again.",
+    "invalid": "Invalid data.",
+    "inUse": "Record is in use.",
+    "notFound": "Record not found."
+  },
   "currencies": {
     "brl": "Real (BRL)",
     "usd": "Dollar (USD)"
@@ -42,6 +51,7 @@
     "emptyMessage": "Create classes (e.g. US Equities, Fixed Income), set each one's target %, and assign your assets so the app can help you rebalance.",
     "emptyAction": "Create class",
     "saveError": "Could not save.",
+    "targetSumError": "The class targets add up to more than 100%.",
     "classNameLabel": "Name",
     "classNameHint": "e.g. US Equities",
     "targetPercentLabel": "Target %",
@@ -95,6 +105,7 @@
     "deleteConfirm": "Delete this institution?",
     "inUseError": "Cannot delete: there are linked transactions.",
     "saveError": "Error while saving.",
+    "duplicateName": "An institution with this name already exists.",
     "kinds": {
       "bank": "Bank",
       "broker": "Brokerage",
@@ -127,6 +138,7 @@
     "deleteConfirm": "Delete this asset?",
     "inUseError": "Cannot delete: there are linked transactions.",
     "saveError": "Error while saving.",
+    "duplicateAsset": "An asset with this ticker already exists in this market.",
     "allocationClass": "Allocation class",
     "allocationClassPlaceholder": "Select the class",
     "allocationNoClasses": "Create a class first",
@@ -170,6 +182,8 @@
     "notes": "Notes",
     "deleteConfirm": "Delete this transaction?",
     "saveError": "Error while saving.",
+    "futureDateError": "A transaction can't be dated in the future.",
+    "oversellError": "This sell exceeds the quantity held on that date.",
     "needPrereqs": "Add an institution and an asset first.",
     "filterAll": "All",
     "noFilterResults": "No transactions for this institution.",
@@ -187,6 +201,8 @@
     "errorTitle": "Could not import",
     "fileError": "Couldn't read the selected file. Make sure it's a valid CSV.",
     "genericError": "Something went wrong. Please try again.",
+    "fileInvalid": "Invalid file. Check the format and try again.",
+    "rowError": "Row $line of the file is invalid. Fix it and try again.",
     "previewItemsHeader": "Items",
     "previewReusedCount": "+$count reused",
     "previewBadgeNew": "New",

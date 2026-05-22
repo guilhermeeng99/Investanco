@@ -4,8 +4,10 @@ import 'package:dartz/dartz.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:investanco/core/error/failure_message.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/format/csv_decoder.dart';
+import 'package:investanco/features/portfolio_import/domain/csv_validation_failure.dart';
 import 'package:investanco/features/portfolio_import/presentation/widgets/csv_import_dialog.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -78,9 +80,9 @@ Future<void> _pickAndPreview<RowT, Preview, Result>(
   if (bytes == null || !context.mounted) return;
 
   final parsed = parseRows(decodeCsvBytes(bytes));
-  final failureMessage = parsed.fold((f) => f.message, (_) => null);
-  if (failureMessage != null) {
-    await showCsvImportErrorDialog(context, failureMessage);
+  final failure = parsed.fold<Failure?>((f) => f, (_) => null);
+  if (failure != null) {
+    await showCsvImportErrorDialog(context, _csvErrorText(failure));
     return;
   }
   final rows = parsed.getOrElse(() => <RowT>[]);
@@ -115,7 +117,7 @@ Future<bool> commitImport<Result>(
     if (!context.mounted) return false;
     return result.fold(
       (failure) {
-        unawaited(showCsvImportErrorDialog(context, failure.message));
+        unawaited(showCsvImportErrorDialog(context, failureMessage(failure)));
         return false;
       },
       (tally) {
@@ -129,4 +131,17 @@ Future<bool> commitImport<Result>(
     }
     return false;
   }
+}
+
+/// Localizes a parse [failure]: a row-tagged CSV error points at its line, any
+/// other CSV error falls back to a generic file message, and anything else uses
+/// the type-based [failureMessage]. Keeps raw English parser text off the screen.
+String _csvErrorText(Failure failure) {
+  if (failure is CsvValidationFailure) {
+    final line = failure.line;
+    return line == null
+        ? t.importCsv.fileInvalid
+        : t.importCsv.rowError(line: line);
+  }
+  return failureMessage(failure);
 }

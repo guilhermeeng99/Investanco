@@ -1,3 +1,4 @@
+import 'package:investanco/core/format/number_format.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 
 /// Metadata key: which allocation class an asset belongs to (the asset is the
@@ -31,9 +32,7 @@ Map<String, String> applyAllocation(
       ..remove(allocationTargetKey);
   } else {
     next[allocationClassIdKey] = classId;
-    next[allocationTargetKey] = targetPercent == targetPercent.roundToDouble()
-        ? targetPercent.toStringAsFixed(0)
-        : '$targetPercent';
+    next[allocationTargetKey] = formatTrimmedDouble(targetPercent);
   }
   return next;
 }

@@ -69,7 +69,6 @@ class _InstitutionsView extends StatelessWidget {
             InstitutionsLoading() => const LoadingShimmerList(),
             InstitutionsError() => ErrorView(
                 message: t.institutions.saveError,
-                onRetry: () {},
               ),
             InstitutionsLoaded(:final institutions)
                 when institutions.isEmpty =>

@@ -51,4 +51,26 @@ void main() {
 
     expect(result, const Left<Failure, Unit>(InUseFailure()));
   });
+
+  test('rejects a duplicate name (case-insensitive) from another institution',
+      () async {
+    await repository.save(institutionFactory(id: 'i1', name: 'Nubank'));
+
+    final result =
+        await repository.save(institutionFactory(id: 'i2', name: 'nubank'));
+
+    final failure =
+        result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
+    expect(failure.code, ValidationCode.duplicateInstitutionName);
+    expect(await repository.watchAll().first, hasLength(1));
+  });
+
+  test('allows re-saving an institution under its own name (same id)', () async {
+    await repository.save(institutionFactory(id: 'i1', name: 'Nubank'));
+
+    final result =
+        await repository.save(institutionFactory(id: 'i1', name: 'Nubank'));
+
+    expect(result, const Right<Failure, Unit>(unit));
+  });
 }

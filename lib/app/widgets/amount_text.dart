@@ -99,33 +99,3 @@ class SignedAmount extends StatelessWidget {
     );
   }
 }
-
-/// A standalone signed percentage badge (e.g. `+1,42%`) coloured by sign.
-class PercentText extends StatelessWidget {
-  /// Creates a percentage label.
-  const PercentText({
-    required this.ratio,
-    this.fontSize = 14,
-    super.key,
-  });
-
-  /// The ratio to render (0.0142 renders `+1,42%`).
-  final double ratio;
-
-  /// Font size.
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final color = ratio == 0
-        ? colors.neutral
-        : ratio < 0
-            ? colors.negative
-            : colors.positive;
-    return Text(
-      formatPercent(ratio),
-      style: AppTypography.amount(color: color, fontSize: fontSize),
-    );
-  }
-}

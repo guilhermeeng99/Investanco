@@ -7,6 +7,7 @@ import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
+import 'package:investanco/features/transactions/domain/oversell_check.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
 
 /// Drift-backed [TransactionRepository]. Each write is mirrored to the cloud via
@@ -41,15 +42,58 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(AssetTransaction transaction) =>
-      guardedWrite(() async {
-        final row = _toRow(transaction);
-        // Firestore-first (write-through): the cloud is authoritative, so persist
-        // remotely before caching locally. A write that can't reach Firestore
-        // fails instead of living only in the local cache.
-        await _mirror.upsert(_collection, row.id, row.toJson());
-        await _db.into(_db.transactions).insertOnConflictUpdate(row);
-      });
+  Future<Either<Failure, Unit>> save(AssetTransaction transaction) async {
+    final invalid = await _validate(transaction);
+    if (invalid != null) return Left(invalid);
+    return guardedWrite(() async {
+      final row = _toRow(transaction);
+      // Firestore-first (write-through): the cloud is authoritative, so persist
+      // remotely before caching locally. A write that can't reach Firestore
+      // fails instead of living only in the local cache.
+      await _mirror.upsert(_collection, row.id, row.toJson());
+      await _db.into(_db.transactions).insertOnConflictUpdate(row);
+    });
+  }
+
+  /// Enforces the domain invariants before any write, so both the form and the
+  /// CSV import are guarded: no future date (rule 4), and no sell exceeding the
+  /// quantity held in its (asset, institution) position on its date (rule 2).
+  /// Returns the blocking [Failure], or null when valid. See
+  /// `docs/specs/transactions.md`.
+  Future<Failure?> _validate(AssetTransaction tx) async {
+    if (tx.date.isAfter(DateTime.now())) {
+      return const ValidationFailure(
+        'A transaction cannot be dated in the future.',
+        ValidationCode.futureTransactionDate,
+      );
+    }
+    // Dividends never change quantity; only a sell (directly) or a buy edit
+    // (stranding a later sell) can break the position's timeline.
+    if (tx.kind == TransactionKind.dividend) return null;
+    final List<AssetTransaction> position;
+    try {
+      final stored = await (_db.select(_db.transactions)
+            ..where(
+              (t) =>
+                  t.assetId.equals(tx.assetId) &
+                  t.institutionId.equals(tx.institutionId),
+            ))
+          .get();
+      position = [
+        for (final row in stored.where((r) => r.id != tx.id)) _toEntity(row),
+        tx,
+      ];
+    } on Exception {
+      return const CacheFailure();
+    }
+    if (oversellsTimeline(position)) {
+      return const ValidationFailure(
+        'A sell cannot exceed the quantity held on its date.',
+        ValidationCode.oversell,
+      );
+    }
+    return null;
+  }
 
   @override
   Future<Either<Failure, Unit>> delete(String id) => guardedWrite(() async {

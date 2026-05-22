@@ -15,6 +15,7 @@ import 'package:investanco/features/quotes/domain/repositories/quote_repository.
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:investanco/features/valuation/domain/entities/portfolio_valuation.dart';
 import 'package:investanco/features/valuation/domain/portfolio_inputs_builder.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
 
@@ -164,12 +165,17 @@ class DashboardCubit extends Cubit<DashboardState> {
     await _recompute();
   }
 
-  Future<void> _recompute() async {
-    final transactions = _transactions;
-    final assets = _assets;
-    final institutions = _institutions;
-    if (transactions == null || assets == null || institutions == null) return;
-
+  /// Prices the held positions from the local quote cache (no network), returning
+  /// the valuation and an id→asset lookup for the UI.
+  Future<
+      ({
+        PortfolioValuation portfolio,
+        Map<String, Asset> assetsById,
+        bool hasOpenPosition,
+      })> _priceFromCache(
+    List<AssetTransaction> transactions,
+    List<Asset> assets,
+  ) async {
     final assetsById = {for (final a in assets) a.id: a};
     final holdings = _calculator.derive(transactions);
     final cached = await _quoteRepository.getCached(
@@ -177,7 +183,6 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
     final quotes = cached.getOrElse(() => const []);
     final quotesById = {for (final q in quotes) q.assetId: q};
-
     final inputs = _inputsBuilder.build(
       holdings: holdings,
       assetsById: assetsById,
@@ -186,11 +191,26 @@ class DashboardCubit extends Cubit<DashboardState> {
       indexSeries: _indexSeries,
       fxUsdToBrl: _fxLoaded ? _fxUsdToBrl : null,
     );
-
     final portfolio = _valuationService.valuatePortfolio(
       inputs,
       now: DateTime.now(),
     );
+    return (
+      portfolio: portfolio,
+      assetsById: assetsById,
+      hasOpenPosition: holdings.any((h) => h.quantity > 0),
+    );
+  }
+
+  Future<void> _recompute() async {
+    final transactions = _transactions;
+    final assets = _assets;
+    final institutions = _institutions;
+    if (transactions == null || assets == null || institutions == null) return;
+
+    final priced = await _priceFromCache(transactions, assets);
+    final portfolio = priced.portfolio;
+    final assetsById = priced.assetsById;
 
     final snapshotsResult = await _snapshotRepository.range(
       DateTime.now().subtract(const Duration(days: 365)),
@@ -218,7 +238,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       ),
     );
 
-    if (!_autoRefreshed && holdings.any((h) => h.quantity > 0)) {
+    if (!_autoRefreshed && priced.hasOpenPosition) {
       _autoRefreshed = true;
       unawaited(refresh());
     }

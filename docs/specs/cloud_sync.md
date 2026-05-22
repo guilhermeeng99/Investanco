@@ -15,7 +15,8 @@ reflected. Mirrors the reference project `financo`. Not to be confused with
 
 ## Scope
 
-Mirrored (user-owned): `institutions`, `assets`, `transactions`, `snapshots`.
+Mirrored (user-owned): `institutions`, `assets`, `transactions`, `snapshots`,
+`asset_classes` (allocation classes — see `allocation.md`).
 Not mirrored: `quotes` (derived cache, refreshed from market APIs) and `settings`
 (device-local). Both are preserved across an authoritative sync.
 
@@ -26,6 +27,7 @@ users/{uid}/institutions/{id}
 users/{uid}/assets/{id}
 users/{uid}/transactions/{id}
 users/{uid}/snapshots/{id}
+users/{uid}/asset_classes/{id}
 ```
 
 Each document is the Drift row serialized via the generated `toJson()`; the doc id

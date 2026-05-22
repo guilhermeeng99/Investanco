@@ -11,6 +11,15 @@
     "required": "Campo obrigatório",
     "retry": "Tentar novamente"
   },
+  "errors": {
+    "network": "Sem conexão com a internet.",
+    "server": "Erro no servidor. Tente novamente.",
+    "storage": "Erro ao acessar os dados locais.",
+    "unexpected": "Algo deu errado. Tente novamente.",
+    "invalid": "Dados inválidos.",
+    "inUse": "Registro em uso.",
+    "notFound": "Registro não encontrado."
+  },
   "currencies": {
     "brl": "Real (BRL)",
     "usd": "Dólar (USD)"
@@ -42,6 +51,7 @@
     "emptyMessage": "Crie classes (ex.: Ações EUA, Renda Fixa), defina o % alvo de cada uma e atribua seus ativos para o app ajudar no rebalanceamento.",
     "emptyAction": "Criar classe",
     "saveError": "Erro ao salvar.",
+    "targetSumError": "A soma dos alvos das classes ultrapassa 100%.",
     "classNameLabel": "Nome",
     "classNameHint": "ex.: Ações EUA",
     "targetPercentLabel": "% alvo",
@@ -95,6 +105,7 @@
     "deleteConfirm": "Excluir esta instituição?",
     "inUseError": "Não é possível excluir: há lançamentos vinculados.",
     "saveError": "Erro ao salvar.",
+    "duplicateName": "Já existe uma instituição com esse nome.",
     "kinds": {
       "bank": "Banco",
       "broker": "Corretora",
@@ -127,6 +138,7 @@
     "deleteConfirm": "Excluir este ativo?",
     "inUseError": "Não é possível excluir: há lançamentos vinculados.",
     "saveError": "Erro ao salvar.",
+    "duplicateAsset": "Já existe um ativo com esse ticker neste mercado.",
     "allocationClass": "Classe de alocação",
     "allocationClassPlaceholder": "Selecione a classe",
     "allocationNoClasses": "Crie uma classe primeiro",
@@ -170,6 +182,8 @@
     "notes": "Observações",
     "deleteConfirm": "Excluir este lançamento?",
     "saveError": "Erro ao salvar.",
+    "futureDateError": "A data do lançamento não pode ser no futuro.",
+    "oversellError": "A venda excede a quantidade disponível nessa data.",
     "needPrereqs": "Cadastre uma instituição e um ativo antes.",
     "filterAll": "Todas",
     "noFilterResults": "Nenhum lançamento nesta instituição.",
@@ -187,6 +201,8 @@
     "errorTitle": "Não foi possível importar",
     "fileError": "Não foi possível ler o arquivo selecionado. Verifique se é um CSV válido.",
     "genericError": "Algo deu errado. Tente novamente.",
+    "fileInvalid": "Arquivo inválido. Verifique o formato e tente novamente.",
+    "rowError": "Linha $line do arquivo está inválida. Corrija e tente novamente.",
     "previewItemsHeader": "Itens",
     "previewReusedCount": "+$count reaproveitados",
     "previewBadgeNew": "Novo",

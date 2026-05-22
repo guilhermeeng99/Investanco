@@ -31,7 +31,9 @@ present in stored data or an imported CSV.
 
 1. `ticker` is required and uppercased. For `treasury`/`fixedIncome`/`fund`,
    `ticker` may be a synthetic id (no market symbol).
-2. `(ticker, market)` is unique per user.
+2. `(ticker, market)` is unique per user (ticker compared case-insensitively) — a
+   duplicate returns `ValidationFailure(code: duplicateAsset)`, enforced in
+   `AssetRepositoryImpl`.
 3. `kind` determines `pricingStrategy` (resolved in `quotes.md`); `currency`
    defaults from `market` (`br→brl`, `us→usd`).
 4. `metadata` for `fixedIncome` MUST contain `fiBasis` (a `FixedIncomeBasis` name:
@@ -60,6 +62,7 @@ surface and let the stream re-emit the updated list.
 ## Edge cases
 
 - Unknown ticker (quote not found) → asset still valid; UI flags "price unavailable".
-- Duplicate `(ticker, market)` → `ValidationFailure`.
+- Duplicate `(ticker, market)` → `ValidationFailure` (rule 2), surfaced as a
+  localized message.
 - Changing `kind`/`currency` after transactions exist → allowed but warns (pricing
   reinterpreted).

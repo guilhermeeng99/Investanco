@@ -65,7 +65,7 @@ void main() {
     expect: () => const [
       StartupLoading(step: StartupStep.checkingAuth, progress: 0),
       StartupLoading(step: StartupStep.syncing, progress: 0.3),
-      StartupError('down'),
+      StartupError(ServerFailure('down')),
     ],
   );
 

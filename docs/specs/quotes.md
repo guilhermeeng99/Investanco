@@ -10,7 +10,7 @@ caches them locally (Drift), and exposes a uniform `Quote` regardless of source.
 | `assetId` | String | which asset |
 | `unitPrice` | Money (native currency) | latest known price |
 | `previousClose` | Money? | for day-change |
-| `currency` | `Currency` | native currency of the price |
+| `currency` | `Currency` | native currency of the price — carried by the `unitPrice`/`previousClose` `Money` values (plus a Drift column); the entity has no separate `currency` field |
 | `asOf` | DateTime | when the source reported it |
 | `fetchedAt` | DateTime | when we cached it |
 | `source` | `QuoteSource` | brapi / coingecko / finnhub / tesouro / bcb / manual |
@@ -98,7 +98,11 @@ Rules:
 2. A registry routes each asset to the first `QuoteDataSource` whose `supports()` is true.
 3. Batch by source (one brapi call for all BR tickers; one Finnhub call per US symbol).
 4. On fetch failure, keep the previous cached quote and mark it **stale** (`fetchedAt` age).
-5. FX and indices cached with their own TTL (FX: minutes; indices: daily).
+5. FX and indices cached with their own TTL (FX: minutes; indices: daily) —
+   `CachingFxDataSource` / `CachingIndexDataSource` decorate the real sources with
+   an in-memory TTL cache (10 min / 12 h), shared via DI so repeated refreshes and
+   the dashboard + allocation cubits reuse a fetch. *(In-memory only — not
+   persisted across restarts; `quotes` remains the one Drift-backed cache.)*
 
 ## Edge cases
 

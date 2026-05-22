@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
@@ -42,7 +43,7 @@ class StartupCubit extends Cubit<StartupState> {
     final result = await _syncService.sync(user.userId);
     emit(
       result.fold(
-        (failure) => StartupError(failure.message),
+        StartupError.new,
         (_) => StartupAuthenticated(userId: user.userId),
       ),
     );
@@ -121,12 +122,12 @@ final class StartupUnauthenticated extends StartupState {
 
 /// Startup failed (e.g. the sync errored); the page shows a retry.
 final class StartupError extends StartupState {
-  /// Creates the error state with a human-readable [message].
-  const StartupError(this.message);
+  /// Creates the error state from the [failure] that aborted startup.
+  const StartupError(this.failure);
 
-  /// The failure message.
-  final String message;
+  /// The failure that aborted startup; the page maps it to localized copy.
+  final Failure failure;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }
