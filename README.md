@@ -17,8 +17,9 @@ Live web build: https://guilhermeeng99.github.io/Investanco/
 | Holdings (what/how much you own) | you buy or sell (rare) | manual entry |
 | Value / profit / performance | every day | public APIs (automatic) |
 
-Drift (SQLite) is the offline-first source of truth; Firestore is an optional
-multi-device mirror (Google sign-in). See `docs/specs/overview.md`.
+Firestore is the source of truth; Drift (SQLite) is a local cache that the app
+rebuilds at sign-in and renders immediately while it refreshes in the background.
+Google sign-in is required. See `docs/specs/overview.md`.
 
 ## Tech stack
 
@@ -29,7 +30,7 @@ dartz · Firebase (Auth + Firestore) · very_good_analysis.
 
 | Source | Used for | Auth |
 |--------|----------|------|
-| brapi.dev | BR equities, FIIs, ETFs, BDRs, indices | free token |
+| brapi.dev | BR equities, FIIs, ETFs, BDRs | free token |
 | CoinGecko | Crypto prices (BRL/USD) | none |
 | Finnhub | US equities/ETFs (Avenue) | free token |
 | Tesouro Direto | Tesouro Direto bond prices | none |
@@ -62,7 +63,9 @@ flutter run -d <device> --dart-define-from-file=env.json # android
 
 > Web uses Drift over sqlite3 WASM (`web/sqlite3.wasm` + `web/drift_worker.dart.js`).
 
-Cloud sync is optional: the app runs fully offline with no Firebase credentials.
+Google sign-in is required: the UI is gated behind Firebase Auth and Firestore is
+the source of truth (the local Drift cache is rebuilt at sign-in). Reads render from
+the cache immediately, then refresh in the background.
 
 ## Development
 
@@ -73,4 +76,3 @@ flutter test      # all tests must pass
 
 Conventions, architecture and the post-change checklist: [`CLAUDE.md`](CLAUDE.md).
 Feature specs (entity contracts, business rules, state machines): [`docs/specs/`](docs/specs/).
-Phase tracker: [`docs/ROADMAP.md`](docs/ROADMAP.md).

@@ -48,7 +48,7 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - Real-time tick streaming (we use delayed/EOD-ish quotes; refresh on demand).
 - Multi-user / social features.
 
-### Done since v1 (see ROADMAP)
+### Done since v1
 - Firebase cloud sync (multi-device) + Google sign-in gate (Phases 6–7).
 - Bulk CSV import — separate Assets and Transactions imports, each with a review
   screen before committing. See `csv_import.md`.
@@ -120,6 +120,9 @@ boundary). Endpoints and response contracts: `quotes.md`.
 | fund | manual NAV (v1) | user-updated unit price |
 | cash | none | face value (× FX if foreign) |
 
+> `fund` (manual NAV) and `cash` (face value) are **planned**: no datasource prices
+> them yet, so a holding of these kinds falls back to its cost basis until repriced.
+
 ---
 
 ## 6. Valuation math
@@ -181,5 +184,5 @@ UI always renders cached data immediately, then refreshes. See `cloud_sync.md`.
 
 ## 9. Phasing
 
-See `../ROADMAP.md`. Build order: foundation → domain+DB → quotes+valuation →
+Build order: foundation → domain+DB → quotes+valuation →
 dashboard → snapshots → sync/polish → (cloud) → (auto-import).

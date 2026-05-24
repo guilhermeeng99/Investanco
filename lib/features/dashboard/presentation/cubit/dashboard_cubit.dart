@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/dashboard/presentation/cubit/dashboard_state.dart';
@@ -10,20 +9,19 @@ import 'package:investanco/features/institutions/domain/entities/institution.dar
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/quotes/domain/datasources/index_data_source.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
-import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:investanco/features/quotes/domain/market_cache_store.dart';
-import 'package:investanco/features/quotes/domain/quote_freshness.dart';
 import 'package:investanco/features/quotes/domain/repositories/quote_repository.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:investanco/features/valuation/domain/entities/portfolio_valuation.dart';
 import 'package:investanco/features/valuation/domain/portfolio_inputs_builder.dart';
 import 'package:investanco/features/valuation/domain/valuation_service.dart';
+import 'package:investanco/features/valuation/presentation/portfolio_pricing_engine.dart';
 
 /// Builds the consolidated portfolio from local data, then refreshes quotes/FX
-/// in the background. Renders cached data immediately. See
-/// `docs/specs/dashboard.md`.
+/// in the background. Renders cached data immediately. The shared pricing/refresh
+/// logic lives in [PortfolioPricingEngine]; this cubit owns the dashboard's data
+/// streams, institution filter and daily snapshot. See `docs/specs/dashboard.md`.
 class DashboardCubit extends Cubit<DashboardState> {
   /// Subscribes to the local data streams on creation.
   DashboardCubit(
@@ -39,6 +37,15 @@ class DashboardCubit extends Cubit<DashboardState> {
     this._marketCacheStore, [
     this._inputsBuilder = const PortfolioInputsBuilder(),
   ]) : super(const DashboardLoading()) {
+    _engine = PortfolioPricingEngine(
+      _quoteRepository,
+      _fxDataSource,
+      _valuationService,
+      _indexDataSource,
+      _marketCacheStore,
+      _calculator,
+      _inputsBuilder,
+    );
     unawaited(_warmStart());
     _transactionSub = _transactionRepository.watchAll().listen(
       (value) {
@@ -75,6 +82,8 @@ class DashboardCubit extends Cubit<DashboardState> {
   final MarketCacheStore _marketCacheStore;
   final PortfolioInputsBuilder _inputsBuilder;
 
+  late final PortfolioPricingEngine _engine;
+
   late final StreamSubscription<List<AssetTransaction>> _transactionSub;
   late final StreamSubscription<List<Asset>> _assetSub;
   late final StreamSubscription<List<Institution>> _institutionSub;
@@ -82,17 +91,6 @@ class DashboardCubit extends Cubit<DashboardState> {
   List<AssetTransaction>? _transactions;
   List<Asset>? _assets;
   List<Institution>? _institutions;
-
-  double _fxUsdToBrl = 1;
-
-  /// Whether a real USD→BRL rate has been fetched. Until it has, foreign
-  /// holdings are passed a null FX so valuation excludes them (with a warning)
-  /// instead of consolidating at a bogus 1:1. See `docs/specs/valuation.md`.
-  bool _fxLoaded = false;
-
-  /// Index series fetched on refresh, reused by `_recompute` to accrue fixed
-  /// income. Keyed by index; each holding filters it from its own purchase date.
-  final Map<EconomicIndex, List<IndexPoint>> _indexSeries = {};
 
   DateTime? _lastSyncAt;
   bool _refreshing = false;
@@ -126,17 +124,8 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
   }
 
-  /// Seeds FX + index series from the durable cache so the first paint already
-  /// consolidates foreign holdings and accrues fixed income from last-known
-  /// data — a closed-then-reopened app shows the previous values instead of a
-  /// wrong total until the network responds. See `docs/specs/quotes.md`.
   Future<void> _warmStart() async {
-    final fx = await _marketCacheStore.lastFxRate(Currency.usd, Currency.brl);
-    if (fx != null) {
-      _fxUsdToBrl = fx;
-      _fxLoaded = true;
-    }
-    _indexSeries.addAll(await _marketCacheStore.allIndexSeries());
+    await _engine.warmStart();
     await _recompute();
   }
 
@@ -149,25 +138,13 @@ class DashboardCubit extends Cubit<DashboardState> {
     final transactions = _transactions;
     if (assets == null || transactions == null) return;
 
-    final holdings = _calculator.derive(transactions);
-    final heldIds = _inputsBuilder.heldAssetIds(holdings, assets, transactions);
-    final heldAssets = assets.where((a) => heldIds.contains(a.id)).toList();
-
-    if (!force && await _quotesAreFresh(heldIds)) return;
+    final held = _engine.heldPositions(transactions, assets);
+    if (!force && await _engine.quotesAreFresh(held.ids)) return;
 
     _refreshing = true;
     await _recompute();
     try {
-      await _quoteRepository.refresh(heldAssets);
-      await _refreshIndices(heldAssets, transactions);
-      if (heldAssets.any((a) => a.currency != Currency.brl)) {
-        final fx = await _fxDataSource.rate(Currency.usd, Currency.brl);
-        await fx.fold((_) async {}, (rate) async {
-          _fxUsdToBrl = rate;
-          _fxLoaded = true;
-          await _marketCacheStore.saveFxRate(Currency.usd, Currency.brl, rate);
-        });
-      }
+      await _engine.refreshNetwork(held.assets, transactions);
       _lastSyncAt = DateTime.now();
     } on Object catch (_) {
       // Best-effort: a network/persist failure keeps the cached values on
@@ -177,15 +154,6 @@ class DashboardCubit extends Cubit<DashboardState> {
       await _recompute();
     }
     await _writeSnapshot();
-  }
-
-  /// True when the held assets' newest cached quote is within [quoteFreshness]
-  /// (or nothing is held). Lets the second portfolio screen skip a refresh the
-  /// first one just did; the freshness signal is shared via `quotes.fetchedAt`.
-  Future<bool> _quotesAreFresh(Set<String> heldIds) async {
-    if (heldIds.isEmpty) return true;
-    final last = await _quoteRepository.lastFetchedAt(heldIds.toList());
-    return last != null && DateTime.now().difference(last) < quoteFreshness;
   }
 
   Future<void> _writeSnapshot() async {
@@ -203,52 +171,14 @@ class DashboardCubit extends Cubit<DashboardState> {
     await _recompute();
   }
 
-  /// Prices the held positions from the local quote cache (no network), returning
-  /// the valuation and an id→asset lookup for the UI.
-  Future<
-      ({
-        PortfolioValuation portfolio,
-        Map<String, Asset> assetsById,
-        bool hasOpenPosition,
-      })> _priceFromCache(
-    List<AssetTransaction> transactions,
-    List<Asset> assets,
-  ) async {
-    final assetsById = {for (final a in assets) a.id: a};
-    final holdings = _calculator.derive(transactions);
-    final cached = await _quoteRepository.getCached(
-      holdings.map((h) => h.assetId).toList(),
-    );
-    final quotes = cached.getOrElse(() => const []);
-    final quotesById = {for (final q in quotes) q.assetId: q};
-    final inputs = _inputsBuilder.build(
-      holdings: holdings,
-      assetsById: assetsById,
-      transactions: transactions,
-      quotesById: quotesById,
-      indexSeries: _indexSeries,
-      fxUsdToBrl: _fxLoaded ? _fxUsdToBrl : null,
-    );
-    final portfolio = _valuationService.valuatePortfolio(
-      inputs,
-      now: DateTime.now(),
-    );
-    return (
-      portfolio: portfolio,
-      assetsById: assetsById,
-      hasOpenPosition: holdings.any((h) => h.quantity > 0),
-    );
-  }
-
   Future<void> _recompute() async {
     final transactions = _transactions;
     final assets = _assets;
     final institutions = _institutions;
     if (transactions == null || assets == null || institutions == null) return;
 
-    final priced = await _priceFromCache(transactions, assets);
+    final priced = await _engine.priceFromCache(transactions, assets);
     final portfolio = priced.portfolio;
-    final assetsById = priced.assetsById;
 
     final snapshotsResult = await _snapshotRepository.range(
       DateTime.now().subtract(const Duration(days: 365)),
@@ -267,7 +197,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     emit(
       DashboardLoaded(
         portfolio: portfolio,
-        assetsById: assetsById,
+        assetsById: priced.assetsById,
         institutionsById: {for (final i in institutions) i.id: i},
         lastSyncAt: _lastSyncAt,
         isRefreshing: _refreshing,
@@ -279,24 +209,6 @@ class DashboardCubit extends Cubit<DashboardState> {
     if (!_autoRefreshed && priced.hasOpenPosition) {
       _autoRefreshed = true;
       unawaited(refresh());
-    }
-  }
-
-  /// Fetches the index series each held fixed-income asset needs, from the
-  /// earliest purchase across positions using that index. Failures are ignored
-  /// (the holding shows cost until a series arrives).
-  Future<void> _refreshIndices(
-    List<Asset> heldAssets,
-    List<AssetTransaction> transactions,
-  ) async {
-    final earliestByIndex =
-        _inputsBuilder.earliestIndexDates(heldAssets, transactions);
-    for (final entry in earliestByIndex.entries) {
-      final result = await _indexDataSource.series(entry.key, entry.value);
-      await result.fold((_) async {}, (points) async {
-        _indexSeries[entry.key] = points;
-        await _marketCacheStore.saveIndexSeries(entry.key, points);
-      });
     }
   }
 

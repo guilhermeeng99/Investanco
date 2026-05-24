@@ -34,13 +34,14 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
   Future<Either<Failure, Unit>> save(Institution institution) async {
     final invalid = await _validate(institution);
     if (invalid != null) return Left(invalid);
-    return guardedWrite(() async {
-      final row = _toRow(institution);
-      // Firestore-first (write-through): persist to the authoritative cloud
-      // before caching locally, so a write that can't reach Firestore fails.
-      await _mirror.upsert(_collection, row.id, row.toJson());
-      await _db.into(_db.institutions).insertOnConflictUpdate(row);
-    });
+    final row = _toRow(institution);
+    return guardedMirroredUpsert(
+      mirror: _mirror,
+      collection: _collection,
+      id: row.id,
+      json: row.toJson(),
+      localUpsert: () => _db.into(_db.institutions).insertOnConflictUpdate(row),
+    );
   }
 
   /// Rejects a duplicate name (case-insensitive, rule 1) before any write, so

@@ -9,6 +9,7 @@ import 'package:investanco/features/valuation/domain/entities/holding_valuation.
 
 import '../../../harness/factories/asset_class_factory.dart';
 import '../../../harness/factories/asset_factory.dart';
+import '../../../harness/factories/holding_valuation_factory.dart';
 
 void main() {
   const brl = Currency.brl;
@@ -24,19 +25,11 @@ void main() {
   HoldingValuation holding(String assetId, double valueMajor,
       {bool fxMissing = false}) {
     final value = Money.fromMajor(valueMajor, brl);
-    return HoldingValuation(
+    return holdingValuationFactory(
       assetId: assetId,
-      institutionId: 'i1',
-      assetKind: AssetKind.etfUs,
-      quantity: 1,
       marketValueBase: value,
       marketValueNative: value,
       investedBase: value,
-      unrealizedPL: const Money.zero(brl),
-      totalPL: const Money.zero(brl),
-      returnPct: 0,
-      dayChangeBase: const Money.zero(brl),
-      priceStale: false,
       fxMissing: fxMissing,
     );
   }

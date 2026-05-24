@@ -40,9 +40,10 @@ The events that build a position: buys, sells, dividends. Transactions are the
    `sell` = redemption (resgate). Enter `quantity = 1` and `unitPrice = amount`;
    `quantity` is only a placeholder (a count) — the valuation reads each
    transaction's `amount` and `date` as a dated cash flow (see `valuation.md` §2),
-   so partial redemptions value correctly. Keeping `quantity = 1` also means that
-   *should* the oversell guard (rule 2) be implemented, it won't block a redemption
-   that includes accrued yield.
+   so partial redemptions value correctly. Keeping `quantity = 1` also means the
+   oversell guard (rule 2, which **is** enforced) never blocks a redemption that
+   includes accrued yield: a resgate is recorded as `sell` with `quantity = 1`, never
+   more than the held placeholder count.
 
 ## Repository contract
 

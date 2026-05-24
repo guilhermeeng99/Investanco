@@ -173,11 +173,7 @@ class ImportTransactionsCsvUseCase {
 int _byDateThenBuyFirst(TransactionImportRow a, TransactionImportRow b) {
   final byDate = a.date.compareTo(b.date);
   if (byDate != 0) return byDate;
-  return _opRank(a.operation).compareTo(_opRank(b.operation));
+  return transactionKindRank(a.operation).compareTo(
+    transactionKindRank(b.operation),
+  );
 }
-
-int _opRank(TransactionKind kind) => switch (kind) {
-      TransactionKind.buy => 0,
-      TransactionKind.dividend => 1,
-      TransactionKind.sell => 2,
-    };

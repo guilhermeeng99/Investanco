@@ -4,8 +4,8 @@ Refreshing all market data (quotes, FX, indices), recomputing the portfolio, and
 writing the daily snapshot.
 
 > **Status:** there is **no** dedicated `SyncBloc`. The reliability design below
-> (retry/backoff, partial-success states, periodic timer) was deferred — see
-> ROADMAP 5.1/5.2. What actually ships is the refresh path inside
+> (retry/backoff, partial-success states, periodic timer) was deferred. What
+> actually ships is the refresh path inside
 > `DashboardCubit` (`dashboard.md`). For the **cloud** (Firestore) mirror, which is
 > a different concern, see `cloud_sync.md`.
 

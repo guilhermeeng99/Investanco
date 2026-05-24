@@ -5,6 +5,17 @@ import 'package:investanco/core/money/money.dart';
 /// avoid clashing with Drift's `Transaction` type in the data layer.
 enum TransactionKind { buy, sell, dividend }
 
+/// Settlement order within the same instant: a buy (then a dividend) settles
+/// before a sell, so a same-timestamp deposit covers its redemption. Used as the
+/// tiebreak when ordering transactions by date — shared by `oversell_check.dart`
+/// and the CSV import so the buy-before-sell rule has one definition. Lower
+/// sorts first.
+int transactionKindRank(TransactionKind kind) => switch (kind) {
+      TransactionKind.buy => 0,
+      TransactionKind.dividend => 1,
+      TransactionKind.sell => 2,
+    };
+
 /// A buy/sell/dividend event that builds a position. Source of truth for
 /// holdings. See `docs/specs/transactions.md`.
 class AssetTransaction extends Equatable {

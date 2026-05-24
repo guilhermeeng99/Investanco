@@ -13,7 +13,7 @@ plugins {
 
 // Release signing is read from android/key.properties (gitignored). In CI it is
 // reconstructed from repository secrets; without it, builds fall back to the debug
-// key so local/dev builds still work. See docs/ROADMAP.md (7.1).
+// key so local/dev builds still work.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {

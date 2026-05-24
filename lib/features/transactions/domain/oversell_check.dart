@@ -42,11 +42,5 @@ int _oldestFirst(AssetTransaction a, AssetTransaction b) {
   if (byCreation != 0) return byCreation;
   // On an exact tie, settle buys before sells so a deposit covers a same-instant
   // redemption (otherwise the unstable sort could read a false oversell).
-  return _kindRank(a.kind).compareTo(_kindRank(b.kind));
+  return transactionKindRank(a.kind).compareTo(transactionKindRank(b.kind));
 }
-
-int _kindRank(TransactionKind kind) => switch (kind) {
-      TransactionKind.buy => 0,
-      TransactionKind.dividend => 1,
-      TransactionKind.sell => 2,
-    };

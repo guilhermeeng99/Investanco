@@ -35,13 +35,14 @@ class AssetRepositoryImpl implements AssetRepository {
   Future<Either<Failure, Unit>> save(Asset asset) async {
     final invalid = await _validate(asset);
     if (invalid != null) return Left(invalid);
-    return guardedWrite(() async {
-      final row = _toRow(asset);
-      // Firestore-first (write-through): persist to the authoritative cloud
-      // before caching locally, so a write that can't reach Firestore fails.
-      await _mirror.upsert(_collection, row.id, row.toJson());
-      await _db.into(_db.assets).insertOnConflictUpdate(row);
-    });
+    final row = _toRow(asset);
+    return guardedMirroredUpsert(
+      mirror: _mirror,
+      collection: _collection,
+      id: row.id,
+      json: row.toJson(),
+      localUpsert: () => _db.into(_db.assets).insertOnConflictUpdate(row),
+    );
   }
 
   /// Rejects a duplicate (ticker, market) (rule 2) before any write — comparing

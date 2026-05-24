@@ -29,13 +29,16 @@ class AssetClassRepositoryImpl implements AssetClassRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> save(AssetClass assetClass) =>
-      guardedWrite(() async {
-        final row = _toRow(assetClass);
-        // Firestore-first: a write that can't reach the cloud must fail.
-        await _mirror.upsert(_collection, row.id, row.toJson());
-        await _db.into(_db.assetClasses).insertOnConflictUpdate(row);
-      });
+  Future<Either<Failure, Unit>> save(AssetClass assetClass) {
+    final row = _toRow(assetClass);
+    return guardedMirroredUpsert(
+      mirror: _mirror,
+      collection: _collection,
+      id: row.id,
+      json: row.toJson(),
+      localUpsert: () => _db.into(_db.assetClasses).insertOnConflictUpdate(row),
+    );
+  }
 
   @override
   Future<Either<Failure, Unit>> delete(String id) => guardedWrite(() async {

@@ -1,5 +1,8 @@
 # Spec: CSV Import
 
+> Maps to the **`portfolio_import`** feature (`lib/features/portfolio_import/`); the
+> spec keeps the `csv_import` name for the user-facing concept.
+
 Two **separate** bulk imports, each on the page it belongs to and matching the
 reference project (financo) which imports per entity:
 

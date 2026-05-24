@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/sync/remote_mirror.dart';
 
 /// Runs a local database [write] (insert/delete + best-effort cloud mirror),
 /// returning [unit] on success or a [CacheFailure] if it throws. Centralizes the
@@ -17,6 +18,25 @@ Future<Either<Failure, Unit>> guardedWrite(
     return const Left(CacheFailure());
   }
 }
+
+/// Persists a row **write-through**: upserts [json] to the authoritative cloud
+/// (`{collection}/{id}` via [mirror]) *before* caching it locally via
+/// [localUpsert]. The cloud is the source of truth, so a write that can't reach
+/// Firestore fails (and never lives only in the local cache). This is the shared
+/// shape of every repository's `save`; keeping the Firestore-first ordering in
+/// one place stops the repos from defining it four different ways. See
+/// `docs/specs/cloud_sync.md`.
+Future<Either<Failure, Unit>> guardedMirroredUpsert({
+  required RemoteMirror mirror,
+  required String collection,
+  required String id,
+  required Map<String, dynamic> json,
+  required Future<void> Function() localUpsert,
+}) =>
+    guardedWrite(() async {
+      await mirror.upsert(collection, id, json);
+      await localUpsert();
+    });
 
 /// Runs a local database [read], returning its value or a [CacheFailure] if it
 /// throws. The read counterpart to [guardedWrite] (same Exception-only policy).

@@ -16,7 +16,10 @@ The domain `Snapshot` is a value object (Equatable, no id) — all money in base
 
 The Drift row (`SnapshotRow`) additionally carries `id` (the `yyyy-MM-dd` day key,
 used for idempotent upsert and as the Firestore doc id) and `currency`. There is no
-`byClass`/`createdAt` — the snapshot stores totals only.
+`byClass`/`createdAt` — the snapshot stores totals only. The row also has a nullable
+`byInstitutionJson` column (added in schema v7) reserved for a future per-institution
+breakdown; it is currently never written and may be dropped by a later migration if
+it stays unused.
 
 ## Business rules
 

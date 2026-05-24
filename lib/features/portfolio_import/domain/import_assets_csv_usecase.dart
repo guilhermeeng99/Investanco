@@ -69,8 +69,7 @@ class ImportAssetsCsvUseCase {
         currency: row.currency,
         createdAt: now,
       );
-      final result = await _assetRepository.save(asset);
-      final failure = result.fold((f) => f, (_) => null);
+      final failure = (await _assetRepository.save(asset)).failureOrNull;
       if (failure != null) return Left(failure);
       byTicker[row.ticker.toLowerCase()] = asset;
       created++;

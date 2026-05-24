@@ -117,4 +117,54 @@ void main() {
 
     expect(holdings.length, 2);
   });
+
+  test('overselling clamps quantity to zero (defensive; repo blocks oversell)',
+      () {
+    final holding = calculator.derive([
+      transactionFactory(
+        id: 't1',
+        quantity: 5,
+        unitPrice: Money.fromMajor(10, brl),
+        date: DateTime(2026, 1, 1),
+      ),
+      transactionFactory(
+        id: 't2',
+        kind: TransactionKind.sell,
+        quantity: 8, // more than held
+        unitPrice: Money.fromMajor(12, brl),
+        date: DateTime(2026, 1, 2),
+      ),
+    ]).single;
+
+    expect(holding.quantity, 0);
+    expect(holding.isClosed, isTrue);
+  });
+
+  test('re-buying after a full close starts a fresh average cost', () {
+    final holding = calculator.derive([
+      transactionFactory(
+        id: 't1',
+        quantity: 10,
+        unitPrice: Money.fromMajor(10, brl),
+        date: DateTime(2026, 1, 1),
+      ),
+      transactionFactory(
+        id: 't2',
+        kind: TransactionKind.sell,
+        quantity: 10,
+        unitPrice: Money.fromMajor(15, brl),
+        date: DateTime(2026, 1, 2),
+      ),
+      transactionFactory(
+        id: 't3',
+        quantity: 5,
+        unitPrice: Money.fromMajor(20, brl),
+        date: DateTime(2026, 1, 3),
+      ),
+    ]).single;
+
+    expect(holding.quantity, 5);
+    // New lot priced at R$20; the closed lot's R$10 cost is not blended in.
+    expect(holding.avgCost, const Money(2000, brl));
+  });
 }

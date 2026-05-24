@@ -70,4 +70,63 @@ void main() {
     expect(source.supports(assetFactory(kind: AssetKind.etfUs)), isTrue);
     expect(source.supports(assetFactory(kind: AssetKind.stockBr)), isFalse);
   });
+
+  test('a failing request for one ticker is skipped; others still return',
+      () async {
+    final source = FinnhubQuoteDataSource(dio, token: 'k');
+    when(
+      () => dio.get<Map<String, dynamic>>(
+        any(),
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer((invocation) async {
+      final params =
+          invocation.namedArguments[#queryParameters] as Map<String, dynamic>;
+      if (params['symbol'] == 'BAD') {
+        throw DioException(requestOptions: RequestOptions(path: ''));
+      }
+      return Response<Map<String, dynamic>>(
+        requestOptions: RequestOptions(path: ''),
+        data: {'c': 100.0, 'pc': 90.0},
+      );
+    });
+
+    final result = await source.fetch([
+      assetFactory(
+        id: 'a1',
+        ticker: 'AAPL',
+        kind: AssetKind.stockUs,
+        currency: Currency.usd,
+      ),
+      assetFactory(
+        id: 'a2',
+        ticker: 'BAD',
+        kind: AssetKind.stockUs,
+        currency: Currency.usd,
+      ),
+    ]);
+    final quotes = result.getOrElse(() => <Quote>[]);
+
+    // Per-ticker resilience: one bad symbol does not lose the batch.
+    expect(quotes.length, 1);
+    expect(quotes.single.assetId, 'a1');
+  });
+
+  test('every request failing degrades to an empty list, not a Left', () async {
+    final source = FinnhubQuoteDataSource(dio, token: 'k');
+    when(
+      () => dio.get<Map<String, dynamic>>(
+        any(),
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenThrow(DioException(requestOptions: RequestOptions(path: '')));
+
+    final result = await source.fetch([
+      assetFactory(kind: AssetKind.stockUs, currency: Currency.usd),
+    ]);
+
+    // US holdings simply show cost basis until a quote arrives — never a failure.
+    expect(result.isRight(), isTrue);
+    expect(result.getOrElse(() => <Quote>[]), isEmpty);
+  });
 }

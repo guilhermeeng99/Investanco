@@ -17,7 +17,7 @@ analyzer:
     strict-inference: true
     strict-raw-types: true
   errors:
-    # TODOs are tracked in docs/ROADMAP.md, not enforced by the analyzer.
+    # TODOs are tracked separately, not enforced by the analyzer.
     todo: ignore
     flutter_style_todos: ignore
 

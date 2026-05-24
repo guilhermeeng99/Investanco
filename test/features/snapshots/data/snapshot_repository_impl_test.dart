@@ -3,8 +3,10 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/features/snapshots/data/repositories/snapshot_repository_impl.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/helpers.dart';
+import '../../../harness/mocks.dart';
 
 void main() {
   late AppDatabase db;
@@ -46,5 +48,39 @@ void main() {
 
     final result = await repository.range(DateTime(2000), DateTime(2001));
     expect(result.getOrElse(() => const []), isEmpty);
+  });
+
+  test('mirrors the written snapshot through the RemoteMirror', () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any())).thenAnswer((_) async {});
+    final repo = SnapshotRepositoryImpl(db, mirror);
+
+    await repo.upsertToday(
+      totalValue: Money.fromMajor(100, Currency.brl),
+      totalInvested: Money.fromMajor(80, Currency.brl),
+      totalPL: Money.fromMajor(20, Currency.brl),
+    );
+
+    verify(() => mirror.upsert('snapshots', any(), any())).called(1);
+  });
+
+  test('a mirror failure is non-fatal and still persists locally', () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any()))
+        .thenThrow(Exception('offline'));
+    final repo = SnapshotRepositoryImpl(db, mirror);
+
+    final result = await repo.upsertToday(
+      totalValue: Money.fromMajor(100, Currency.brl),
+      totalInvested: const Money.zero(Currency.brl),
+      totalPL: const Money.zero(Currency.brl),
+    );
+
+    expect(result.isRight(), isTrue);
+    final range = await repo.range(
+      DateTime.now().subtract(const Duration(days: 1)),
+      DateTime.now().add(const Duration(days: 1)),
+    );
+    expect(range.getOrElse(() => const []).length, 1);
   });
 }
