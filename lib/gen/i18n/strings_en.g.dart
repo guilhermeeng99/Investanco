@@ -425,6 +425,7 @@ class _TranslationsAuthEn implements TranslationsAuthPt {
 	@override String get continueWithGoogle => 'Continue with Google';
 	@override String get signInSubtitle => 'Sign in to start tracking your investments.';
 	@override String get signInError => 'Could not sign in. Please try again.';
+	@override String get unauthorizedAccount => 'This account isn\'t authorized to use this app.';
 }
 
 // Path: institutions.kinds
@@ -755,6 +756,7 @@ extension on TranslationsEn {
 			'auth.continueWithGoogle' => 'Continue with Google',
 			'auth.signInSubtitle' => 'Sign in to start tracking your investments.',
 			'auth.signInError' => 'Could not sign in. Please try again.',
+			'auth.unauthorizedAccount' => 'This account isn\'t authorized to use this app.',
 			_ => null,
 		};
 	}

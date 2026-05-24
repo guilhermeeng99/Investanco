@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:investanco/core/error/failure_message.dart';
+import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
@@ -44,7 +46,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthInProgress());
     final result = await _repository.signInWithGoogle();
     result.fold(
-      (failure) => emit(AuthUnauthenticated(message: failure.message)),
+      // The owner-restriction error is localized; other (provider) errors keep
+      // their original message. See `FirebaseAuthRepository`.
+      (failure) => emit(
+        AuthUnauthenticated(
+          message: failure is UnauthorizedFailure
+              ? failureMessage(failure)
+              : failure.message,
+        ),
+      ),
       (user) => emit(AuthAuthenticated(user)),
     );
   }

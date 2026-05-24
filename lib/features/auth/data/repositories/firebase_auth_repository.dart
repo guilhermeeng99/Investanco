@@ -6,6 +6,13 @@ import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
 
+/// Accounts allowed to use this single-owner app. This client-side check gives
+/// anyone else a clear sign-in error instead of an empty app; `firestore.rules`
+/// enforces the same restriction server-side (the real protection). Compared
+/// case-insensitively. (Forks: replace with your own e-mail, or inject
+/// `allowedEmails` via DI.)
+const _ownerEmails = {'guilhermeeng99@gmail.com'};
+
 /// Firebase Auth + Google sign-in implementation of [AuthRepository].
 ///
 /// Platform-split (mirrors financo): a Firebase popup on web, the native
@@ -14,11 +21,17 @@ import 'package:investanco/features/auth/domain/repositories/auth_repository.dar
 /// `firebaseapp.com/__/auth/handler`, which fails with "missing initial state"
 /// in storage-partitioned browsers. See `docs/specs/auth.md`.
 class FirebaseAuthRepository implements AuthRepository {
-  /// Creates the repository over [fb.FirebaseAuth] and [GoogleSignIn].
-  FirebaseAuthRepository(this._auth, this._googleSignIn);
+  /// Creates the repository over [fb.FirebaseAuth] and [GoogleSignIn]. The
+  /// optional allow-list restricts sign-in to the owner account(s).
+  FirebaseAuthRepository(
+    this._auth,
+    this._googleSignIn, [
+    this._allowedEmails = _ownerEmails,
+  ]);
 
   final fb.FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final Set<String> _allowedEmails;
 
   @override
   AuthUser? get currentUser => _toUser(_auth.currentUser);
@@ -32,6 +45,13 @@ class FirebaseAuthRepository implements AuthRepository {
       final credential = kIsWeb ? await _signInWeb() : await _signInMobile();
       final user = _toUser(credential.user);
       if (user == null) return const Left(ServerFailure('Sign-in failed'));
+      if (!_isAllowed(user.email)) {
+        // Wrong account: drop the session so the intruder is not left signed in,
+        // and report a clear error instead of an empty app. `firestore.rules`
+        // denies their data server-side regardless.
+        await signOut();
+        return const Left(UnauthorizedFailure());
+      }
       return Right(user);
     } on fb.FirebaseAuthException catch (error) {
       return Left(ServerFailure(error.message ?? 'Sign-in failed'));
@@ -77,6 +97,9 @@ class FirebaseAuthRepository implements AuthRepository {
     }
     await _auth.signOut();
   }
+
+  /// Whether [email] is on the owner allow-list (case-insensitive).
+  bool _isAllowed(String email) => _allowedEmails.contains(email.toLowerCase());
 
   AuthUser? _toUser(fb.User? user) {
     if (user == null) return null;

@@ -75,6 +75,13 @@ class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = 'Not found']);
 }
 
+/// The signed-in account is not on the owner allow-list of this single-owner
+/// app. The client signs the user back out and shows a localized error; the
+/// Firestore security rules enforce the same restriction server-side.
+class UnauthorizedFailure extends Failure {
+  const UnauthorizedFailure([super.message = 'Account not authorized']);
+}
+
 /// Collapses a repository result to its [Failure], or null on success — for
 /// fire-and-forget writes whose only interesting outcome is the error (e.g. a
 /// cubit returning `Future<Failure?>` to the form that triggered the save).

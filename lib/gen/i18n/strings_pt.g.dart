@@ -879,6 +879,9 @@ class TranslationsAuthPt {
 
 	/// pt: 'Não foi possível entrar. Tente novamente.'
 	String get signInError => 'Não foi possível entrar. Tente novamente.';
+
+	/// pt: 'Esta conta não tem acesso a este aplicativo.'
+	String get unauthorizedAccount => 'Esta conta não tem acesso a este aplicativo.';
 }
 
 // Path: institutions.kinds
@@ -1261,6 +1264,7 @@ extension on Translations {
 			'auth.continueWithGoogle' => 'Continuar com Google',
 			'auth.signInSubtitle' => 'Entre para começar a acompanhar seus investimentos.',
 			'auth.signInError' => 'Não foi possível entrar. Tente novamente.',
+			'auth.unauthorizedAccount' => 'Esta conta não tem acesso a este aplicativo.',
 			_ => null,
 		};
 	}

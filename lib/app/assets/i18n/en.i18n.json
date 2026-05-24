@@ -288,6 +288,7 @@
   "auth": {
     "continueWithGoogle": "Continue with Google",
     "signInSubtitle": "Sign in to start tracking your investments.",
-    "signInError": "Could not sign in. Please try again."
+    "signInError": "Could not sign in. Please try again.",
+    "unauthorizedAccount": "This account isn't authorized to use this app."
   }
 }

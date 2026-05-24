@@ -288,6 +288,7 @@
   "auth": {
     "continueWithGoogle": "Continuar com Google",
     "signInSubtitle": "Entre para começar a acompanhar seus investimentos.",
-    "signInError": "Não foi possível entrar. Tente novamente."
+    "signInError": "Não foi possível entrar. Tente novamente.",
+    "unauthorizedAccount": "Esta conta não tem acesso a este aplicativo."
   }
 }

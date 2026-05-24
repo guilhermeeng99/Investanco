@@ -90,6 +90,14 @@ Pure function (testable) consumed by `GoRouter.redirect`, with
    `GoogleSignIn.signOut()` on web would throw `StateError`). On Android the server
    client id is read from `google-services.json` (its `oauth_client` web entry),
    so the release SHA-1/SHA-256 must be registered in the Firebase console.
+5. **Single-owner access.** Sign-in is restricted to an owner allow-list in
+   `FirebaseAuthRepository`: a non-authorized Google account is signed back out
+   and the attempt is rejected with `UnauthorizedFailure`, surfaced as a localized
+   message (`AuthUnauthenticated` → `t.auth.unauthorizedAccount`). This is a
+   client-side UX gate so the wrong account gets a clear error instead of an empty
+   app; `firestore.rules` pins the same e-mail server-side (the real enforcement).
+   A true auth-layer block (Firebase Auth blocking functions) would need Identity
+   Platform/GCIP enabled on the project.
 
 ## Open questions
 

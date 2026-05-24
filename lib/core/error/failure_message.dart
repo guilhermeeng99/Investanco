@@ -14,4 +14,5 @@ String failureMessage(Failure failure) => switch (failure) {
       ValidationFailure() => validationMessage(failure) ?? t.errors.invalid,
       InUseFailure() => t.errors.inUse,
       NotFoundFailure() => t.errors.notFound,
+      UnauthorizedFailure() => t.auth.unauthorizedAccount,
     };

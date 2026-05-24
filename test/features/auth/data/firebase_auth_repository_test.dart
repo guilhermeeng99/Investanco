@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/data/repositories/firebase_auth_repository.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,7 +21,13 @@ void main() {
   setUp(() {
     auth = MockFirebaseAuth();
     googleSignIn = MockGoogleSignIn();
-    repository = FirebaseAuthRepository(auth, googleSignIn);
+    // Scope the allow-list to the stubbed test user so the success-path tests
+    // pass; the rejection test signs in a different account on purpose.
+    repository = FirebaseAuthRepository(
+      auth,
+      googleSignIn,
+      const {'ada@example.com'},
+    );
   });
 
   // Builds a fully-stubbed Firebase user. Must be called outside any `when(...)`
@@ -97,6 +104,35 @@ void main() {
     verify(() => googleSignIn.authenticate()).called(1);
     verify(() => auth.signInWithCredential(any())).called(1);
     verifyNever(() => auth.signInWithProvider(any()));
+  });
+
+  test('signInWithGoogle rejects an account outside the allow-list', () async {
+    // A non-owner signs in: the attempt must fail with UnauthorizedFailure and
+    // the session must be dropped (signed back out) so they are not left in.
+    final intruder = stubbedUser();
+    when(() => intruder.email).thenReturn('intruder@example.com');
+    stubMobileSignIn(intruder);
+    when(() => googleSignIn.signOut()).thenAnswer((_) async {});
+    when(() => auth.signOut()).thenAnswer((_) async {});
+
+    final result = await repository.signInWithGoogle();
+
+    expect(result.isLeft(), isTrue);
+    result.fold(
+      (failure) => expect(failure, isA<UnauthorizedFailure>()),
+      (_) => fail('expected a Left'),
+    );
+    verify(() => auth.signOut()).called(1);
+  });
+
+  test('signInWithGoogle allows the owner e-mail case-insensitively', () async {
+    final user = stubbedUser();
+    when(() => user.email).thenReturn('ADA@example.com');
+    stubMobileSignIn(user);
+
+    final result = await repository.signInWithGoogle();
+
+    expect(result.isRight(), isTrue);
   });
 
   test('signInWithGoogle maps a cancelled chooser to a failure', () async {

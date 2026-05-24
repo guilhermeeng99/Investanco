@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:investanco/gen/i18n/strings.g.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/auth_user_factory.dart';
@@ -63,6 +64,21 @@ void main() {
     expect: () => [
       const AuthInProgress(),
       const AuthUnauthenticated(message: 'nope'),
+    ],
+  );
+
+  blocTest<AuthBloc, AuthState>(
+    'AuthSignInRequested localizes the owner-restriction error',
+    build: () {
+      when(() => repository.signInWithGoogle()).thenAnswer(
+        (_) async => const Left<Failure, AuthUser>(UnauthorizedFailure()),
+      );
+      return AuthBloc(repository, syncService);
+    },
+    act: (bloc) => bloc.add(const AuthSignInRequested()),
+    expect: () => [
+      const AuthInProgress(),
+      AuthUnauthenticated(message: t.auth.unauthorizedAccount),
     ],
   );
 
