@@ -1,11 +1,16 @@
 rules_version = '2';
 
-// Each user owns everything under users/{uid}. No cross-user access. Quotes and
-// device settings stay local (not mirrored). See docs/specs/cloud_sync.md.
+// Single-owner lock: only the authorized account may read/write, which makes the
+// app unusable to anyone else even though the web build and Firebase client config
+// are public. `request.auth.uid == userId` keeps each user's path isolated; the
+// e-mail check pins access to one account. (Forks: swap in your own e-mail, or
+// remove the e-mail clause for a normal multi-user app.) See docs/specs/cloud_sync.md.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.email == "guilhermeeng99@gmail.com";
     }
   }
 }
