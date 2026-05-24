@@ -6,7 +6,6 @@ name: Deploy to GitHub Pages
 #
 # Signing + distribution use repository secrets: ANDROID_KEYSTORE_BASE64,
 # ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, FIREBASE_SERVICE_ACCOUNT_ANDROID.
-# See docs/ROADMAP.md (7.1/7.2).
 
 on:
   push:
@@ -46,9 +45,15 @@ jobs:
           curl -L -o web/drift_worker.dart.js \
             "https://github.com/simolus3/drift/releases/download/drift-2.33.0/drift_worker.js"
 
+      # --no-tree-shake-icons is required: allocation classes let the user PICK any
+      # glyph from `allocationIcons`, and asset/institution/transaction icons resolve
+      # through runtime switches. The icon tree-shaker can only keep glyphs it sees
+      # referenced as constants, so it strips the runtime-selected ones and they
+      # render as tofu boxes. Keep the full Font Awesome set. See docs/specs/allocation.md.
       - name: Build web
         run: |
           flutter build web --release \
+            --no-tree-shake-icons \
             --base-href /Investanco/ \
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }} \
@@ -68,9 +73,12 @@ jobs:
             echo "storeFile=upload-keystore.jks"
           } > android/key.properties
 
+      # --no-tree-shake-icons: same reason as the web build above — runtime-selected
+      # Font Awesome glyphs would be stripped and render as tofu boxes.
       - name: Build Android APK (release-signed)
         run: |
           flutter build apk --release \
+            --no-tree-shake-icons \
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }} \
             --dart-define=BRAPI_TOKEN=${{ secrets.BRAPI_TOKEN }}
