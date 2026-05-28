@@ -34,19 +34,6 @@ void main() {
     expect(list.map((t) => t.id), ['t2', 't1']);
   });
 
-  test('watchByAsset filters and returns oldest first', () async {
-    await repository.save(
-      transactionFactory(id: 't1', date: DateTime(2026, 1, 2)),
-    );
-    await repository.save(
-      transactionFactory(id: 't2', date: DateTime(2026, 1, 1)),
-    );
-    await repository.save(transactionFactory(id: 't3', assetId: 'a2'));
-
-    final list = await repository.watchByAsset('a1').first;
-    expect(list.map((t) => t.id), ['t2', 't1']);
-  });
-
   test('delete removes the transaction', () async {
     await repository.save(transactionFactory());
 
@@ -89,6 +76,18 @@ void main() {
     final failure =
         result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
     expect(failure.code, ValidationCode.futureTransactionDate);
+    expect(await repository.watchAll().first, isEmpty);
+  });
+
+  test('rejects a buy with a non-positive quantity and skips the cache',
+      () async {
+    final result = await repository.save(
+      transactionFactory(quantity: 0),
+    );
+
+    final failure =
+        result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
+    expect(failure.code, ValidationCode.nonPositiveQuantity);
     expect(await repository.watchAll().first, isEmpty);
   });
 

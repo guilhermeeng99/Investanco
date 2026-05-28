@@ -56,4 +56,14 @@ void main() {
       expect(failure, isA<InUseFailure>());
     },
   );
+
+  blocTest<InstitutionsCubit, InstitutionsState>(
+    'emits Error when the backing stream fails',
+    build: () {
+      when(repository.watchAll)
+          .thenAnswer((_) => Stream.error(Exception('boom')));
+      return InstitutionsCubit(repository, const FakeIdGenerator());
+    },
+    expect: () => [const InstitutionsError()],
+  );
 }

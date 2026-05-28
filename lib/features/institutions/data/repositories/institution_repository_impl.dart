@@ -4,6 +4,7 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
@@ -21,7 +22,7 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
   final AppDatabase _db;
   final RemoteMirror _mirror;
 
-  static const _collection = 'institutions';
+  static const String _collection = MirroredCollections.institutions;
 
   @override
   Stream<List<Institution>> watchAll() {

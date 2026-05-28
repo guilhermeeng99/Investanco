@@ -49,6 +49,9 @@ enum ValidationCode {
   /// A sell exceeds the quantity held in the position on its date.
   oversell,
 
+  /// A buy/sell was entered with a non-positive quantity.
+  nonPositiveQuantity,
+
   /// Allocation-class targets sum to more than 100%.
   classTargetSum,
 }

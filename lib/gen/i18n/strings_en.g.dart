@@ -38,27 +38,27 @@ class TranslationsEn with BaseTranslations<AppLocale, Translations> implements T
 
 	// Translations
 	@override String get appName => 'Investanco';
-	@override late final _TranslationsCommonEn common = _TranslationsCommonEn._(_root);
-	@override late final _TranslationsErrorsEn errors = _TranslationsErrorsEn._(_root);
-	@override late final _TranslationsCurrenciesEn currencies = _TranslationsCurrenciesEn._(_root);
-	@override late final _TranslationsNavEn nav = _TranslationsNavEn._(_root);
-	@override late final _TranslationsAllocationEn allocation = _TranslationsAllocationEn._(_root);
-	@override late final _TranslationsDashboardEn dashboard = _TranslationsDashboardEn._(_root);
-	@override late final _TranslationsInstitutionsEn institutions = _TranslationsInstitutionsEn._(_root);
-	@override late final _TranslationsAssetsEn assets = _TranslationsAssetsEn._(_root);
-	@override late final _TranslationsTransactionsEn transactions = _TranslationsTransactionsEn._(_root);
-	@override late final _TranslationsImportCsvEn importCsv = _TranslationsImportCsvEn._(_root);
-	@override late final _TranslationsImportAssetsEn importAssets = _TranslationsImportAssetsEn._(_root);
-	@override late final _TranslationsImportTransactionsEn importTransactions = _TranslationsImportTransactionsEn._(_root);
-	@override late final _TranslationsProfileEn profile = _TranslationsProfileEn._(_root);
-	@override late final _TranslationsStartupEn startup = _TranslationsStartupEn._(_root);
-	@override late final _TranslationsOnboardingEn onboarding = _TranslationsOnboardingEn._(_root);
-	@override late final _TranslationsAuthEn auth = _TranslationsAuthEn._(_root);
+	@override late final _Translations$common$en common = _Translations$common$en._(_root);
+	@override late final _Translations$errors$en errors = _Translations$errors$en._(_root);
+	@override late final _Translations$currencies$en currencies = _Translations$currencies$en._(_root);
+	@override late final _Translations$nav$en nav = _Translations$nav$en._(_root);
+	@override late final _Translations$allocation$en allocation = _Translations$allocation$en._(_root);
+	@override late final _Translations$dashboard$en dashboard = _Translations$dashboard$en._(_root);
+	@override late final _Translations$institutions$en institutions = _Translations$institutions$en._(_root);
+	@override late final _Translations$assets$en assets = _Translations$assets$en._(_root);
+	@override late final _Translations$transactions$en transactions = _Translations$transactions$en._(_root);
+	@override late final _Translations$importCsv$en importCsv = _Translations$importCsv$en._(_root);
+	@override late final _Translations$importAssets$en importAssets = _Translations$importAssets$en._(_root);
+	@override late final _Translations$importTransactions$en importTransactions = _Translations$importTransactions$en._(_root);
+	@override late final _Translations$profile$en profile = _Translations$profile$en._(_root);
+	@override late final _Translations$startup$en startup = _Translations$startup$en._(_root);
+	@override late final _Translations$onboarding$en onboarding = _Translations$onboarding$en._(_root);
+	@override late final _Translations$auth$en auth = _Translations$auth$en._(_root);
 }
 
 // Path: common
-class _TranslationsCommonEn implements TranslationsCommonPt {
-	_TranslationsCommonEn._(this._root);
+class _Translations$common$en implements Translations$common$pt {
+	_Translations$common$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -75,8 +75,8 @@ class _TranslationsCommonEn implements TranslationsCommonPt {
 }
 
 // Path: errors
-class _TranslationsErrorsEn implements TranslationsErrorsPt {
-	_TranslationsErrorsEn._(this._root);
+class _Translations$errors$en implements Translations$errors$pt {
+	_Translations$errors$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -91,8 +91,8 @@ class _TranslationsErrorsEn implements TranslationsErrorsPt {
 }
 
 // Path: currencies
-class _TranslationsCurrenciesEn implements TranslationsCurrenciesPt {
-	_TranslationsCurrenciesEn._(this._root);
+class _Translations$currencies$en implements Translations$currencies$pt {
+	_Translations$currencies$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -102,8 +102,8 @@ class _TranslationsCurrenciesEn implements TranslationsCurrenciesPt {
 }
 
 // Path: nav
-class _TranslationsNavEn implements TranslationsNavPt {
-	_TranslationsNavEn._(this._root);
+class _Translations$nav$en implements Translations$nav$pt {
+	_Translations$nav$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -117,8 +117,8 @@ class _TranslationsNavEn implements TranslationsNavPt {
 }
 
 // Path: allocation
-class _TranslationsAllocationEn implements TranslationsAllocationPt {
-	_TranslationsAllocationEn._(this._root);
+class _Translations$allocation$en implements Translations$allocation$pt {
+	_Translations$allocation$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -167,8 +167,8 @@ class _TranslationsAllocationEn implements TranslationsAllocationPt {
 }
 
 // Path: dashboard
-class _TranslationsDashboardEn implements TranslationsDashboardPt {
-	_TranslationsDashboardEn._(this._root);
+class _Translations$dashboard$en implements Translations$dashboard$pt {
+	_Translations$dashboard$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -194,8 +194,8 @@ class _TranslationsDashboardEn implements TranslationsDashboardPt {
 }
 
 // Path: institutions
-class _TranslationsInstitutionsEn implements TranslationsInstitutionsPt {
-	_TranslationsInstitutionsEn._(this._root);
+class _Translations$institutions$en implements Translations$institutions$pt {
+	_Translations$institutions$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -211,12 +211,12 @@ class _TranslationsInstitutionsEn implements TranslationsInstitutionsPt {
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
 	@override String get duplicateName => 'An institution with this name already exists.';
-	@override late final _TranslationsInstitutionsKindsEn kinds = _TranslationsInstitutionsKindsEn._(_root);
+	@override late final _Translations$institutions$kinds$en kinds = _Translations$institutions$kinds$en._(_root);
 }
 
 // Path: assets
-class _TranslationsAssetsEn implements TranslationsAssetsPt {
-	_TranslationsAssetsEn._(this._root);
+class _Translations$assets$en implements Translations$assets$pt {
+	_Translations$assets$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -235,7 +235,7 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get fixedIncomeBasis => 'Index';
 	@override String get fixedIncomeRate => 'Contracted rate (%)';
 	@override String get fixedIncomeRateHelp => 'CDI/Selic: % of the index. Prefixed: % p.a. IPCA+: spread % p.a.';
-	@override late final _TranslationsAssetsBasisEn basis = _TranslationsAssetsBasisEn._(_root);
+	@override late final _Translations$assets$basis$en basis = _Translations$assets$basis$en._(_root);
 	@override String get deleteConfirm => 'Delete this asset?';
 	@override String get inUseError => 'Cannot delete: there are linked transactions.';
 	@override String get saveError => 'Error while saving.';
@@ -248,13 +248,13 @@ class _TranslationsAssetsEn implements TranslationsAssetsPt {
 	@override String get allocationTargetHelp => 'How much this asset should be within the class.';
 	@override String get allocationTargetRequired => 'Enter a target % above 0';
 	@override String get allocationUnassigned => 'No class';
-	@override late final _TranslationsAssetsKindsEn kinds = _TranslationsAssetsKindsEn._(_root);
-	@override late final _TranslationsAssetsMarketsEn markets = _TranslationsAssetsMarketsEn._(_root);
+	@override late final _Translations$assets$kinds$en kinds = _Translations$assets$kinds$en._(_root);
+	@override late final _Translations$assets$markets$en markets = _Translations$assets$markets$en._(_root);
 }
 
 // Path: transactions
-class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
-	_TranslationsTransactionsEn._(this._root);
+class _Translations$transactions$en implements Translations$transactions$pt {
+	_Translations$transactions$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -276,15 +276,16 @@ class _TranslationsTransactionsEn implements TranslationsTransactionsPt {
 	@override String get saveError => 'Error while saving.';
 	@override String get futureDateError => 'A transaction can\'t be dated in the future.';
 	@override String get oversellError => 'This sell exceeds the quantity held on that date.';
+	@override String get quantityError => 'Quantity must be greater than zero.';
 	@override String get needPrereqs => 'Add an institution and an asset first.';
 	@override String get filterAll => 'All';
 	@override String get noFilterResults => 'No transactions for this institution.';
-	@override late final _TranslationsTransactionsKindsEn kinds = _TranslationsTransactionsKindsEn._(_root);
+	@override late final _Translations$transactions$kinds$en kinds = _Translations$transactions$kinds$en._(_root);
 }
 
 // Path: importCsv
-class _TranslationsImportCsvEn implements TranslationsImportCsvPt {
-	_TranslationsImportCsvEn._(this._root);
+class _Translations$importCsv$en implements Translations$importCsv$pt {
+	_Translations$importCsv$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -309,8 +310,8 @@ class _TranslationsImportCsvEn implements TranslationsImportCsvPt {
 }
 
 // Path: importAssets
-class _TranslationsImportAssetsEn implements TranslationsImportAssetsPt {
-	_TranslationsImportAssetsEn._(this._root);
+class _Translations$importAssets$en implements Translations$importAssets$pt {
+	_Translations$importAssets$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -326,8 +327,8 @@ class _TranslationsImportAssetsEn implements TranslationsImportAssetsPt {
 }
 
 // Path: importTransactions
-class _TranslationsImportTransactionsEn implements TranslationsImportTransactionsPt {
-	_TranslationsImportTransactionsEn._(this._root);
+class _Translations$importTransactions$en implements Translations$importTransactions$pt {
+	_Translations$importTransactions$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -346,8 +347,8 @@ class _TranslationsImportTransactionsEn implements TranslationsImportTransaction
 }
 
 // Path: profile
-class _TranslationsProfileEn implements TranslationsProfilePt {
-	_TranslationsProfileEn._(this._root);
+class _Translations$profile$en implements Translations$profile$pt {
+	_Translations$profile$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -384,8 +385,8 @@ class _TranslationsProfileEn implements TranslationsProfilePt {
 }
 
 // Path: startup
-class _TranslationsStartupEn implements TranslationsStartupPt {
-	_TranslationsStartupEn._(this._root);
+class _Translations$startup$en implements Translations$startup$pt {
+	_Translations$startup$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -399,8 +400,8 @@ class _TranslationsStartupEn implements TranslationsStartupPt {
 }
 
 // Path: onboarding
-class _TranslationsOnboardingEn implements TranslationsOnboardingPt {
-	_TranslationsOnboardingEn._(this._root);
+class _Translations$onboarding$en implements Translations$onboarding$pt {
+	_Translations$onboarding$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -416,8 +417,8 @@ class _TranslationsOnboardingEn implements TranslationsOnboardingPt {
 }
 
 // Path: auth
-class _TranslationsAuthEn implements TranslationsAuthPt {
-	_TranslationsAuthEn._(this._root);
+class _Translations$auth$en implements Translations$auth$pt {
+	_Translations$auth$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -429,8 +430,8 @@ class _TranslationsAuthEn implements TranslationsAuthPt {
 }
 
 // Path: institutions.kinds
-class _TranslationsInstitutionsKindsEn implements TranslationsInstitutionsKindsPt {
-	_TranslationsInstitutionsKindsEn._(this._root);
+class _Translations$institutions$kinds$en implements Translations$institutions$kinds$pt {
+	_Translations$institutions$kinds$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -443,8 +444,8 @@ class _TranslationsInstitutionsKindsEn implements TranslationsInstitutionsKindsP
 }
 
 // Path: assets.basis
-class _TranslationsAssetsBasisEn implements TranslationsAssetsBasisPt {
-	_TranslationsAssetsBasisEn._(this._root);
+class _Translations$assets$basis$en implements Translations$assets$basis$pt {
+	_Translations$assets$basis$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -456,8 +457,8 @@ class _TranslationsAssetsBasisEn implements TranslationsAssetsBasisPt {
 }
 
 // Path: assets.kinds
-class _TranslationsAssetsKindsEn implements TranslationsAssetsKindsPt {
-	_TranslationsAssetsKindsEn._(this._root);
+class _Translations$assets$kinds$en implements Translations$assets$kinds$pt {
+	_Translations$assets$kinds$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -476,8 +477,8 @@ class _TranslationsAssetsKindsEn implements TranslationsAssetsKindsPt {
 }
 
 // Path: assets.markets
-class _TranslationsAssetsMarketsEn implements TranslationsAssetsMarketsPt {
-	_TranslationsAssetsMarketsEn._(this._root);
+class _Translations$assets$markets$en implements Translations$assets$markets$pt {
+	_Translations$assets$markets$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -488,8 +489,8 @@ class _TranslationsAssetsMarketsEn implements TranslationsAssetsMarketsPt {
 }
 
 // Path: transactions.kinds
-class _TranslationsTransactionsKindsEn implements TranslationsTransactionsKindsPt {
-	_TranslationsTransactionsKindsEn._(this._root);
+class _Translations$transactions$kinds$en implements Translations$transactions$kinds$pt {
+	_Translations$transactions$kinds$en._(this._root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
@@ -668,6 +669,7 @@ extension on TranslationsEn {
 			'transactions.saveError' => 'Error while saving.',
 			'transactions.futureDateError' => 'A transaction can\'t be dated in the future.',
 			'transactions.oversellError' => 'This sell exceeds the quantity held on that date.',
+			'transactions.quantityError' => 'Quantity must be greater than zero.',
 			'transactions.needPrereqs' => 'Add an institution and an asset first.',
 			'transactions.filterAll' => 'All',
 			'transactions.noFilterResults' => 'No transactions for this institution.',

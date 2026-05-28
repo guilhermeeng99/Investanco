@@ -143,16 +143,63 @@ void main() {
       expect(overview.classes.single.currentValue, Money.fromMajor(600, brl));
     });
 
-    test(r'a gap under R$1 produces no rebalance action', () {
+    test(r'a gap under R$1 (50 minor) is noise — no rebalance action', () {
       final overview = computeInvestmentOverview(
-        classes: [assetClassFactory(id: 'eq', targetPercent: 100)],
+        classes: [
+          assetClassFactory(id: 'eq', targetPercent: 50),
+          assetClassFactory(id: 'fi', targetPercent: 50),
+        ],
+        assets: [
+          asset('a1', classId: 'eq', target: 100),
+          asset('a2', classId: 'fi', target: 100),
+        ],
+        // total 20.00: eq 10.50 (target 10.00 → R$0.50 over); fi 9.50 (under).
+        holdings: [holding('a1', 10.5), holding('a2', 9.5)],
+        base: brl,
+      );
+
+      final eq = overview.classes.firstWhere((c) => c.id == 'eq');
+      expect(eq.deltaValue, Money.fromMajor(-0.5, brl)); // R$0.50 < R$1
+      expect(overview.rebalanceActions, isEmpty);
+    });
+
+    test(r'a gap of exactly R$1 crosses the threshold and produces an action',
+        () {
+      final overview = computeInvestmentOverview(
+        classes: [
+          assetClassFactory(id: 'eq', targetPercent: 50),
+          assetClassFactory(id: 'fi', targetPercent: 50),
+        ],
+        assets: [
+          asset('a1', classId: 'eq', target: 100),
+          asset('a2', classId: 'fi', target: 100),
+        ],
+        // total 20.00: eq 11.00 (target 10.00 → R$1.00 over → sell); fi buy.
+        holdings: [holding('a1', 11), holding('a2', 9)],
+        base: brl,
+      );
+
+      expect(overview.rebalanceActions, hasLength(2));
+      final sell = overview.rebalanceActions
+          .firstWhere((a) => a.direction == RebalanceDirection.sell);
+      expect(sell.classId, 'eq');
+      expect(sell.amount, Money.fromMajor(1, brl)); // R$1 boundary → action
+    });
+
+    test('excludes a non-root subclass from the slices and target sum', () {
+      final overview = computeInvestmentOverview(
+        classes: [
+          assetClassFactory(id: 'eq', targetPercent: 60),
+          assetClassFactory(id: 'sub', parentId: 'eq', targetPercent: 40),
+        ],
         assets: [asset('a1', classId: 'eq', target: 100)],
         holdings: [holding('a1', 100)],
         base: brl,
       );
 
-      // eq is exactly on target (100% / 100%).
-      expect(overview.rebalanceActions, isEmpty);
+      // Only roots become top-level slices; the subclass target is not summed.
+      expect(overview.classes.map((c) => c.id), ['eq']);
+      expect(overview.targetSumPercent, 60);
     });
   });
 }

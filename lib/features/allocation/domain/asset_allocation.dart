@@ -9,6 +9,12 @@ const String allocationClassIdKey = 'allocationClassId';
 /// Metadata key: the asset's target share **within its class** (percent).
 const String allocationTargetKey = 'allocationTargetPercent';
 
+/// Gaps smaller than this (money minor units = R$1) are rounding noise: no
+/// rebalance action and no off-target flag. One definition shared by the
+/// overview math and the allocation UI so the boundary can't drift (the rule is
+/// `abs(delta) >= kRebalanceThresholdMinor` → off target / actionable).
+const int kRebalanceThresholdMinor = 100;
+
 /// The class id an asset is assigned to, or null if none.
 String? allocationClassIdOf(Asset asset) {
   final value = asset.metadata[allocationClassIdKey];

@@ -185,6 +185,7 @@
     "saveError": "Erro ao salvar.",
     "futureDateError": "A data do lançamento não pode ser no futuro.",
     "oversellError": "A venda excede a quantidade disponível nessa data.",
+    "quantityError": "A quantidade deve ser maior que zero.",
     "needPrereqs": "Cadastre uma instituição e um ativo antes.",
     "filterAll": "Todas",
     "noFilterResults": "Nenhum lançamento nesta instituição.",

@@ -135,6 +135,31 @@ void main() {
     expect(result.isRight(), isTrue);
   });
 
+  test('the DEFAULT allow-list pins the configured production owner account',
+      () async {
+    // Pins the real owner address baked into the production default (and
+    // mirrored in firestore.rules) so an accidental edit/typo is caught: the
+    // owner signs in, anyone else is rejected. Built WITHOUT an injected list.
+    final prodRepo = FirebaseAuthRepository(auth, googleSignIn);
+
+    final owner = stubbedUser();
+    when(() => owner.email).thenReturn('guilhermeeng99@gmail.com');
+    stubMobileSignIn(owner);
+    expect((await prodRepo.signInWithGoogle()).isRight(), isTrue);
+
+    final intruder = stubbedUser();
+    when(() => intruder.email).thenReturn('someone-else@gmail.com');
+    stubMobileSignIn(intruder);
+    when(() => googleSignIn.signOut()).thenAnswer((_) async {});
+    when(() => auth.signOut()).thenAnswer((_) async {});
+
+    final rejected = await prodRepo.signInWithGoogle();
+    rejected.fold(
+      (f) => expect(f, isA<UnauthorizedFailure>()),
+      (_) => fail('a non-owner must be rejected by the default lock'),
+    );
+  });
+
   test('signInWithGoogle maps a cancelled chooser to a failure', () async {
     when(() => googleSignIn.authenticate()).thenThrow(
       const GoogleSignInException(code: GoogleSignInExceptionCode.canceled),

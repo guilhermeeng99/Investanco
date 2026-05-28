@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/network/guarded_fetch.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/quotes/domain/datasources/quote_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/quote.dart';
@@ -30,19 +31,26 @@ class FinnhubQuoteDataSource implements QuoteDataSource {
   @override
   Future<Either<Failure, List<Quote>>> fetch(List<Asset> assets) async {
     final supported = assets.where(supports).toList();
-    if (supported.isEmpty) return const Right([]);
-    if (token.isEmpty) return const Right([]);
+    if (supported.isEmpty || token.isEmpty) return const Right([]);
 
-    final now = DateTime.now();
-    final quotes = <Quote>[];
-    for (final asset in supported) {
-      final quote = await _fetchOne(asset, token, now);
-      if (quote != null) quotes.add(quote);
-    }
-    return Right(quotes);
+    // Wrap the batch in guardedFetch so a malformed payload surfaces as a
+    // ParseFailure instead of being silently swallowed (the old `on Object`
+    // masked cast/type bugs). Per-ticker transport errors are still tolerated
+    // inside _fetchOne so one unreachable symbol doesn't lose the batch — and
+    // when every symbol fails, the loop simply yields an empty list (US
+    // holdings then show cost basis), never a hard failure.
+    return guardedFetch(() async {
+      final now = DateTime.now();
+      final quotes = <Quote>[];
+      for (final asset in supported) {
+        final quote = await _fetchOne(asset, now);
+        if (quote != null) quotes.add(quote);
+      }
+      return Right(quotes);
+    });
   }
 
-  Future<Quote?> _fetchOne(Asset asset, String token, DateTime now) async {
+  Future<Quote?> _fetchOne(Asset asset, DateTime now) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         'https://finnhub.io/api/v1/quote',
@@ -62,7 +70,10 @@ class FinnhubQuoteDataSource implements QuoteDataSource {
         fetchedAt: now,
         source: QuoteSource.finnhub,
       );
-    } on Object {
+    } on DioException {
+      // Transient transport failure for this one symbol — skip it, keep the
+      // rest of the batch. A parse/type error is NOT caught here: it propagates
+      // to guardedFetch and becomes a ParseFailure rather than a silent drop.
       return null;
     }
   }

@@ -13,16 +13,18 @@ import '../../../harness/mocks.dart';
 
 void main() {
   late MockAssetRepository repository;
+  late MockAssetClassRepository classRepository;
   final sample = assetFactory();
 
   setUp(() {
     repository = MockAssetRepository();
+    classRepository = MockAssetClassRepository();
     when(repository.watchAll).thenAnswer((_) => Stream.value([sample]));
   });
 
   blocTest<AssetsCubit, AssetsState>(
     'emits Loaded from the repository stream',
-    build: () => AssetsCubit(repository, const FakeIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
     expect: () => [
       AssetsLoaded([sample]),
     ],
@@ -30,7 +32,7 @@ void main() {
 
   blocTest<AssetsCubit, AssetsState>(
     'add() upper-cases the ticker and persists',
-    build: () => AssetsCubit(repository, const FakeIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
     setUp: () => when(() => repository.save(any()))
         .thenAnswer((_) async => const Right(unit)),
     act: (cubit) => cubit.add(
@@ -50,12 +52,22 @@ void main() {
 
   blocTest<AssetsCubit, AssetsState>(
     'remove() surfaces InUseFailure from the repository',
-    build: () => AssetsCubit(repository, const FakeIdGenerator()),
+    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
     setUp: () => when(() => repository.delete(any()))
         .thenAnswer((_) async => const Left(InUseFailure())),
     act: (cubit) async {
       final failure = await cubit.remove('a1');
       expect(failure, isA<InUseFailure>());
     },
+  );
+
+  blocTest<AssetsCubit, AssetsState>(
+    'emits Error when the backing stream fails',
+    build: () {
+      when(repository.watchAll)
+          .thenAnswer((_) => Stream.error(Exception('boom')));
+      return AssetsCubit(repository, const FakeIdGenerator(), classRepository);
+    },
+    expect: () => [const AssetsError()],
   );
 }

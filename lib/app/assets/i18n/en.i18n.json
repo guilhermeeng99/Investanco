@@ -185,6 +185,7 @@
     "saveError": "Error while saving.",
     "futureDateError": "A transaction can't be dated in the future.",
     "oversellError": "This sell exceeds the quantity held on that date.",
+    "quantityError": "Quantity must be greater than zero.",
     "needPrereqs": "Add an institution and an asset first.",
     "filterAll": "All",
     "noFilterResults": "No transactions for this institution.",

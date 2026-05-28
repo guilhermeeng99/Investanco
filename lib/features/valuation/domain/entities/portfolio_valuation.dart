@@ -35,9 +35,11 @@ class PortfolioValuation extends Equatable {
   }
 
   /// Aggregates totals and allocations from already-valued [holdings]. FX-missing
-  /// holdings are excluded from every total (they're still kept in [holdings] so
-  /// the UI can list them with a warning). Single source of the aggregation math,
-  /// reused by the valuation service and by [forInstitution].
+  /// holdings are excluded from the base-consolidated totals and allocations
+  /// (they're still kept in [holdings] so the UI can list them with a warning),
+  /// but they DO contribute to [byCurrency], which is a native-currency subtotal
+  /// that needs no FX conversion. Single source of the aggregation math, reused
+  /// by the valuation service and by [forInstitution].
   factory PortfolioValuation.fromHoldings(
     List<HoldingValuation> holdings,
     Currency base,
@@ -51,6 +53,13 @@ class PortfolioValuation extends Equatable {
     final byCurrency = <Currency, Money>{};
 
     for (final v in holdings) {
+      // The native-currency subtotal needs no FX conversion, so a foreign
+      // holding still belongs in its own-currency bucket even when its rate to
+      // base is missing — only the base totals/allocations below must skip it.
+      final native = v.marketValueNative;
+      byCurrency[native.currency] =
+          (byCurrency[native.currency] ?? Money.zero(native.currency)) + native;
+
       if (v.fxMissing) continue;
       totalValue += v.marketValueBase;
       totalInvested += v.investedBase;
@@ -61,9 +70,6 @@ class PortfolioValuation extends Equatable {
       byInstitution[v.institutionId] =
           (byInstitution[v.institutionId] ?? Money.zero(base)) +
               v.marketValueBase;
-      final native = v.marketValueNative;
-      byCurrency[native.currency] =
-          (byCurrency[native.currency] ?? Money.zero(native.currency)) + native;
     }
 
     final totalReturnPct = totalInvested.minorUnits == 0

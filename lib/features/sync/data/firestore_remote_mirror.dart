@@ -9,7 +9,13 @@ import 'package:investanco/features/auth/domain/repositories/auth_repository.dar
 /// Failures (offline, transient, permission) **propagate**: the repository
 /// surfaces them and skips the local cache write, because the next authoritative
 /// startup sync rebuilds local from Firestore and would otherwise wipe a
-/// cloud-less row. No-op when signed out. See `docs/specs/cloud_sync.md`.
+/// cloud-less row.
+///
+/// Signed-out writes are a deliberate no-op. This is safe because the whole UI
+/// is gated behind Firebase Auth (see `docs/specs/auth.md`), so no write form is
+/// reachable without a user, and sign-out wipes the local cache via
+/// `SyncService.resetLocal` — there is therefore no path that could leave an
+/// unmirrored local row behind. See `docs/specs/cloud_sync.md`.
 class FirestoreRemoteMirror implements RemoteMirror {
   /// Creates the mirror over [_firestore], scoped to [_auth]'s current user.
   FirestoreRemoteMirror(this._firestore, this._auth);

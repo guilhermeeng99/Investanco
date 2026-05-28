@@ -7,9 +7,6 @@ abstract class TransactionRepository {
   /// Reactive list of all transactions, newest first.
   Stream<List<AssetTransaction>> watchAll();
 
-  /// Reactive list of transactions for one asset, oldest first (for holdings).
-  Stream<List<AssetTransaction>> watchByAsset(String assetId);
-
   /// Creates or updates a transaction (upsert).
   Future<Either<Failure, Unit>> save(AssetTransaction transaction);
 

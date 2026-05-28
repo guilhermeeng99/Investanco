@@ -13,6 +13,7 @@ String? validationMessage(ValidationFailure failure) {
     ValidationCode.duplicateAsset => t.assets.duplicateAsset,
     ValidationCode.futureTransactionDate => t.transactions.futureDateError,
     ValidationCode.oversell => t.transactions.oversellError,
+    ValidationCode.nonPositiveQuantity => t.transactions.quantityError,
     ValidationCode.classTargetSum => t.allocation.targetSumError,
   };
 }

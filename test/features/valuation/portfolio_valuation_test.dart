@@ -55,7 +55,8 @@ void main() {
       expect(portfolio.byCurrency[usd], Money.fromMajor(200, usd));
     });
 
-    test('excludes FX-missing holdings from totals and byCurrency', () {
+    test('excludes FX-missing holdings from base totals but keeps their '
+        'native subtotal', () {
       final portfolio = PortfolioValuation.fromHoldings(
         [
           holdingValuationFactory(
@@ -71,9 +72,11 @@ void main() {
         brl,
       );
 
+      // The FX-missing holding is excluded from the base-consolidated total…
       expect(portfolio.totalValueBase, Money.fromMajor(100, brl));
-      expect(portfolio.byCurrency.containsKey(usd), isFalse);
-      // The holding is still listed so the UI can warn about it.
+      // …but its native value still shows in the USD subtotal (no FX needed)…
+      expect(portfolio.byCurrency[usd], Money.fromMajor(50, usd));
+      // …and it is still listed so the UI can warn about it.
       expect(portfolio.holdings, hasLength(2));
     });
   });

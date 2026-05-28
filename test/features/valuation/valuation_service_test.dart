@@ -198,6 +198,136 @@ void main() {
     expect(portfolio.byCurrency[brl], Money.fromMajor(210, brl));
   });
 
+  test('day change is (price − previous close) × quantity, in base', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(quantity: 10),
+        asset: assetFactory(),
+        fxToBase: 1,
+        quote: quoteFactory(
+          unitPrice: Money.fromMajor(11, brl),
+          previousClose: Money.fromMajor(10, brl),
+          asOf: now,
+          fetchedAt: now,
+        ),
+      ),
+      now: now,
+    );
+
+    expect(result.dayChangeBase, Money.fromMajor(10, brl)); // (11 − 10) × 10
+  });
+
+  test('day change converts to base via FX for a foreign holding', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(quantity: 2, avgCost: const Money(1000, usd)),
+        asset: assetFactory(
+          currency: usd,
+          market: Market.us,
+          kind: AssetKind.stockUs,
+        ),
+        fxToBase: 5,
+        quote: quoteFactory(
+          unitPrice: Money.fromMajor(12, usd),
+          previousClose: Money.fromMajor(11, usd),
+          asOf: now,
+          fetchedAt: now,
+        ),
+      ),
+      now: now,
+    );
+
+    // (12 − 11) USD × 2 × 5 = 10 BRL
+    expect(result.dayChangeBase, Money.fromMajor(10, brl));
+  });
+
+  test('portfolio sums day change; a quote without previous close adds 0', () {
+    final portfolio = service.valuatePortfolio(
+      [
+        ValuationInput(
+          holding: holdingFactory(quantity: 10),
+          asset: assetFactory(id: 'a1'),
+          fxToBase: 1,
+          quote: quoteFactory(
+            unitPrice: Money.fromMajor(11, brl),
+            previousClose: Money.fromMajor(10, brl),
+            asOf: now,
+            fetchedAt: now,
+          ),
+        ),
+        ValuationInput(
+          holding: holdingFactory(assetId: 'a2', quantity: 5),
+          asset: assetFactory(id: 'a2'),
+          fxToBase: 1,
+          quote: quoteFactory(
+            assetId: 'a2',
+            unitPrice: Money.fromMajor(20, brl),
+            asOf: now,
+            fetchedAt: now,
+          ),
+        ),
+      ],
+      now: now,
+    );
+
+    // First: (11 − 10) × 10 = 10 ; second has no previousClose → 0.
+    expect(portfolio.totalDayChangeBase, Money.fromMajor(10, brl));
+  });
+
+  test('total P/L adds realized gains and dividends to the unrealized P/L', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(
+          quantity: 10,
+          realizedPL: Money.fromMajor(30, brl),
+          dividends: Money.fromMajor(20, brl),
+        ),
+        asset: assetFactory(),
+        fxToBase: 1,
+        quote: quoteFactory(
+          unitPrice: Money.fromMajor(15, brl),
+          asOf: now,
+          fetchedAt: now,
+        ),
+      ),
+      now: now,
+    );
+
+    expect(result.unrealizedPL, Money.fromMajor(50, brl));
+    // 50 unrealized + 30 realized + 20 dividends = 100, distinct from unrealized.
+    expect(result.totalPL, Money.fromMajor(100, brl));
+  });
+
+  test('total P/L consolidates realized + dividends to base via FX', () {
+    final result = service.valuateHolding(
+      ValuationInput(
+        holding: holdingFactory(
+          quantity: 2,
+          avgCost: const Money(1000, usd),
+          realizedPL: Money.fromMajor(4, usd),
+          dividends: Money.fromMajor(2, usd),
+        ),
+        asset: assetFactory(
+          currency: usd,
+          market: Market.us,
+          kind: AssetKind.stockUs,
+        ),
+        fxToBase: 5,
+        quote: quoteFactory(
+          unitPrice: Money.fromMajor(12, usd),
+          asOf: now,
+          fetchedAt: now,
+        ),
+      ),
+      now: now,
+    );
+
+    // market $24 − invested $20 = $4 → ×5 = R$20 unrealized.
+    expect(result.unrealizedPL, Money.fromMajor(20, brl));
+    // unrealized 20 + realized ($4×5=20) + dividends ($2×5=10) = 50 BRL.
+    expect(result.totalPL, Money.fromMajor(50, brl));
+  });
+
   // R$10,000 principal modeled as quantity 1 × avgCost 10,000.
   final fixedIncomeHolding =
       holdingFactory(quantity: 1, avgCost: const Money(1000000, brl));

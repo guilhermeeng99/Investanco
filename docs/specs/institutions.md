@@ -44,7 +44,7 @@ abstract class InstitutionRepository {
 
 ## State machine (`InstitutionsCubit`)
 
-`InstitutionsLoading → InstitutionsLoaded(list) | InstitutionsError(failure)`. The cubit
+`InstitutionsLoading → InstitutionsLoaded(list) | InstitutionsError`. The cubit
 subscribes to `watchAll()`; mutations (`add`/`edit`/`remove`) return a `Failure?` and the
 stream re-emits the updated list.
 

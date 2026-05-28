@@ -53,7 +53,7 @@ void main() {
   );
 
   blocTest<AuthBloc, AuthState>(
-    'AuthSignInRequested emits Unauthenticated with the failure message',
+    'AuthSignInRequested surfaces a localized error, never the raw message',
     build: () {
       when(() => repository.signInWithGoogle()).thenAnswer(
         (_) async => const Left<Failure, AuthUser>(ServerFailure('nope')),
@@ -63,7 +63,9 @@ void main() {
     act: (bloc) => bloc.add(const AuthSignInRequested()),
     expect: () => [
       const AuthInProgress(),
-      const AuthUnauthenticated(message: 'nope'),
+      // The raw developer message ('nope') must never reach the UI — a generic
+      // localized error is shown instead (see `failureMessage`).
+      AuthUnauthenticated(message: t.errors.server),
     ],
   );
 

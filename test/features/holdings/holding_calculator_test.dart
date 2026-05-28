@@ -140,6 +140,36 @@ void main() {
     expect(holding.isClosed, isTrue);
   });
 
+  test('orders a same-timestamp buy before a sell so cost basis survives', () {
+    // Regression: oversell_check and HoldingCalculator must share ONE ordering.
+    // On an exact (date, createdAt) tie the buy has to settle first; otherwise
+    // the sell is processed first, clamps quantity to zero, and corrupts
+    // avgCost/realizedPL — while the oversell guard (which DID order buy-first)
+    // had already accepted the sell. The sell is listed first on purpose.
+    final sameInstant = DateTime(2026, 1, 1);
+    final holding = calculator.derive([
+      transactionFactory(
+        id: 'sell',
+        kind: TransactionKind.sell,
+        quantity: 4,
+        unitPrice: Money.fromMajor(15, brl),
+        date: sameInstant,
+        createdAt: sameInstant,
+      ),
+      transactionFactory(
+        id: 'buy',
+        quantity: 10,
+        unitPrice: Money.fromMajor(10, brl),
+        date: sameInstant,
+        createdAt: sameInstant,
+      ),
+    ]).single;
+
+    expect(holding.quantity, 6); // 10 bought − 4 sold, NOT clamped to 0
+    expect(holding.avgCost, const Money(1000, brl));
+    expect(holding.realizedPL, const Money(2000, brl)); // (1500−1000)*4
+  });
+
   test('re-buying after a full close starts a fresh average cost', () {
     final holding = calculator.derive([
       transactionFactory(

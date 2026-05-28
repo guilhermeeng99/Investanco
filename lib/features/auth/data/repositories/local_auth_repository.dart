@@ -3,12 +3,12 @@ import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/auth/domain/entities/auth_user.dart';
 import 'package:investanco/features/auth/domain/repositories/auth_repository.dart';
 
-/// Placeholder [AuthRepository] until Firebase Auth is configured (Phase 6).
+/// A signed-out [AuthRepository] stub for tests and no-Firebase dev runs.
 ///
 /// Reports the user as signed out and refuses sign-in with a clear message, so
-/// the `AuthBloc` and any future login UI can be exercised without a Firebase
-/// project. `FirebaseAuthRepository` replaces this behind the same port once
-/// `firebase_options.dart` is provided.
+/// the `AuthBloc` and login UI can be exercised without a Firebase project. The
+/// production app wires `FirebaseAuthRepository` behind the same port (Firebase
+/// Auth + Google sign-in is the live implementation; see `injection_container`).
 class LocalAuthRepository implements AuthRepository {
   /// Creates the placeholder.
   const LocalAuthRepository();

@@ -5,6 +5,7 @@ import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/snapshots/domain/entities/snapshot.dart';
 import 'package:investanco/features/snapshots/domain/repositories/snapshot_repository.dart';
@@ -21,7 +22,7 @@ class SnapshotRepositoryImpl implements SnapshotRepository {
   final AppDatabase _db;
   final RemoteMirror _mirror;
 
-  static const _collection = 'snapshots';
+  static const String _collection = MirroredCollections.snapshots;
 
   @override
   Future<Either<Failure, Unit>> upsertToday({

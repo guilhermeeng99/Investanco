@@ -5,6 +5,7 @@ import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/oversell_check.dart';
@@ -22,7 +23,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   final AppDatabase _db;
   final RemoteMirror _mirror;
 
-  static const _collection = 'transactions';
+  static const String _collection = MirroredCollections.transactions;
 
   @override
   Stream<List<AssetTransaction>> watchAll() {
@@ -30,14 +31,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
       ..orderBy([
         (t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc),
       ]);
-    return query.watch().map((rows) => rows.map(_toEntity).toList());
-  }
-
-  @override
-  Stream<List<AssetTransaction>> watchByAsset(String assetId) {
-    final query = _db.select(_db.transactions)
-      ..where((t) => t.assetId.equals(assetId))
-      ..orderBy([(t) => OrderingTerm(expression: t.date)]);
     return query.watch().map((rows) => rows.map(_toEntity).toList());
   }
 
@@ -56,10 +49,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   /// Enforces the domain invariants before any write, so both the form and the
-  /// CSV import are guarded: no future date (rule 4), and no sell exceeding the
-  /// quantity held in its (asset, institution) position on its date (rule 2).
-  /// Returns the blocking [Failure], or null when valid. See
-  /// `docs/specs/transactions.md`.
+  /// CSV import are guarded: a positive quantity for buy/sell (rule 1), no
+  /// future date (rule 4), and no sell exceeding the quantity held in its
+  /// (asset, institution) position on its date (rule 2). Returns the blocking
+  /// [Failure], or null when valid. See `docs/specs/transactions.md`.
   Future<Failure?> _validate(AssetTransaction tx) async {
     if (tx.date.isAfter(DateTime.now())) {
       return const ValidationFailure(
@@ -70,6 +63,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
     // Dividends never change quantity; only a sell (directly) or a buy edit
     // (stranding a later sell) can break the position's timeline.
     if (tx.kind == TransactionKind.dividend) return null;
+    // A buy/sell must move a positive quantity (rule 1) — guard here so the
+    // interactive form is covered too, not just the CSV parser.
+    if (tx.quantity <= 0) {
+      return const ValidationFailure(
+        'A buy or sell must have a quantity greater than zero.',
+        ValidationCode.nonPositiveQuantity,
+      );
+    }
     final List<AssetTransaction> position;
     try {
       final stored = await (_db.select(_db.transactions)

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
+import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/core/money/money.dart';
@@ -20,14 +21,12 @@ class QuoteRepositoryImpl implements QuoteRepository {
   @override
   Future<Either<Failure, List<Quote>>> getCached(List<String> assetIds) async {
     if (assetIds.isEmpty) return const Right([]);
-    try {
+    return guardedRead(() async {
       final rows = await (_db.select(_db.quotes)
             ..where((t) => t.assetId.isIn(assetIds)))
           .get();
-      return Right(rows.map(_toQuote).toList());
-    } on Object {
-      return const Left(CacheFailure());
-    }
+      return rows.map(_toQuote).toList();
+    });
   }
 
   @override
@@ -55,11 +54,18 @@ class QuoteRepositoryImpl implements QuoteRepository {
   @override
   Future<DateTime?> lastFetchedAt(List<String> assetIds) async {
     if (assetIds.isEmpty) return null;
-    final rows = await (_db.select(_db.quotes)
-          ..where((t) => t.assetId.isIn(assetIds)))
-        .get();
-    if (rows.isEmpty) return null;
-    return rows.map((r) => r.fetchedAt).reduce((a, b) => a.isAfter(b) ? a : b);
+    try {
+      final rows = await (_db.select(_db.quotes)
+            ..where((t) => t.assetId.isIn(assetIds)))
+          .get();
+      if (rows.isEmpty) return null;
+      return rows.map((r) => r.fetchedAt).reduce((a, b) => a.isAfter(b) ? a : b);
+    } on Exception {
+      // A cache read error must not crash the freshness check (it runs on the
+      // hot dashboard/allocation refresh path). Treat it as "no known fetch" so
+      // the engine refreshes from the network instead of throwing.
+      return null;
+    }
   }
 
   Future<void> _cache(List<Quote> quotes) async {

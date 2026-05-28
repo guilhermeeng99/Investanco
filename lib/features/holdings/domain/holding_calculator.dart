@@ -18,7 +18,7 @@ class HoldingCalculator {
   }
 
   Holding _deriveOne(List<AssetTransaction> transactions) {
-    final sorted = [...transactions]..sort(_byDateThenCreation);
+    final sorted = [...transactions]..sort(compareTransactionsOldestFirst);
     final currency = sorted.first.unitPrice.currency;
 
     var quantity = 0.0;
@@ -55,10 +55,5 @@ class HoldingCalculator {
       realizedPL: Money(realizedMinor, currency),
       dividends: Money(dividendsMinor, currency),
     );
-  }
-
-  int _byDateThenCreation(AssetTransaction a, AssetTransaction b) {
-    final byDate = a.date.compareTo(b.date);
-    return byDate != 0 ? byDate : a.createdAt.compareTo(b.createdAt);
   }
 }

@@ -55,6 +55,14 @@ void main() {
     totalPlMinor: 10000,
     currency: 'brl',
   );
+  final assetClass = AssetClassRow(
+    id: 'c1',
+    name: 'US Stocks',
+    iconKey: 'chart',
+    colorValue: 0xFF6366F1,
+    targetPercent: 40,
+    createdAt: DateTime(2026),
+  );
 
   Future<void> putDoc(
     String userId,
@@ -69,6 +77,7 @@ void main() {
     await putDoc(userId, 'assets', asset.id, asset.toJson());
     await putDoc(userId, 'transactions', transaction.id, transaction.toJson());
     await putDoc(userId, 'snapshots', snapshot.id, snapshot.toJson());
+    await putDoc(userId, 'asset_classes', assetClass.id, assetClass.toJson());
   }
 
   test('sync pulls every mirrored collection into the local cache', () async {
@@ -81,6 +90,18 @@ void main() {
     expect((await db.select(db.assets).get()).single.ticker, 'PETR4');
     expect((await db.select(db.transactions).get()).single.quantity, 10);
     expect((await db.select(db.snapshots).get()).single.id, '2026-05-20');
+    expect((await db.select(db.assetClasses).get()).single.id, 'c1');
+  });
+
+  test('sync removes a local asset class deleted on another device', () async {
+    // Authoritative pull also propagates asset_classes deletes (the cloud has
+    // none, so the stale local row must go).
+    await db.into(db.assetClasses).insert(assetClass);
+    await putDoc('u1', 'institutions', institution.id, institution.toJson());
+
+    await service.sync('u1');
+
+    expect(await db.select(db.assetClasses).get(), isEmpty);
   });
 
   test('sync removes a local row that was deleted on another device', () async {
@@ -155,20 +176,27 @@ void main() {
   test('clear wipes both Firestore and local data', () async {
     await db.into(db.institutions).insert(institution);
     await db.into(db.transactions).insert(transaction);
+    await db.into(db.assetClasses).insert(assetClass);
     await seedCloud('u1');
 
     final result = await service.clear('u1');
 
     expect(result.isRight(), isTrue);
-    expect(
-      (await firestore.collection('users/u1/institutions').get()).docs,
-      isEmpty,
-    );
-    expect(
-      (await firestore.collection('users/u1/transactions').get()).docs,
-      isEmpty,
-    );
+    for (final name in const [
+      'institutions',
+      'assets',
+      'transactions',
+      'snapshots',
+      'asset_classes',
+    ]) {
+      expect(
+        (await firestore.collection('users/u1/$name').get()).docs,
+        isEmpty,
+        reason: 'cloud $name should be wiped',
+      );
+    }
     expect(await db.select(db.institutions).get(), isEmpty);
     expect(await db.select(db.transactions).get(), isEmpty);
+    expect(await db.select(db.assetClasses).get(), isEmpty);
   });
 }

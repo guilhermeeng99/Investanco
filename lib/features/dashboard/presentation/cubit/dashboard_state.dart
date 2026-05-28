@@ -49,7 +49,9 @@ class DashboardLoaded extends DashboardState {
   /// snapshots are always written from this full figure.
   final PortfolioValuation portfolio;
 
-  /// Historical daily snapshots (oldest first) for the evolution chart.
+  /// Historical daily snapshots (oldest first). Persisted for cloud sync and
+  /// future charting; the dashboard does not currently render an evolution
+  /// chart (see `docs/specs/dashboard.md`).
   final List<Snapshot> snapshots;
 
   /// Assets keyed by id (for display).

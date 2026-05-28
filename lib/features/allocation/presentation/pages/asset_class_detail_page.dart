@@ -9,6 +9,7 @@ import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/currency_formatter.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/features/allocation/domain/asset_allocation.dart';
 import 'package:investanco/features/allocation/domain/entities/investment_overview.dart';
 import 'package:investanco/features/allocation/presentation/allocation_visuals.dart';
 import 'package:investanco/features/allocation/presentation/cubit/allocation_cubit.dart';
@@ -201,7 +202,7 @@ class _HeroCard extends StatelessWidget {
     final actual = (slice.currentPercent * 100).toStringAsFixed(0);
     final target = slice.targetPercent.toStringAsFixed(0);
     final deltaMinor = slice.deltaValue.minorUnits;
-    final onTarget = deltaMinor.abs() < 100;
+    final onTarget = deltaMinor.abs() < kRebalanceThresholdMinor;
     final deltaColor = onTarget
         ? colors.positive
         : (slice.isUnderTarget ? colors.warning : colors.negative);
@@ -305,8 +306,8 @@ class _AssetRow extends StatelessWidget {
     final target = sub.targetPercent.toStringAsFixed(0);
     final hasTarget = sub.targetPercent > 0;
     final deltaMinor = sub.suggestedDelta.minorUnits;
-    final isBelow = hasTarget && deltaMinor > 100;
-    final isAbove = hasTarget && deltaMinor < -100;
+    final isBelow = hasTarget && deltaMinor >= kRebalanceThresholdMinor;
+    final isAbove = hasTarget && deltaMinor <= -kRebalanceThresholdMinor;
     final suggestionColor = !hasTarget
         ? colors.onBackgroundLight
         : isBelow

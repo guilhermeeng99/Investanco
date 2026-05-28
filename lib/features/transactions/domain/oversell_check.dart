@@ -9,9 +9,11 @@ const double _qtyEpsilon = 1e-9;
 /// sell exceeds the quantity held on its date. Buys add, sells subtract,
 /// dividends leave quantity untouched.
 ///
-/// Ordering mirrors `HoldingCalculator` (date, then createdAt) with a final
-/// buy-before-sell tiebreak, so a same-instant deposit covers its redemption —
-/// e.g. bulk-imported fixed-income cash flows that share a timestamp.
+/// Ordering uses [compareTransactionsOldestFirst] — the same comparator
+/// `HoldingCalculator` sorts by (date, then createdAt, then a buy-before-sell
+/// tiebreak) — so a same-instant deposit covers its redemption and the guard
+/// and the holding math can never disagree (e.g. bulk-imported fixed-income
+/// cash flows that share a timestamp).
 ///
 /// Example:
 /// ```dart
@@ -19,7 +21,7 @@ const double _qtyEpsilon = 1e-9;
 /// oversellsTimeline([sell1]);                 // true — nothing is held
 /// ```
 bool oversellsTimeline(List<AssetTransaction> transactions) {
-  final ordered = [...transactions]..sort(_oldestFirst);
+  final ordered = [...transactions]..sort(compareTransactionsOldestFirst);
   var quantity = 0.0;
   for (final tx in ordered) {
     switch (tx.kind) {
@@ -33,14 +35,4 @@ bool oversellsTimeline(List<AssetTransaction> transactions) {
     }
   }
   return false;
-}
-
-int _oldestFirst(AssetTransaction a, AssetTransaction b) {
-  final byDate = a.date.compareTo(b.date);
-  if (byDate != 0) return byDate;
-  final byCreation = a.createdAt.compareTo(b.createdAt);
-  if (byCreation != 0) return byCreation;
-  // On an exact tie, settle buys before sells so a deposit covers a same-instant
-  // redemption (otherwise the unstable sort could read a false oversell).
-  return transactionKindRank(a.kind).compareTo(transactionKindRank(b.kind));
 }

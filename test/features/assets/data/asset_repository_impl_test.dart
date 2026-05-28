@@ -5,10 +5,12 @@ import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/assets/data/repositories/asset_repository_impl.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/asset_factory.dart';
 import '../../../harness/factories/transaction_factory.dart';
 import '../../../harness/helpers.dart';
+import '../../../harness/mocks.dart';
 
 void main() {
   late AppDatabase db;
@@ -68,5 +70,53 @@ void main() {
     );
 
     expect(result, const Right<Failure, Unit>(unit));
+  });
+
+  test('tolerates a blank or corrupt metadata cell (defaults to empty)',
+      () async {
+    // A bad metadata cell must not throw inside the reactive watchAll stream
+    // and break the whole assets list.
+    await db.into(db.assets).insert(
+          AssetRow(
+            id: 'bad',
+            ticker: 'BAD',
+            name: 'Corrupt',
+            kind: 'crypto',
+            market: 'global',
+            currency: 'brl',
+            metadata: 'not-json{',
+            createdAt: DateTime(2026),
+          ),
+        );
+
+    final assets = await repository.watchAll().first;
+
+    expect(assets.single.metadata, isEmpty);
+  });
+
+  test('mirrors writes to the cloud on save and delete', () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any())).thenAnswer((_) async {});
+    when(() => mirror.delete(any(), any())).thenAnswer((_) async {});
+    final repo = AssetRepositoryImpl(db, mirror);
+
+    await repo.save(assetFactory(id: 'a1'));
+    verify(() => mirror.upsert('assets', 'a1', any())).called(1);
+
+    await repo.delete('a1');
+    verify(() => mirror.delete('assets', 'a1')).called(1);
+  });
+
+  test('save surfaces the failure and skips the cache when the remote fails',
+      () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any()))
+        .thenThrow(Exception('offline'));
+    final repo = AssetRepositoryImpl(db, mirror);
+
+    final result = await repo.save(assetFactory(id: 'a1'));
+
+    expect(result.isLeft(), isTrue);
+    expect(await db.select(db.assets).get(), isEmpty);
   });
 }

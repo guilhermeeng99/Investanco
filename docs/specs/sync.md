@@ -3,17 +3,28 @@
 Refreshing all market data (quotes, FX, indices), recomputing the portfolio, and
 writing the daily snapshot.
 
+> **Naming note:** this spec is about **market-data** refresh, whose code lives in
+> `lib/features/dashboard` + `lib/features/valuation`. The directory
+> `lib/features/sync/` is a *different* concern — the Firestore **cloud** mirror,
+> documented in `cloud_sync.md`. Don't map this spec to `lib/features/sync`.
+
 > **Status:** there is **no** dedicated `SyncBloc`. The reliability design below
 > (retry/backoff, partial-success states, periodic timer) was deferred. What
-> actually ships is the refresh path inside
-> `DashboardCubit` (`dashboard.md`). For the **cloud** (Firestore) mirror, which is
-> a different concern, see `cloud_sync.md`.
+> actually ships is the shared `PortfolioPricingEngine`
+> (`lib/features/valuation/presentation/portfolio_pricing_engine.dart`) composed by
+> both `DashboardCubit` (`dashboard.md`) and `AllocationCubit` (`allocation.md`).
 
-## What actually ships (in `DashboardCubit`)
+## What actually ships (`PortfolioPricingEngine` + the portfolio cubits)
 
-`DashboardCubit.refresh()` orchestrates a single best-effort pass:
+The refresh/pricing logic was extracted into **`PortfolioPricingEngine`**, a module
+each portfolio cubit composes (so the dashboard and allocation screens share the
+rules but not the state). `DashboardCubit.refresh()` delegates to it
+(`heldPositions` / `quotesAreFresh` / `refreshNetwork`) and owns only the daily
+snapshot + institution filter. A single best-effort pass:
 
-1. Derive holdings; collect held assets (`quantity > 0`).
+1. Derive holdings; collect held assets — open positions (`quantity > 0`) **plus**
+   any fixed-income asset with cash flows even at zero net quantity (so its
+   CDI/Selic/IPCA series is still fetched). See `heldAssetIds`.
 2. `QuoteRepository.refresh(heldAssets)` — routes each asset to the first
    `QuoteDataSource` whose `supports()` is true; one attempt per source.
 3. `_refreshIndices(...)` — fetches each BCB index series a fixed-income holding

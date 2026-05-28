@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/quotes/data/datasources/caching_index_data_source.dart';
 import 'package:investanco/features/quotes/domain/entities/index_point.dart';
 import 'package:mocktail/mocktail.dart';
@@ -35,6 +36,20 @@ void main() {
     await ds.series(EconomicIndex.cdi, DateTime(2025, 1, 1));
 
     verify(() => inner.series(any(), any())).called(2);
+  });
+
+  test('does not cache a failed fetch (retries on the next call)', () async {
+    // A failed series must NOT be cached — caching it would pin a bad/empty
+    // series and starve fixed-income accrual until the TTL elapsed.
+    final from = DateTime(2020);
+    when(() => inner.series(EconomicIndex.cdi, from))
+        .thenAnswer((_) async => const Left(NetworkFailure()));
+    final ds = CachingIndexDataSource(inner, ttl: const Duration(hours: 12));
+
+    await ds.series(EconomicIndex.cdi, from);
+    await ds.series(EconomicIndex.cdi, from);
+
+    verify(() => inner.series(EconomicIndex.cdi, from)).called(2);
   });
 
   test('refetches once the TTL has elapsed', () async {

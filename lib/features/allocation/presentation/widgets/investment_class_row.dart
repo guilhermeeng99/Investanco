@@ -4,6 +4,7 @@ import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
 import 'package:investanco/core/format/currency_formatter.dart';
 import 'package:investanco/core/money/money.dart';
+import 'package:investanco/features/allocation/domain/asset_allocation.dart';
 import 'package:investanco/features/allocation/domain/entities/investment_overview.dart';
 import 'package:investanco/features/allocation/presentation/allocation_visuals.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
@@ -105,7 +106,9 @@ class InvestmentClassRow extends StatelessWidget {
 
   String _deltaLabel() {
     final minor = slice.deltaValue.minorUnits;
-    if (minor.abs() < 100) return t.allocation.classRowOnTarget;
+    if (minor.abs() < kRebalanceThresholdMinor) {
+      return t.allocation.classRowOnTarget;
+    }
     final amount = formatCurrency(Money(minor.abs(), slice.deltaValue.currency));
     return slice.isUnderTarget
         ? t.allocation.classRowUnderTarget(amount: amount)
@@ -114,7 +117,9 @@ class InvestmentClassRow extends StatelessWidget {
 
   Color _deltaColor(BuildContext context) {
     final colors = context.appColors;
-    if (slice.deltaValue.minorUnits.abs() < 100) return colors.positive;
+    if (slice.deltaValue.minorUnits.abs() < kRebalanceThresholdMinor) {
+      return colors.positive;
+    }
     return slice.isUnderTarget ? colors.warning : colors.negative;
   }
 }

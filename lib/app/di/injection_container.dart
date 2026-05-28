@@ -182,7 +182,7 @@ void _initAssets() {
     ..registerLazySingleton<AssetRepository>(
       () => AssetRepositoryImpl(sl(), sl()),
     )
-    ..registerFactory<AssetsCubit>(() => AssetsCubit(sl(), sl()));
+    ..registerFactory<AssetsCubit>(() => AssetsCubit(sl(), sl(), sl()));
 }
 
 void _initTransactions() {
@@ -210,7 +210,7 @@ void _initPortfolioImport() {
 void _initQuotes() {
   sl
     ..registerLazySingleton<Dio>(createDio)
-    // Caching decorators: an in-memory TTL cache (FX minutes, indices daily) so
+    // Caching decorators: an in-memory TTL cache (FX 10 min, indices 12 h) so
     // repeated refreshes and the dashboard + allocation cubits reuse fetches.
     ..registerLazySingleton<FxDataSource>(
       () => CachingFxDataSource(AwesomeApiFxDataSource(sl())),

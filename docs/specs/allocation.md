@@ -22,8 +22,12 @@ rebalancing math are ported; the "current value" comes from real prices.
 - **Não alocado (pending)**: market value of holdings whose asset has no
   (resolvable) class assignment.
 
-Classes are flat (`AssetClass`, all roots). `parentId` exists on the entity but is
-currently unused by the UI (reserved).
+Classes are flat in the **UI** — no screen creates a child `AssetClass`, and
+`computeInvestmentOverview` builds slices only for roots (`where(isRoot)`), so a
+non-root class contributes no slice. The `parentId` plumbing nonetheless exists
+end-to-end (entity field, `AllocationCubit.createClass(parentId:)`, and a
+**cascade delete** that removes a root's children) — reserved for a future
+nested-class UI. (Distinct from "Asset = subclass" below, which is per-asset.)
 
 ## Entity contract — `AssetClass`
 
@@ -61,7 +65,8 @@ carrying its class + target via metadata), and the valued `holdings`
 
 ## Algorithm — `computeInvestmentOverview`
 
-Pure, synchronous. `_minRebalanceMinor = 100` (R$1; smaller gaps are noise).
+Pure, synchronous. `kRebalanceThresholdMinor = 100` (R$1; smaller gaps are noise),
+shared from `asset_allocation.dart` by the math and the UI.
 
 1. Market value per asset = Σ `marketValueBase` of its holdings (skip `fxMissing`);
    `total` = Σ all. Group assets under their (existing) class; `allocated` = Σ those.

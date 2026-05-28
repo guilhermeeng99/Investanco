@@ -66,10 +66,14 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - **Institution** — where assets are custodied (Nubank, Avenue, a broker).
 - **Asset** — a tradable instrument (PETR4, AAPL, "Tesouro IPCA+ 2029", a CDB).
 - **Asset kind** — `stockBr`, `fiiBr`, `etfBr`, `bdrBr`, `stockUs`, `etfUs`,
-  `crypto`, `treasury`, `fixedIncome`, `fund`, `cash`.
+  `crypto`, `treasury`, `fixedIncome`, `fund`, `cash`. The create-asset UI
+  currently offers only `etfUs`, `crypto` and `fixedIncome`
+  (`AssetKind.selectableKinds`); the other kinds are priced and displayed but only
+  enter via stored data / CSV import. See `assets.md`.
 - **Transaction** — a buy, sell or dividend event on an asset at an institution.
-- **Holding** — net position of one asset (quantity + average cost), derived from
-  its transactions.
+- **Holding** — net position keyed by **(asset, institution)** — quantity +
+  average cost — derived from its transactions; the dashboard may further
+  aggregate by asset for display. See `holdings.md`.
 - **Quote** — latest known unit price of an asset in its native currency.
 - **Snapshot** — total portfolio value (in BRL) recorded on a given date.
 
@@ -89,8 +93,12 @@ Institution 1───* Transaction *───1 Asset
 
 Detailed entity contracts live in each feature spec:
 `institutions.md`, `assets.md`, `transactions.md`, `holdings.md`,
-`quotes.md`, `valuation.md`, `dashboard.md`, `records.md`, `snapshots.md`,
-`sync.md`, `profile.md`, `auth.md`, `startup.md`.
+`quotes.md`, `valuation.md`, `allocation.md`, `dashboard.md`, `records.md`,
+`snapshots.md`, `csv_import.md`, `sync.md`, `cloud_sync.md`, `profile.md`,
+`auth.md`, `startup.md`.
+
+> **Landing tab:** the app opens on **Investimentos** (the `allocation` feature,
+> `/allocation`), not the dashboard — see `startup.md` and `records.md`.
 
 ---
 

@@ -29,13 +29,13 @@ dependencies:
   google_fonts: ^8.0.2
   google_sign_in: ^7.2.0
   intl: ^0.20.2
-  package_info_plus: ^8.1.0
+  package_info_plus: ^9.0.1
   path: ^1.9.1
   path_provider: ^2.1.5
   shared_preferences: ^2.3.0
   shimmer: ^3.0.0
-  slang: ^4.14.0
-  slang_flutter: ^4.14.0
+  slang: ^4.15.0
+  slang_flutter: ^4.15.0
   sqlite3_flutter_libs: ^0.6.0+eol
   uuid: ^4.5.3
   web: ^1.1.0

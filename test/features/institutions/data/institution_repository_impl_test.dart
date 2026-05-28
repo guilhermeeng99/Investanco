@@ -4,10 +4,12 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/features/institutions/data/repositories/institution_repository_impl.dart';
 import 'package:investanco/features/transactions/data/repositories/transaction_repository_impl.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/institution_factory.dart';
 import '../../../harness/factories/transaction_factory.dart';
 import '../../../harness/helpers.dart';
+import '../../../harness/mocks.dart';
 
 void main() {
   late AppDatabase db;
@@ -72,5 +74,32 @@ void main() {
         await repository.save(institutionFactory(id: 'i1', name: 'Nubank'));
 
     expect(result, const Right<Failure, Unit>(unit));
+  });
+
+  test('mirrors writes to the cloud on save and delete', () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any())).thenAnswer((_) async {});
+    when(() => mirror.delete(any(), any())).thenAnswer((_) async {});
+    final repo = InstitutionRepositoryImpl(db, mirror);
+
+    await repo.save(institutionFactory(id: 'i1'));
+    verify(() => mirror.upsert('institutions', 'i1', any())).called(1);
+
+    await repo.delete('i1');
+    verify(() => mirror.delete('institutions', 'i1')).called(1);
+  });
+
+  test('save surfaces the failure and skips the cache when the remote fails',
+      () async {
+    final mirror = MockRemoteMirror();
+    when(() => mirror.upsert(any(), any(), any()))
+        .thenThrow(Exception('offline'));
+    final repo = InstitutionRepositoryImpl(db, mirror);
+
+    final result = await repo.save(institutionFactory(id: 'i1'));
+
+    expect(result.isLeft(), isTrue);
+    // Write-through: nothing is cached locally when the cloud write fails.
+    expect(await db.select(db.institutions).get(), isEmpty);
   });
 }

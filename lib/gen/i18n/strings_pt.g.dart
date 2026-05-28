@@ -44,27 +44,27 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	/// pt: 'Investanco'
 	String get appName => 'Investanco';
 
-	late final TranslationsCommonPt common = TranslationsCommonPt._(_root);
-	late final TranslationsErrorsPt errors = TranslationsErrorsPt._(_root);
-	late final TranslationsCurrenciesPt currencies = TranslationsCurrenciesPt._(_root);
-	late final TranslationsNavPt nav = TranslationsNavPt._(_root);
-	late final TranslationsAllocationPt allocation = TranslationsAllocationPt._(_root);
-	late final TranslationsDashboardPt dashboard = TranslationsDashboardPt._(_root);
-	late final TranslationsInstitutionsPt institutions = TranslationsInstitutionsPt._(_root);
-	late final TranslationsAssetsPt assets = TranslationsAssetsPt._(_root);
-	late final TranslationsTransactionsPt transactions = TranslationsTransactionsPt._(_root);
-	late final TranslationsImportCsvPt importCsv = TranslationsImportCsvPt._(_root);
-	late final TranslationsImportAssetsPt importAssets = TranslationsImportAssetsPt._(_root);
-	late final TranslationsImportTransactionsPt importTransactions = TranslationsImportTransactionsPt._(_root);
-	late final TranslationsProfilePt profile = TranslationsProfilePt._(_root);
-	late final TranslationsStartupPt startup = TranslationsStartupPt._(_root);
-	late final TranslationsOnboardingPt onboarding = TranslationsOnboardingPt._(_root);
-	late final TranslationsAuthPt auth = TranslationsAuthPt._(_root);
+	late final Translations$common$pt common = Translations$common$pt._(_root);
+	late final Translations$errors$pt errors = Translations$errors$pt._(_root);
+	late final Translations$currencies$pt currencies = Translations$currencies$pt._(_root);
+	late final Translations$nav$pt nav = Translations$nav$pt._(_root);
+	late final Translations$allocation$pt allocation = Translations$allocation$pt._(_root);
+	late final Translations$dashboard$pt dashboard = Translations$dashboard$pt._(_root);
+	late final Translations$institutions$pt institutions = Translations$institutions$pt._(_root);
+	late final Translations$assets$pt assets = Translations$assets$pt._(_root);
+	late final Translations$transactions$pt transactions = Translations$transactions$pt._(_root);
+	late final Translations$importCsv$pt importCsv = Translations$importCsv$pt._(_root);
+	late final Translations$importAssets$pt importAssets = Translations$importAssets$pt._(_root);
+	late final Translations$importTransactions$pt importTransactions = Translations$importTransactions$pt._(_root);
+	late final Translations$profile$pt profile = Translations$profile$pt._(_root);
+	late final Translations$startup$pt startup = Translations$startup$pt._(_root);
+	late final Translations$onboarding$pt onboarding = Translations$onboarding$pt._(_root);
+	late final Translations$auth$pt auth = Translations$auth$pt._(_root);
 }
 
 // Path: common
-class TranslationsCommonPt {
-	TranslationsCommonPt._(this._root);
+class Translations$common$pt {
+	Translations$common$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -99,8 +99,8 @@ class TranslationsCommonPt {
 }
 
 // Path: errors
-class TranslationsErrorsPt {
-	TranslationsErrorsPt._(this._root);
+class Translations$errors$pt {
+	Translations$errors$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -129,8 +129,8 @@ class TranslationsErrorsPt {
 }
 
 // Path: currencies
-class TranslationsCurrenciesPt {
-	TranslationsCurrenciesPt._(this._root);
+class Translations$currencies$pt {
+	Translations$currencies$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -144,8 +144,8 @@ class TranslationsCurrenciesPt {
 }
 
 // Path: nav
-class TranslationsNavPt {
-	TranslationsNavPt._(this._root);
+class Translations$nav$pt {
+	Translations$nav$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -171,8 +171,8 @@ class TranslationsNavPt {
 }
 
 // Path: allocation
-class TranslationsAllocationPt {
-	TranslationsAllocationPt._(this._root);
+class Translations$allocation$pt {
+	Translations$allocation$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -303,8 +303,8 @@ class TranslationsAllocationPt {
 }
 
 // Path: dashboard
-class TranslationsDashboardPt {
-	TranslationsDashboardPt._(this._root);
+class Translations$dashboard$pt {
+	Translations$dashboard$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -366,8 +366,8 @@ class TranslationsDashboardPt {
 }
 
 // Path: institutions
-class TranslationsInstitutionsPt {
-	TranslationsInstitutionsPt._(this._root);
+class Translations$institutions$pt {
+	Translations$institutions$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -406,12 +406,12 @@ class TranslationsInstitutionsPt {
 	/// pt: 'Já existe uma instituição com esse nome.'
 	String get duplicateName => 'Já existe uma instituição com esse nome.';
 
-	late final TranslationsInstitutionsKindsPt kinds = TranslationsInstitutionsKindsPt._(_root);
+	late final Translations$institutions$kinds$pt kinds = Translations$institutions$kinds$pt._(_root);
 }
 
 // Path: assets
-class TranslationsAssetsPt {
-	TranslationsAssetsPt._(this._root);
+class Translations$assets$pt {
+	Translations$assets$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -459,7 +459,7 @@ class TranslationsAssetsPt {
 	/// pt: 'CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.'
 	String get fixedIncomeRateHelp => 'CDI/Selic: % do índice. Prefixado: % a.a. IPCA+: spread % a.a.';
 
-	late final TranslationsAssetsBasisPt basis = TranslationsAssetsBasisPt._(_root);
+	late final Translations$assets$basis$pt basis = Translations$assets$basis$pt._(_root);
 
 	/// pt: 'Excluir este ativo?'
 	String get deleteConfirm => 'Excluir este ativo?';
@@ -497,13 +497,13 @@ class TranslationsAssetsPt {
 	/// pt: 'Sem classe'
 	String get allocationUnassigned => 'Sem classe';
 
-	late final TranslationsAssetsKindsPt kinds = TranslationsAssetsKindsPt._(_root);
-	late final TranslationsAssetsMarketsPt markets = TranslationsAssetsMarketsPt._(_root);
+	late final Translations$assets$kinds$pt kinds = Translations$assets$kinds$pt._(_root);
+	late final Translations$assets$markets$pt markets = Translations$assets$markets$pt._(_root);
 }
 
 // Path: transactions
-class TranslationsTransactionsPt {
-	TranslationsTransactionsPt._(this._root);
+class Translations$transactions$pt {
+	Translations$transactions$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -560,6 +560,9 @@ class TranslationsTransactionsPt {
 	/// pt: 'A venda excede a quantidade disponível nessa data.'
 	String get oversellError => 'A venda excede a quantidade disponível nessa data.';
 
+	/// pt: 'A quantidade deve ser maior que zero.'
+	String get quantityError => 'A quantidade deve ser maior que zero.';
+
 	/// pt: 'Cadastre uma instituição e um ativo antes.'
 	String get needPrereqs => 'Cadastre uma instituição e um ativo antes.';
 
@@ -569,12 +572,12 @@ class TranslationsTransactionsPt {
 	/// pt: 'Nenhum lançamento nesta instituição.'
 	String get noFilterResults => 'Nenhum lançamento nesta instituição.';
 
-	late final TranslationsTransactionsKindsPt kinds = TranslationsTransactionsKindsPt._(_root);
+	late final Translations$transactions$kinds$pt kinds = Translations$transactions$kinds$pt._(_root);
 }
 
 // Path: importCsv
-class TranslationsImportCsvPt {
-	TranslationsImportCsvPt._(this._root);
+class Translations$importCsv$pt {
+	Translations$importCsv$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -633,8 +636,8 @@ class TranslationsImportCsvPt {
 }
 
 // Path: importAssets
-class TranslationsImportAssetsPt {
-	TranslationsImportAssetsPt._(this._root);
+class Translations$importAssets$pt {
+	Translations$importAssets$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -666,8 +669,8 @@ class TranslationsImportAssetsPt {
 }
 
 // Path: importTransactions
-class TranslationsImportTransactionsPt {
-	TranslationsImportTransactionsPt._(this._root);
+class Translations$importTransactions$pt {
+	Translations$importTransactions$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -708,8 +711,8 @@ class TranslationsImportTransactionsPt {
 }
 
 // Path: profile
-class TranslationsProfilePt {
-	TranslationsProfilePt._(this._root);
+class Translations$profile$pt {
+	Translations$profile$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -804,8 +807,8 @@ class TranslationsProfilePt {
 }
 
 // Path: startup
-class TranslationsStartupPt {
-	TranslationsStartupPt._(this._root);
+class Translations$startup$pt {
+	Translations$startup$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -831,8 +834,8 @@ class TranslationsStartupPt {
 }
 
 // Path: onboarding
-class TranslationsOnboardingPt {
-	TranslationsOnboardingPt._(this._root);
+class Translations$onboarding$pt {
+	Translations$onboarding$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -864,8 +867,8 @@ class TranslationsOnboardingPt {
 }
 
 // Path: auth
-class TranslationsAuthPt {
-	TranslationsAuthPt._(this._root);
+class Translations$auth$pt {
+	Translations$auth$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -885,8 +888,8 @@ class TranslationsAuthPt {
 }
 
 // Path: institutions.kinds
-class TranslationsInstitutionsKindsPt {
-	TranslationsInstitutionsKindsPt._(this._root);
+class Translations$institutions$kinds$pt {
+	Translations$institutions$kinds$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -909,8 +912,8 @@ class TranslationsInstitutionsKindsPt {
 }
 
 // Path: assets.basis
-class TranslationsAssetsBasisPt {
-	TranslationsAssetsBasisPt._(this._root);
+class Translations$assets$basis$pt {
+	Translations$assets$basis$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -930,8 +933,8 @@ class TranslationsAssetsBasisPt {
 }
 
 // Path: assets.kinds
-class TranslationsAssetsKindsPt {
-	TranslationsAssetsKindsPt._(this._root);
+class Translations$assets$kinds$pt {
+	Translations$assets$kinds$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -972,8 +975,8 @@ class TranslationsAssetsKindsPt {
 }
 
 // Path: assets.markets
-class TranslationsAssetsMarketsPt {
-	TranslationsAssetsMarketsPt._(this._root);
+class Translations$assets$markets$pt {
+	Translations$assets$markets$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -990,8 +993,8 @@ class TranslationsAssetsMarketsPt {
 }
 
 // Path: transactions.kinds
-class TranslationsTransactionsKindsPt {
-	TranslationsTransactionsKindsPt._(this._root);
+class Translations$transactions$kinds$pt {
+	Translations$transactions$kinds$pt._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1176,6 +1179,7 @@ extension on Translations {
 			'transactions.saveError' => 'Erro ao salvar.',
 			'transactions.futureDateError' => 'A data do lançamento não pode ser no futuro.',
 			'transactions.oversellError' => 'A venda excede a quantidade disponível nessa data.',
+			'transactions.quantityError' => 'A quantidade deve ser maior que zero.',
 			'transactions.needPrereqs' => 'Cadastre uma instituição e um ativo antes.',
 			'transactions.filterAll' => 'Todas',
 			'transactions.noFilterResults' => 'Nenhum lançamento nesta instituição.',

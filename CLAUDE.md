@@ -36,14 +36,16 @@ lib/
 │   ├── shell/    # HomeShell (nav rail + bottom bar)
 │   ├── theme/    # AppColors, AppTheme, ThemeCubit, palette cubits
 │   └── widgets/  # Shared design-system widgets (Investanco* + helpers)
-├── core/         # Shared: database, errors, network, format, l10n, money, sync, utils
-├── features/     # Feature modules (each with data/domain/presentation)
+├── core/         # Shared: app_info, database, error, extensions, format, l10n, money, network, sync, utils
+├── features/     # Feature modules (data/domain/presentation, as each needs)
 └── gen/          # Generated code (i18n strings in gen/i18n)
 ```
 
 Translation sources live in `lib/app/assets/i18n/` (`pt.i18n.json` base + `en.i18n.json`); slang generates `lib/gen/i18n/strings.g.dart`. This mirrors financo.
 
-Each feature follows:
+Each feature *may* contain the layers it needs (not all are present in every
+feature — e.g. `dashboard`/`records`/`startup` are presentation-only aggregations,
+`holdings` is domain-only):
 
 * `domain/` — entities, repository interfaces, use cases
 * `data/` — models, datasources, repository implementations
@@ -222,7 +224,7 @@ Test infrastructure lives in `test/harness/`:
 ## State Management
 
 * **Bloc** for event-driven logic (Auth)
-* **Cubit** for everything else (Dashboard, Institutions, Assets, Transactions, Profile, Startup, theme/locale)
+* **Cubit** for everything else (Dashboard, Allocation, Institutions, Assets, Transactions, Profile, Startup, theme/locale)
 
 ### Rules
 
@@ -254,15 +256,23 @@ users/{uid}/transactions/{id}   → id, institutionId, assetId, kind, quantity,
                                    unitPriceMinor, feesMinor, amountMinor, currency,
                                    date, notes, createdAt, updatedAt
 users/{uid}/snapshots/{id}      → id (yyyy-MM-dd), date, totalValueMinor,
-                                   totalInvestedMinor, totalPlMinor, currency
+                                   totalInvestedMinor, totalPlMinor, currency,
+                                   byInstitutionJson (reserved — currently unwritten)
+users/{uid}/asset_classes/{id}  → id, name, iconKey, colorValue, targetPercent,
+                                   parentId, createdAt
 ```
 
-Not mirrored: `quotes` (derived cache) and `settings` (device-local). Security
-rules restrict every `users/{uid}/**` path to its owner. **Firestore is the source
-of truth**; Drift is a local cache. Guidelines: write-through via `RemoteMirror` on
-each write (remote-first, online-required) + authoritative full pull at sign-in
-(rebuild local from Firestore, so creates/edits/deletes propagate); mirror Drift
-schema 1:1. See `docs/specs/cloud_sync.md`.
+Five collections are mirrored: institutions, assets, transactions, snapshots and
+asset_classes (the authoritative sign-in pull rebuilds all five). Not mirrored:
+`quotes` (derived cache), `fx_rates`/`index_points` (derived caches) and `settings`
+(device-local). Security rules restrict every `users/{uid}/**` path to its owner
+**and** to a single hard-coded owner email (single-owner lock — see
+`firestore.rules`); the client mirrors the same allow-list in
+`FirebaseAuthRepository`. **Firestore is the source of truth**; Drift is a local cache.
+Guidelines: write-through via `RemoteMirror` on each write (remote-first,
+online-required) + authoritative full pull at sign-in (rebuild local from
+Firestore, so creates/edits/deletes propagate); mirror Drift schema 1:1. See
+`docs/specs/cloud_sync.md`.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

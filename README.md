@@ -21,6 +21,20 @@ Firestore is the source of truth; Drift (SQLite) is a local cache that the app
 rebuilds at sign-in and renders immediately while it refreshes in the background.
 Google sign-in is required. See `docs/specs/overview.md`.
 
+## Features
+
+- **Holdings & records** — institutions, assets and transactions (buy/sell/dividend),
+  one at a time or via **bulk CSV import** (separate Assets/Transactions flows with a
+  review screen). See `docs/specs/csv_import.md`.
+- **Automatic valuation** — per-holding market value, profit/loss and return, with
+  **fixed-income accrual** (CDI/Selic/prefixed/IPCA+) modeled as dated cash flows.
+  See `docs/specs/valuation.md`.
+- **Allocation (Investimentos, the landing tab)** — user-defined classes with target
+  %, real-vs-target comparison and a rebalancing plan. See `docs/specs/allocation.md`.
+- **Daily snapshots** of total value/invested/P-L for history. See `docs/specs/snapshots.md`.
+- **Cloud sync** — Firebase Auth (Google) + Firestore as the source of truth, with a
+  single-owner lock. See `docs/specs/cloud_sync.md`.
+
 ## Tech stack
 
 Flutter · flutter_bloc · get_it · go_router · Drift · dio · fl_chart · slang ·

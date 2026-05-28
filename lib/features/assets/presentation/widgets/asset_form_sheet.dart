@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:investanco/app/di/injection_container.dart';
 import 'package:investanco/app/widgets/widgets.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/extensions/context_extensions.dart';
@@ -10,7 +9,6 @@ import 'package:investanco/core/l10n/currency_label.dart';
 import 'package:investanco/core/money/currency.dart';
 import 'package:investanco/features/allocation/domain/asset_allocation.dart';
 import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
-import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
 import 'package:investanco/features/allocation/presentation/allocation_visuals.dart';
 import 'package:investanco/features/assets/domain/asset_kind_defaults.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
@@ -112,7 +110,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   }
 
   Future<void> _loadAllocationClasses() async {
-    final classes = await sl<AssetClassRepository>().watchAll().first;
+    final classes = await widget.cubit.loadAllocationClasses();
     if (mounted) setState(() => _allocationClasses = classes);
   }
 

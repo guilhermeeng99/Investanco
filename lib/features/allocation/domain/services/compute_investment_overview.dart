@@ -6,9 +6,6 @@ import 'package:investanco/features/allocation/domain/entities/investment_overvi
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/valuation/domain/entities/holding_valuation.dart';
 
-/// Gaps smaller than R$1 (in minor units) are noise — no rebalance action.
-const int _minRebalanceMinor = 100;
-
 /// Builds an [InvestmentOverview] from the user's [classes], [assets] (each
 /// carrying its class + target via metadata), and the valued [holdings].
 ///
@@ -99,7 +96,7 @@ InvestmentOverview computeInvestmentOverview({
   });
 
   final actions = classSlices
-      .where((s) => s.deltaValue.minorUnits.abs() >= _minRebalanceMinor)
+      .where((s) => s.deltaValue.minorUnits.abs() >= kRebalanceThresholdMinor)
       .map(
         (s) => RebalanceAction(
           classId: s.id,

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/allocation/domain/entities/asset_class.dart';
 import 'package:investanco/features/allocation/domain/repositories/asset_class_repository.dart';
@@ -19,7 +20,7 @@ class AssetClassRepositoryImpl implements AssetClassRepository {
   final AppDatabase _db;
   final RemoteMirror _mirror;
 
-  static const _collection = 'asset_classes';
+  static const String _collection = MirroredCollections.assetClasses;
 
   @override
   Stream<List<AssetClass>> watchAll() {

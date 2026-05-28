@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/error/failures.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/features/sync/domain/sync_service.dart';
 
 /// Firestore implementation of [SyncService].
@@ -18,37 +19,35 @@ class FirestoreSyncService implements SyncService {
   final AppDatabase _db;
   final FirebaseFirestore _firestore;
 
-  static const List<String> _mirroredCollections = [
-    'institutions',
-    'assets',
-    'transactions',
-    'snapshots',
-    'asset_classes',
-  ];
-
   @override
   Future<Either<Failure, Unit>> sync(String userId) async {
     try {
-      // Phase 1 — fetch from Firestore (network, may throw).
+      // Phase 1 — fetch from Firestore (network, may throw). Collection names
+      // come from MirroredCollections so they can't drift from the repositories'
+      // write targets (a mismatch would silently drop a collection on sign-in).
       final institutions = await _fetchRows(
         userId,
-        'institutions',
+        MirroredCollections.institutions,
         InstitutionRow.fromJson,
       );
-      final assets = await _fetchRows(userId, 'assets', AssetRow.fromJson);
+      final assets = await _fetchRows(
+        userId,
+        MirroredCollections.assets,
+        AssetRow.fromJson,
+      );
       final transactions = await _fetchRows(
         userId,
-        'transactions',
+        MirroredCollections.transactions,
         TransactionRow.fromJson,
       );
       final snapshots = await _fetchRows(
         userId,
-        'snapshots',
+        MirroredCollections.snapshots,
         SnapshotRow.fromJson,
       );
       final assetClasses = await _fetchRows(
         userId,
-        'asset_classes',
+        MirroredCollections.assetClasses,
         AssetClassRow.fromJson,
       );
 
@@ -69,7 +68,7 @@ class FirestoreSyncService implements SyncService {
   @override
   Future<Either<Failure, Unit>> clear(String userId) async {
     try {
-      for (final name in _mirroredCollections) {
+      for (final name in MirroredCollections.all) {
         await _deleteCollection(_collection(userId, name));
       }
       await _db.clearUserData();

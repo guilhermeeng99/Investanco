@@ -36,9 +36,11 @@ present in stored data or an imported CSV.
    `AssetRepositoryImpl`.
 3. `kind` determines `pricingStrategy` (resolved in `quotes.md`); `currency`
    defaults from `market` (`br→brl`, `us→usd`).
-4. `metadata` for `fixedIncome` MUST contain `fiBasis` (a `FixedIncomeBasis` name:
+4. `metadata` for `fixedIncome` *should* carry `fiBasis` (a `FixedIncomeBasis` name:
    `cdi|selic|prefixed|ipca`) and `fiRate` (the contracted rate: `110` for 110% of
-   CDI/Selic, or the absolute annual % for prefixed/IPCA+). Keys are centralized in
+   CDI/Selic, or the absolute annual % for prefixed/IPCA+). Not enforced: the form
+   writes both only when a rate is entered, so a `fixedIncome` asset with no rate is
+   allowed and valued at cost until one is set. Keys are centralized in
    `FixedIncomeMetadata` (read/write). See `valuation.md`.
 5. `metadata` for `treasury` contains the Tesouro bond canonical name used to match
    the Tesouro Direto API.
@@ -55,7 +57,7 @@ abstract class AssetRepository {
 
 ## State machine (`AssetsCubit`)
 
-`AssetsLoading → AssetsLoaded(list) | AssetsError(failure)`. The cubit subscribes to
+`AssetsLoading → AssetsLoaded(list) | AssetsError`. The cubit subscribes to
 `watchAll()`; mutations (`add`/`edit`/`remove`) return a `Failure?` for the form to
 surface and let the stream re-emit the updated list.
 

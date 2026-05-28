@@ -6,6 +6,7 @@ import 'package:investanco/core/database/app_database.dart';
 import 'package:investanco/core/database/guarded_write.dart';
 import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/money/currency.dart';
+import 'package:investanco/core/sync/mirrored_collections.dart';
 import 'package:investanco/core/sync/remote_mirror.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
@@ -22,7 +23,7 @@ class AssetRepositoryImpl implements AssetRepository {
   final AppDatabase _db;
   final RemoteMirror _mirror;
 
-  static const _collection = 'assets';
+  static const String _collection = MirroredCollections.assets;
 
   @override
   Stream<List<Asset>> watchAll() {
@@ -88,7 +89,7 @@ class AssetRepositoryImpl implements AssetRepository {
       );
 
   Asset _toEntity(AssetRow row) {
-    final decoded = jsonDecode(row.metadata) as Map<String, dynamic>;
+    final decoded = _decodeMetadata(row.metadata);
     return Asset(
       id: row.id,
       ticker: row.ticker,
@@ -99,6 +100,19 @@ class AssetRepositoryImpl implements AssetRepository {
       metadata: decoded.map((key, value) => MapEntry(key, value.toString())),
       createdAt: row.createdAt,
     );
+  }
+
+  /// Decodes a stored metadata cell, tolerating a blank or corrupt value by
+  /// falling back to empty metadata. A single bad row must not throw inside the
+  /// reactive `watchAll` stream and break the entire assets list.
+  Map<String, dynamic> _decodeMetadata(String raw) {
+    if (raw.trim().isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is Map<String, dynamic> ? decoded : const {};
+    } on FormatException {
+      return const {};
+    }
   }
 
   AssetRow _toRow(Asset asset) {

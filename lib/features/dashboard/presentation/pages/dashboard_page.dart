@@ -106,7 +106,7 @@ class _LoadedView extends StatelessWidget {
               institutionsById: state.institutionsById,
             )
           else
-            _NoPositions(),
+            const _NoPositions(),
           if (anyStale)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -172,6 +172,8 @@ class _InstitutionFilterBar extends StatelessWidget {
 }
 
 class _NoPositions extends StatelessWidget {
+  const _NoPositions();
+
   @override
   Widget build(BuildContext context) {
     return Padding(

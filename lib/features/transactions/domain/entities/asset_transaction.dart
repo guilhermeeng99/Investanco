@@ -16,6 +16,22 @@ int transactionKindRank(TransactionKind kind) => switch (kind) {
       TransactionKind.sell => 2,
     };
 
+/// Orders transactions oldest-first for replaying a position's timeline: by
+/// [AssetTransaction.date], then [AssetTransaction.createdAt], then
+/// [transactionKindRank] so a same-instant buy settles before a sell. This is
+/// the **single** ordering definition shared by `HoldingCalculator` and
+/// `oversell_check.dart`, so the oversell guard and the holding math can never
+/// disagree on the order of same-timestamp transactions (e.g. bulk-imported
+/// fixed-income cash flows) — a disagreement would let the guard accept a sell
+/// the calculator then clamps to zero, corrupting cost basis.
+int compareTransactionsOldestFirst(AssetTransaction a, AssetTransaction b) {
+  final byDate = a.date.compareTo(b.date);
+  if (byDate != 0) return byDate;
+  final byCreation = a.createdAt.compareTo(b.createdAt);
+  if (byCreation != 0) return byCreation;
+  return transactionKindRank(a.kind).compareTo(transactionKindRank(b.kind));
+}
+
 /// A buy/sell/dividend event that builds a position. Source of truth for
 /// holdings. See `docs/specs/transactions.md`.
 class AssetTransaction extends Equatable {

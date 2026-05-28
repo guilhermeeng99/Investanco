@@ -394,6 +394,115 @@ void main() {
     verify(() => quoteRepository.refresh(any())).called(1);
   });
 
+  test('writes a daily snapshot with the portfolio totals after refresh',
+      () async {
+    final now = DateTime.now();
+    final quote = quoteFactory(
+      unitPrice: Money.fromMajor(100, Currency.usd),
+      asOf: now,
+      fetchedAt: now,
+      source: QuoteSource.finnhub,
+    );
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => Right([quote]));
+    when(() => quoteRepository.refresh(any()))
+        .thenAnswer((_) async => Right([quote]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
+    when(() => fxDataSource.rate(Currency.usd, Currency.brl))
+        .thenAnswer((_) async => const Right<Failure, double>(5));
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+    when(
+      () => snapshotRepository.upsertToday(
+        totalValue: any(named: 'totalValue'),
+        totalInvested: any(named: 'totalInvested'),
+        totalPL: any(named: 'totalPL'),
+      ),
+    ).thenAnswer((_) async => const Right(unit));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    // Wait until FX has applied and the position is freshly priced.
+    await expectLater(
+      cubit.stream,
+      emitsThrough(
+        predicate<DashboardState>(
+          (s) =>
+              s is DashboardLoaded &&
+              s.portfolio.holdings.isNotEmpty &&
+              !s.portfolio.holdings.first.priceStale,
+        ),
+      ),
+    );
+    await pumpEventQueue();
+
+    // 2 × US$100 × 5 = R$1000 value, R$800 invested, R$200 unrealized P/L.
+    verify(
+      () => snapshotRepository.upsertToday(
+        totalValue: Money.fromMajor(1000, Currency.brl),
+        totalInvested: Money.fromMajor(800, Currency.brl),
+        totalPL: Money.fromMajor(200, Currency.brl),
+      ),
+    ).called(greaterThanOrEqualTo(1));
+  });
+
+  test('does not write a snapshot when no fresh-priced position exists',
+      () async {
+    // No quote ever arrives → the holding stays stale → snapshot is skipped.
+    when(() => quoteRepository.getCached(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.refresh(any()))
+        .thenAnswer((_) async => const Right(<Quote>[]));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
+    when(() => fxDataSource.rate(Currency.usd, Currency.brl))
+        .thenAnswer((_) async => const Right<Failure, double>(5));
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+
+    await cubit.stream.firstWhere((s) => s is DashboardLoaded);
+    await pumpEventQueue(); // let the one-shot auto-refresh complete
+
+    verifyNever(
+      () => snapshotRepository.upsertToday(
+        totalValue: any(named: 'totalValue'),
+        totalInvested: any(named: 'totalInvested'),
+        totalPL: any(named: 'totalPL'),
+      ),
+    );
+  });
+
+  test('emits DashboardError when a source stream fails', () async {
+    final failing = MockTransactionRepository();
+    when(failing.watchAll)
+        .thenAnswer((_) => Stream.error(Exception('boom')));
+    when(() => quoteRepository.lastFetchedAt(any()))
+        .thenAnswer((_) async => null);
+    when(() => snapshotRepository.range(any(), any()))
+        .thenAnswer((_) async => const Right(<Snapshot>[]));
+
+    final cubit = DashboardCubit(
+      failing,
+      AssetRepositoryImpl(db),
+      InstitutionRepositoryImpl(db),
+      const HoldingCalculator(),
+      quoteRepository,
+      fxDataSource,
+      const ValuationService(),
+      snapshotRepository,
+      indexDataSource,
+      DriftMarketCacheStore(db),
+    );
+    addTearDown(cubit.close);
+
+    await expectLater(cubit.stream, emitsThrough(isA<DashboardError>()));
+  });
+
   test('clears isRefreshing even when a source throws (no infinite spinner)',
       () async {
     when(() => quoteRepository.getCached(any()))

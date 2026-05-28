@@ -24,7 +24,9 @@ The events that build a position: buys, sells, dividends. Transactions are the
 
 ## Business rules
 
-1. `buy`/`sell` require `quantity > 0` and `unitPrice ≥ 0`.
+1. `buy`/`sell` require `quantity > 0` → `ValidationFailure(code: nonPositiveQuantity)`,
+   enforced in `TransactionRepositoryImpl` (so the form and the CSV import are both
+   guarded); `unitPrice ≥ 0`.
 2. A `sell` cannot exceed the quantity held **at its date** →
    `ValidationFailure(code: oversell)`, enforced in `TransactionRepositoryImpl`
    (so the form and the CSV import are both guarded). `oversellsTimeline` re-runs
@@ -50,7 +52,6 @@ The events that build a position: buys, sells, dividends. Transactions are the
 ```dart
 abstract class TransactionRepository {
   Stream<List<AssetTransaction>> watchAll();                  // newest first
-  Stream<List<AssetTransaction>> watchByAsset(String assetId); // oldest first (for holdings)
   Future<Either<Failure, Unit>> save(AssetTransaction tx);    // create or update (upsert)
   Future<Either<Failure, Unit>> delete(String id);
 }
@@ -59,7 +60,7 @@ abstract class TransactionRepository {
 ## State machine (`TransactionsCubit`)
 
 `TransactionsLoading → TransactionsLoaded(transactions, assets, institutions, institutionFilter)
-| TransactionsError(failure)`. The cubit merges three streams (transactions, assets,
+| TransactionsError`. The cubit merges three streams (transactions, assets,
 institutions) so the list can render asset/institution labels. The form is a plain
 `StatefulWidget` (`transaction_form_sheet.dart`) — there is no separate form cubit;
 it validates locally and calls `add`/`edit`, which return a `Failure?`.
