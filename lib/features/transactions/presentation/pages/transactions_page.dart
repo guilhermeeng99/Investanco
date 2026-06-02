@@ -31,12 +31,25 @@ void openTransactionForm(
     );
     return;
   }
+  final linkedAssets = state.assets
+      .where(
+        (asset) =>
+            asset.institutionId != null &&
+            asset.institutionId!.trim().isNotEmpty,
+      )
+      .toList();
+  final formAssets = existing == null ? linkedAssets : state.assets;
+  if (formAssets.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.transactions.needLinkedAsset)),
+    );
+    return;
+  }
   unawaited(
     TransactionFormSheet.show(
       context,
       cubit,
-      assets: state.assets,
-      institutions: state.institutions,
+      assets: formAssets,
       existing: existing,
     ),
   );
@@ -78,13 +91,12 @@ class TransactionsView extends StatelessWidget {
     BuildContext context,
     TransactionsCubit cubit,
     String id,
-  ) =>
-      confirmAndRemove(
-        context,
-        title: t.transactions.title,
-        message: t.transactions.deleteConfirm,
-        onConfirm: () => cubit.remove(id),
-      );
+  ) => confirmAndRemove(
+    context,
+    title: t.transactions.title,
+    message: t.transactions.deleteConfirm,
+    onConfirm: () => cubit.remove(id),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -94,19 +106,19 @@ class TransactionsView extends StatelessWidget {
         return switch (state) {
           TransactionsLoading() => const LoadingShimmerList(),
           TransactionsError() => ErrorView(
-              message: t.transactions.saveError,
-            ),
+            message: t.transactions.saveError,
+          ),
           TransactionsLoaded(:final transactions) when transactions.isEmpty =>
             _EmptyState(
               onAdd: () => openTransactionForm(context, cubit, state),
             ),
           TransactionsLoaded() => _LoadedBody(
-              state: state,
-              onFilter: cubit.setInstitutionFilter,
-              onTap: (tx) =>
-                  openTransactionForm(context, cubit, state, existing: tx),
-              onDelete: (id) => _confirmDelete(context, cubit, id),
-            ),
+            state: state,
+            onFilter: cubit.setInstitutionFilter,
+            onTap: (tx) =>
+                openTransactionForm(context, cubit, state, existing: tx),
+            onDelete: (id) => _confirmDelete(context, cubit, id),
+          ),
         };
       },
     );

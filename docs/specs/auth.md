@@ -82,6 +82,11 @@ Pure function (testable) consumed by `GoRouter.redirect`, with
    users. Platform-split:
    - **Web** — the OAuth `prompt=select_account` custom parameter on
      `GoogleAuthProvider`, passed to `signInWithPopup`.
+     Local development and manual testing must use `localhost` URLs
+     (`flutter run -d chrome --web-hostname localhost ...`), not `127.0.0.1`.
+     Firebase Auth authorized domains include `localhost` by default; using
+     `127.0.0.1` can make Google sign-in fail with `auth/unauthorized-domain`
+     and appear in the UI as the generic server-error snackbar.
    - **Mobile** — `signOut()` also calls `GoogleSignIn.signOut()` (non-fatal, on a
      best-effort basis) so the next `authenticate()` shows the chooser fresh.
 4. `google_sign_in` is initialised once at startup via `GoogleSignIn.initialize()`,

@@ -138,6 +138,7 @@ void main() {
         ticker: 'CDB-NU',
         name: 'CDB Nubank',
         kind: AssetKind.fixedIncome,
+        institutionId: 'i2',
         metadata: FixedIncomeMetadata.write(FixedIncomeBasis.cdi, 100),
       ),
     );
@@ -209,6 +210,7 @@ void main() {
         kind: AssetKind.stockBr,
         market: Market.br,
         currency: Currency.brl,
+        institutionId: 'i2',
       ),
     );
     await TransactionRepositoryImpl(db).save(

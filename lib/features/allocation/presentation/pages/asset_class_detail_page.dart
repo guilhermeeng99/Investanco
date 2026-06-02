@@ -62,10 +62,12 @@ class _DetailView extends StatelessWidget {
       },
       builder: (context, state) {
         final cubit = context.read<AllocationCubit>();
-        final entity =
-            state is AllocationLoaded ? state.classById(classId) : null;
-        final slice =
-            state is AllocationLoaded ? state.sliceById(classId) : null;
+        final entity = state is AllocationLoaded
+            ? state.classById(classId)
+            : null;
+        final slice = state is AllocationLoaded
+            ? state.sliceById(classId)
+            : null;
         return Scaffold(
           appBar: InvestancoAppBar(
             title: entity?.name ?? t.allocation.classDetailTitle,
@@ -88,12 +90,13 @@ class _DetailView extends StatelessWidget {
           body: switch (state) {
             AllocationLoading() => const LoadingShimmerList(itemHeight: 96),
             AllocationError() => ErrorView(
-                message: t.allocation.loadError,
-                onRetry: cubit.refresh,
-              ),
-            AllocationLoaded() => slice == null
-                ? const SizedBox.shrink()
-                : _Loaded(state: state, slice: slice),
+              message: t.allocation.loadError,
+              onRetry: cubit.refresh,
+            ),
+            AllocationLoaded() =>
+              slice == null
+                  ? const SizedBox.shrink()
+                  : _Loaded(state: state, slice: slice),
           },
         );
       },
@@ -120,8 +123,9 @@ class _Loaded extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
               t.allocation.detailNoAssets,
-              style: context.textTheme.bodyMedium
-                  ?.copyWith(color: context.appColors.onBackgroundLight),
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.appColors.onBackgroundLight,
+              ),
             ),
           )
         else
@@ -209,12 +213,16 @@ class _HeroCard extends StatelessWidget {
     final deltaLabel = onTarget
         ? t.allocation.classRowOnTarget
         : (slice.isUnderTarget
-            ? t.allocation.classRowUnderTarget(
-                amount: formatCurrency(
-                    Money(deltaMinor.abs(), slice.deltaValue.currency)))
-            : t.allocation.classRowOverTarget(
-                amount: formatCurrency(
-                    Money(deltaMinor.abs(), slice.deltaValue.currency))));
+              ? t.allocation.classRowUnderTarget(
+                  amount: formatCurrency(
+                    Money(deltaMinor.abs(), slice.deltaValue.currency),
+                  ),
+                )
+              : t.allocation.classRowOverTarget(
+                  amount: formatCurrency(
+                    Money(deltaMinor.abs(), slice.deltaValue.currency),
+                  ),
+                ));
 
     final targetFraction = slice.targetPercent / 100;
     final progress = targetFraction <= 0
@@ -236,8 +244,11 @@ class _HeroCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child:
-                      FaIcon(allocationIcon(slice.iconKey), size: 20, color: tint),
+                  child: FaIcon(
+                    allocationIcon(slice.iconKey),
+                    size: 20,
+                    color: tint,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -246,14 +257,18 @@ class _HeroCard extends StatelessWidget {
                 children: [
                   Text(
                     formatCurrency(slice.currentValue),
-                    style: context.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: context.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
-                    t.allocation
-                        .classRowSubtitle(actual: '$actual%', target: '$target%'),
-                    style: context.textTheme.bodySmall
-                        ?.copyWith(color: colors.onBackgroundLight),
+                    t.allocation.classRowSubtitle(
+                      actual: '$actual%',
+                      target: '$target%',
+                    ),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
                   ),
                 ],
               ),
@@ -274,15 +289,19 @@ class _HeroCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                t.allocation
-                    .detailTargetAmount(amount: formatCurrency(slice.targetValue)),
-                style: context.textTheme.bodySmall
-                    ?.copyWith(color: colors.onBackgroundLight),
+                t.allocation.detailTargetAmount(
+                  amount: formatCurrency(slice.targetValue),
+                ),
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: colors.onBackgroundLight,
+                ),
               ),
               Text(
                 deltaLabel,
-                style: context.textTheme.bodySmall
-                    ?.copyWith(color: deltaColor, fontWeight: FontWeight.w600),
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: deltaColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -308,22 +327,19 @@ class _AssetRow extends StatelessWidget {
     final deltaMinor = sub.suggestedDelta.minorUnits;
     final isBelow = hasTarget && deltaMinor >= kRebalanceThresholdMinor;
     final isAbove = hasTarget && deltaMinor <= -kRebalanceThresholdMinor;
+    final deltaAmount = _formatSuggestionAmount(sub);
     final suggestionColor = !hasTarget
         ? colors.onBackgroundLight
         : isBelow
-            ? colors.warning
-            : (isAbove ? colors.negative : colors.positive);
+        ? colors.warning
+        : (isAbove ? colors.negative : colors.positive);
     final suggestionLabel = !hasTarget
         ? t.allocation.subclassSuggestionNoTarget
         : isBelow
-            ? t.allocation.subclassSuggestionAdd(
-                amount: formatCurrency(
-                    Money(deltaMinor.abs(), sub.suggestedDelta.currency)))
-            : (isAbove
-                ? t.allocation.subclassSuggestionTrim(
-                    amount: formatCurrency(
-                        Money(deltaMinor.abs(), sub.suggestedDelta.currency)))
-                : t.allocation.subclassSuggestionBalanced);
+        ? t.allocation.subclassSuggestionAdd(amount: deltaAmount)
+        : (isAbove
+              ? t.allocation.subclassSuggestionTrim(amount: deltaAmount)
+              : t.allocation.subclassSuggestionBalanced);
 
     return InvestancoCard(
       onTap: onTap,
@@ -337,8 +353,9 @@ class _AssetRow extends StatelessWidget {
               children: [
                 Text(
                   sub.name,
-                  style: context.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: context.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -352,8 +369,9 @@ class _AssetRow extends StatelessWidget {
                           amount: formatCurrency(sub.currentValue),
                           percent: '$actual%',
                         ),
-                  style: context.textTheme.bodySmall
-                      ?.copyWith(color: colors.onBackgroundLight),
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: colors.onBackgroundLight,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -366,10 +384,27 @@ class _AssetRow extends StatelessWidget {
               ],
             ),
           ),
-          FaIcon(FontAwesomeIcons.chevronRight,
-              size: 11, color: colors.onBackgroundLight),
+          FaIcon(
+            FontAwesomeIcons.chevronRight,
+            size: 11,
+            color: colors.onBackgroundLight,
+          ),
         ],
       ),
     );
+  }
+
+  String _formatSuggestionAmount(InvestmentSubclassSlice sub) {
+    final baseAmount = Money(
+      sub.suggestedDelta.minorUnits.abs(),
+      sub.suggestedDelta.currency,
+    );
+    final nativeDelta = sub.suggestedDeltaNative;
+    if (nativeDelta == null) return formatCurrency(baseAmount);
+    final nativeAmount = Money(
+      nativeDelta.minorUnits.abs(),
+      nativeDelta.currency,
+    );
+    return '${formatCurrency(baseAmount)} (${formatCurrency(nativeAmount)})';
   }
 }

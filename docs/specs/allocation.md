@@ -47,7 +47,8 @@ Getters: `isRoot => parentId == null`, `isSubclass`, `targetFraction => targetPe
 
 Produced by the pure `computeInvestmentOverview` from `classes`, `assets` (each
 carrying its class + target via metadata), and the valued `holdings`
-(`HoldingValuation`). All money in base currency.
+(`HoldingValuation`). Class totals and targets are in base currency; subclass
+rows may also carry a native-currency equivalent for foreign-asset suggestions.
 
 - `InvestmentOverview`: `total`, `allocated`, `pending` (Money), `classes`
   (`List<InvestmentClassSlice>`), `rebalanceActions`, `targetSumPercent`.
@@ -60,7 +61,9 @@ carrying its class + target via metadata), and the valued `holdings`
 - `InvestmentSubclassSlice` (one per **asset** in the class): `id` (asset id),
   `name` (ticker), `currentValue`, `percentOfClass` (`[0,1]`), `percentOfTotal`
   (`[0,1]`), `targetPercent` (the asset's target within the class), `suggestedValue`,
-  `suggestedDelta` (`suggestedValue − currentValue`).
+  `suggestedDelta` (`suggestedValue − currentValue`, base currency),
+  `suggestedDeltaNative` (same delta converted to the asset's native currency
+  when the asset is foreign and an FX-derived native/base ratio is available).
 - `RebalanceAction`: `classId, className, direction (buy|sell), amount` (Money, >0).
 
 ## Algorithm — `computeInvestmentOverview`
@@ -76,7 +79,10 @@ shared from `asset_allocation.dart` by the math and the UI.
    `targetValue = total × targetFraction`; `deltaValue = targetValue − classTotal`.
 4. Per asset (subclass slice): `percentOfClass = classTotal==0 ? 0 : v/classTotal`;
    `percentOfTotal`; `suggestedValue = targetValue × assetTarget/100`;
-   `suggestedDelta = suggestedValue − v`.
+   `suggestedDelta = suggestedValue − v`. For foreign assets, derive
+   `suggestedDeltaNative` from the already-valued holding ratio
+   `marketValueNative / marketValueBase`; omit it when the asset is in the base
+   currency or the ratio cannot be computed.
 5. `rebalanceActions`: classes with `|deltaValue| ≥ R$1` → `buy` if delta > 0
    (under), else `sell`; `amount = |deltaValue|`; sorted by amount desc. **Per-class,
    independent** (not netted/paired) — matches financo.
@@ -144,7 +150,8 @@ classes; the asset→class link is written by the asset form (assets feature) vi
   (allocate-pending line + per-class buy/sell rows). FAB adds a class.
 - **Class detail** (nested under the tab, so the nav shell + a back chip stay):
   hero (value, % of target, target amount, delta) + the class's **assets** (ticker,
-  value, "% de %", suggested aporte/reduzir; tap to edit the asset) + "Adicionar
+  value, "% de %", suggested aporte/reduzir; for foreign assets, the suggestion
+  shows BRL plus the native amount in parentheses; tap to edit the asset) + "Adicionar
   ativo" (opens the asset form pre-linked to this class) + edit/delete class.
 - **Class form**: name, target %, icon, color.
 - **Asset form** (Registros tab → Ativos): adds an allocation-class picker + a target-% field,

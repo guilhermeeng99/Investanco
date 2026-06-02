@@ -47,6 +47,10 @@ class Assets extends Table {
   /// `Currency` name (native).
   TextColumn get currency => text()();
 
+  /// FK -> Institutions.id. Nullable only so pre-v10 rows can be edited and
+  /// linked before being saved again.
+  TextColumn get institutionId => text().nullable()();
+
   /// JSON-encoded `Map<String, String>` of kind-specific metadata.
   TextColumn get metadata => text().withDefault(const Constant('{}'))();
 
@@ -280,7 +284,7 @@ class AppDatabase extends _$AppDatabase {
         );
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -305,6 +309,10 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(fxRates);
             await m.createTable(indexPoints);
           }
+          // v10 links every asset to its custodian. Nullable for migration:
+          // legacy cloud/local rows without the field must still load so the
+          // user can choose the institution in the asset form.
+          if (from < 10) await m.addColumn(assets, assets.institutionId);
         },
       );
 

@@ -48,6 +48,7 @@ class InvestmentSubclassSlice extends Equatable {
     required this.targetPercent,
     required this.suggestedValue,
     required this.suggestedDelta,
+    required this.suggestedDeltaNative,
   });
 
   /// Subclass id.
@@ -74,17 +75,22 @@ class InvestmentSubclassSlice extends Equatable {
   /// `suggestedValue − currentValue` (+ = aporte, − = reduzir).
   final Money suggestedDelta;
 
+  /// Same suggested delta in the asset's native currency, when different from
+  /// the base currency and derivable from the current valuation's FX ratio.
+  final Money? suggestedDeltaNative;
+
   @override
   List<Object?> get props => [
-        id,
-        name,
-        currentValue,
-        percentOfClass,
-        percentOfTotal,
-        targetPercent,
-        suggestedValue,
-        suggestedDelta,
-      ];
+    id,
+    name,
+    currentValue,
+    percentOfClass,
+    percentOfTotal,
+    targetPercent,
+    suggestedValue,
+    suggestedDelta,
+    suggestedDeltaNative,
+  ];
 }
 
 /// A root class row in the allocation overview.
@@ -141,17 +147,17 @@ class InvestmentClassSlice extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        iconKey,
-        colorValue,
-        currentValue,
-        currentPercent,
-        targetPercent,
-        targetValue,
-        deltaValue,
-        subclasses,
-      ];
+    id,
+    name,
+    iconKey,
+    colorValue,
+    currentValue,
+    currentPercent,
+    targetPercent,
+    targetValue,
+    deltaValue,
+    subclasses,
+  ];
 }
 
 /// The full computed allocation snapshot the UI binds to. See
@@ -169,13 +175,13 @@ class InvestmentOverview extends Equatable {
 
   /// An empty overview where every money figure is [zero] (base currency).
   factory InvestmentOverview.empty(Money zero) => InvestmentOverview(
-        total: zero,
-        allocated: zero,
-        pending: zero,
-        classes: const [],
-        rebalanceActions: const [],
-        targetSumPercent: 0,
-      );
+    total: zero,
+    allocated: zero,
+    pending: zero,
+    classes: const [],
+    rebalanceActions: const [],
+    targetSumPercent: 0,
+  );
 
   /// Total market value of the portfolio (base currency).
   final Money total;
@@ -205,6 +211,12 @@ class InvestmentOverview extends Equatable {
   bool get targetsBalanced => (targetSumPercent - 100).abs() <= 0.1;
 
   @override
-  List<Object?> get props =>
-      [total, allocated, pending, classes, rebalanceActions, targetSumPercent];
+  List<Object?> get props => [
+    total,
+    allocated,
+    pending,
+    classes,
+    rebalanceActions,
+    targetSumPercent,
+  ];
 }

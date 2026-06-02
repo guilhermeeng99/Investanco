@@ -48,16 +48,16 @@ class TransactionImportRow extends Equatable {
 
   @override
   List<Object?> get props => [
-        ticker,
-        institutionName,
-        operation,
-        quantity,
-        unitPriceMajor,
-        feesMajor,
-        date,
-        amountMajor,
-        notes,
-      ];
+    ticker,
+    institutionName,
+    operation,
+    quantity,
+    unitPriceMajor,
+    feesMajor,
+    date,
+    amountMajor,
+    notes,
+  ];
 }
 
 /// A preview row: the parsed [row] plus whether its asset already exists and
@@ -68,6 +68,8 @@ class TransactionImportPreviewRow extends Equatable {
     required this.row,
     required this.assetExists,
     required this.institutionIsNew,
+    required this.assetHasInstitution,
+    required this.institutionMatchesAsset,
   });
 
   /// The parsed row.
@@ -79,8 +81,24 @@ class TransactionImportPreviewRow extends Equatable {
   /// True when no institution with this name exists yet (created on import).
   final bool institutionIsNew;
 
+  /// True when the referenced asset has a resolvable institution link.
+  final bool assetHasInstitution;
+
+  /// True when the CSV institution matches the asset's registered institution.
+  final bool institutionMatchesAsset;
+
+  /// Whether this row can be imported.
+  bool get canImport =>
+      assetExists && assetHasInstitution && institutionMatchesAsset;
+
   @override
-  List<Object?> get props => [row, assetExists, institutionIsNew];
+  List<Object?> get props => [
+    row,
+    assetExists,
+    institutionIsNew,
+    assetHasInstitution,
+    institutionMatchesAsset,
+  ];
 }
 
 /// What a transaction import would do, computed without persisting. Import is
@@ -112,8 +130,33 @@ class TransactionImportPreview extends Equatable {
     return out;
   }
 
-  /// Whether the import can proceed: rows present and no missing assets.
-  bool get canImport => rows.isNotEmpty && missingTickers.isEmpty;
+  /// Distinct tickers whose registered asset has no institution link.
+  List<String> get unlinkedTickers {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final r in rows.where(
+      (r) => r.assetExists && !r.assetHasInstitution,
+    )) {
+      if (seen.add(r.row.ticker.toLowerCase())) out.add(r.row.ticker);
+    }
+    return out;
+  }
+
+  /// Distinct tickers whose CSV institution differs from the asset institution.
+  List<String> get institutionMismatchTickers {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final r in rows.where(
+      (r) =>
+          r.assetExists && r.assetHasInstitution && !r.institutionMatchesAsset,
+    )) {
+      if (seen.add(r.row.ticker.toLowerCase())) out.add(r.row.ticker);
+    }
+    return out;
+  }
+
+  /// Whether the import can proceed: rows present and no blocked row.
+  bool get canImport => rows.isNotEmpty && rows.every((r) => r.canImport);
 
   /// Whether nothing is left to import.
   bool get isEmpty => rows.isEmpty;

@@ -7,7 +7,10 @@ import 'package:investanco/gen/i18n/strings.g.dart';
 
 void main() {
   // Builds a preview, flagging each row's asset as existing or missing.
-  TransactionImportPreview previewFrom(String csv, {required bool assetExists}) {
+  TransactionImportPreview previewFrom(
+    String csv, {
+    required bool assetExists,
+  }) {
     final rows = parseTransactionsCsv(csv);
     return TransactionImportPreview(
       rows: [
@@ -15,7 +18,9 @@ void main() {
           TransactionImportPreviewRow(
             row: r,
             assetExists: assetExists,
-            institutionIsNew: true,
+            institutionIsNew: false,
+            assetHasInstitution: assetExists,
+            institutionMatchesAsset: assetExists,
           ),
       ],
     );
@@ -32,7 +37,8 @@ void main() {
   FilledButton submit(WidgetTester tester) =>
       tester.widget<FilledButton>(find.byType(FilledButton));
 
-  const csv = 'ticker,institution,operation,quantity,price\n'
+  const csv =
+      'ticker,institution,operation,quantity,price\n'
       'SOXX,Avenue,buy,2,100';
 
   testWidgets('missing asset → banner shown and import disabled', (

@@ -47,7 +47,41 @@ void main() {
 
   test('delete returns InUseFailure when a transaction references it', () async {
     await repository.save(institutionFactory());
+    await db.into(db.assets).insert(
+          AssetRow(
+            id: 'a1',
+            ticker: 'PETR4',
+            name: 'Petrobras PN',
+            kind: 'stockBr',
+            market: 'br',
+            currency: 'brl',
+            institutionId: 'i1',
+            metadata: '{}',
+            createdAt: DateTime(2026),
+          ),
+        );
     await TransactionRepositoryImpl(db).save(transactionFactory());
+
+    final result = await repository.delete('i1');
+
+    expect(result, const Left<Failure, Unit>(InUseFailure()));
+  });
+
+  test('delete returns InUseFailure when an asset references it', () async {
+    await repository.save(institutionFactory());
+    await db.into(db.assets).insert(
+          AssetRow(
+            id: 'a1',
+            ticker: 'PETR4',
+            name: 'Petrobras PN',
+            kind: 'stockBr',
+            market: 'br',
+            currency: 'brl',
+            institutionId: 'i1',
+            metadata: '{}',
+            createdAt: DateTime(2026),
+          ),
+        );
 
     final result = await repository.delete('i1');
 

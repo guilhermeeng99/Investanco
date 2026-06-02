@@ -11,7 +11,7 @@ The events that build a position: buys, sells, dividends. Transactions are the
 | Field | Type | Invariant |
 |-------|------|-----------|
 | `id` | String (uuid) | immutable |
-| `institutionId` | String | FK → Institution |
+| `institutionId` | String | FK → Institution; must equal the selected asset's `institutionId` |
 | `assetId` | String | FK → Asset |
 | `kind` | `TransactionKind` | `buy`, `sell`, `dividend` |
 | `quantity` | double | > 0 (for buy/sell); ignored for dividend |
@@ -24,21 +24,26 @@ The events that build a position: buys, sells, dividends. Transactions are the
 
 ## Business rules
 
-1. `buy`/`sell` require `quantity > 0` → `ValidationFailure(code: nonPositiveQuantity)`,
+1. The transaction institution is derived from the asset. A save where
+   `tx.institutionId != asset.institutionId` returns
+   `ValidationFailure(code: transactionInstitutionMismatch)`. If the asset has no
+   institution yet, saving returns
+   `ValidationFailure(code: assetInstitutionRequired)`.
+2. `buy`/`sell` require `quantity > 0` → `ValidationFailure(code: nonPositiveQuantity)`,
    enforced in `TransactionRepositoryImpl` (so the form and the CSV import are both
    guarded); `unitPrice ≥ 0`.
-2. A `sell` cannot exceed the quantity held **at its date** →
+3. A `sell` cannot exceed the quantity held **at its date** →
    `ValidationFailure(code: oversell)`, enforced in `TransactionRepositoryImpl`
    (so the form and the CSV import are both guarded). `oversellsTimeline` re-runs
    the whole (asset, institution) position, so a backdated buy edit that strands a
    later sell is caught too.
-3. `dividend` carries `amount` only; does not change quantity.
-4. `date` cannot be in the future → `ValidationFailure(code: futureTransactionDate)`
+4. `dividend` carries `amount` only; does not change quantity.
+5. `date` cannot be in the future → `ValidationFailure(code: futureTransactionDate)`
    in the repository (the form's date picker also caps `lastDate` at today).
-5. Editing/deleting a transaction re-derives the affected holding (see 6.1 in overview).
-6. Native currency is the **asset's** currency; consolidation to BRL happens at
+6. Editing/deleting a transaction re-derives the affected holding (see 6.1 in overview).
+7. Native currency is the **asset's** currency; consolidation to BRL happens at
    valuation time, not storage time.
-7. **Fixed income** uses transactions as cash flows: `buy` = deposit (aplicação),
+8. **Fixed income** uses transactions as cash flows: `buy` = deposit (aplicação),
    `sell` = redemption (resgate). Enter `quantity = 1` and `unitPrice = amount`;
    `quantity` is only a placeholder (a count) — the valuation reads each
    transaction's `amount` and `date` as a dated cash flow (see `valuation.md` §2),
@@ -64,6 +69,9 @@ abstract class TransactionRepository {
 institutions) so the list can render asset/institution labels. The form is a plain
 `StatefulWidget` (`transaction_form_sheet.dart`) — there is no separate form cubit;
 it validates locally and calls `add`/`edit`, which return a `Failure?`.
+For new transactions the form only offers assets that already have
+`institutionId`; the institution field is display-only and derived from the
+selected asset.
 
 ### Institution filter
 
@@ -78,12 +86,11 @@ filter bar when there is more than one institution — nothing to filter otherwi
 
 ## Validation
 
-Rules 2 (oversell) and 4 (future date) are enforced in `TransactionRepositoryImpl`
-before any write — `oversell_check.dart`'s `oversellsTimeline` for the former, a
-date check for the latter — returning a `ValidationFailure` with a `ValidationCode`
-(`oversell` / `futureTransactionDate`). The form maps the code to localized copy via
-`validationMessage`; the CSV import sorts rows oldest-first (buys before sells on a
-tie) so a valid file's sells always follow their covering buys.
+Rules 1 (asset/institution consistency), 3 (oversell) and 5 (future date) are
+enforced in `TransactionRepositoryImpl` before any write. The form maps
+`ValidationCode`s to localized copy via `validationMessage`; the CSV import sorts
+rows oldest-first (buys before sells on a tie) so a valid file's sells always
+follow their covering buys.
 
 ## Edge cases
 

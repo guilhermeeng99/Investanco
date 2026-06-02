@@ -15,6 +15,8 @@ import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
 import 'package:investanco/features/assets/presentation/widgets/asset_form_sheet.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
+import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/portfolio_import/presentation/widgets/assets_csv_import_dialog.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
 
@@ -29,52 +31,65 @@ class AssetsView extends StatelessWidget {
     BuildContext context,
     AssetsCubit cubit,
     Asset asset,
-  ) =>
-      confirmAndRemove(
-        context,
-        title: asset.ticker,
-        message: t.assets.deleteConfirm,
-        onConfirm: () => cubit.remove(asset.id),
-        inUseError: t.assets.inUseError,
-      );
+  ) => confirmAndRemove(
+    context,
+    title: asset.ticker,
+    message: t.assets.deleteConfirm,
+    onConfirm: () => cubit.remove(asset.id),
+    inUseError: t.assets.inUseError,
+  );
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<AssetsCubit>();
-    return StreamBuilder<List<AssetClass>>(
-      stream: sl<AssetClassRepository>().watchAll(),
-      builder: (context, snapshot) {
-        final classesById = {
-          for (final c in snapshot.data ?? const <AssetClass>[]) c.id: c,
+    return StreamBuilder<List<Institution>>(
+      stream: sl<InstitutionRepository>().watchAll(),
+      builder: (context, institutionSnapshot) {
+        final institutionsById = {
+          for (final i in institutionSnapshot.data ?? const <Institution>[])
+            i.id: i,
         };
-        return BlocBuilder<AssetsCubit, AssetsState>(
-          builder: (context, state) {
-            return switch (state) {
-              AssetsLoading() => const LoadingShimmerList(),
-              AssetsError() => ErrorView(
-                  message: t.assets.saveError,
-                ),
-              AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
-                  icon: FontAwesomeIcons.coins,
-                  title: t.assets.title,
-                  message: t.assets.empty,
-                  actionLabel: t.assets.add,
-                  onAction: () => AssetFormSheet.show(context, cubit),
-                ),
-              AssetsLoaded(:final assets) => EntityListView(
-                  itemCount: assets.length,
-                  itemBuilder: (context, index) => _AssetTile(
-                    asset: assets[index],
-                    assetClass: classesById[allocationClassIdOf(assets[index])],
-                    onTap: () => AssetFormSheet.show(
-                      context,
-                      cubit,
-                      existing: assets[index],
-                    ),
-                    onDelete: () => _confirmDelete(context, cubit, assets[index]),
-                  ),
-                ),
+        return StreamBuilder<List<AssetClass>>(
+          stream: sl<AssetClassRepository>().watchAll(),
+          builder: (context, classSnapshot) {
+            final classesById = {
+              for (final c in classSnapshot.data ?? const <AssetClass>[])
+                c.id: c,
             };
+            return BlocBuilder<AssetsCubit, AssetsState>(
+              builder: (context, state) {
+                return switch (state) {
+                  AssetsLoading() => const LoadingShimmerList(),
+                  AssetsError() => ErrorView(
+                    message: t.assets.saveError,
+                  ),
+                  AssetsLoaded(:final assets) when assets.isEmpty => EmptyState(
+                    icon: FontAwesomeIcons.coins,
+                    title: t.assets.title,
+                    message: t.assets.empty,
+                    actionLabel: t.assets.add,
+                    onAction: () => AssetFormSheet.show(context, cubit),
+                  ),
+                  AssetsLoaded(:final assets) => EntityListView(
+                    itemCount: assets.length,
+                    itemBuilder: (context, index) {
+                      final asset = assets[index];
+                      return _AssetTile(
+                        asset: asset,
+                        institution: institutionsById[asset.institutionId],
+                        assetClass: classesById[allocationClassIdOf(asset)],
+                        onTap: () => AssetFormSheet.show(
+                          context,
+                          cubit,
+                          existing: asset,
+                        ),
+                        onDelete: () => _confirmDelete(context, cubit, asset),
+                      );
+                    },
+                  ),
+                };
+              },
+            );
           },
         );
       },
@@ -105,12 +120,16 @@ class AssetsFab extends StatelessWidget {
 class _AssetTile extends StatelessWidget {
   const _AssetTile({
     required this.asset,
+    required this.institution,
     required this.assetClass,
     required this.onTap,
     required this.onDelete,
   });
 
   final Asset asset;
+
+  /// Institution where the asset is custodied, or null for legacy/unlinked rows.
+  final Institution? institution;
 
   /// The allocation class this asset is assigned to, or null when unassigned.
   final AssetClass? assetClass;
@@ -170,6 +189,16 @@ class _AssetTile extends StatelessWidget {
                       label: asset.currency.code,
                       color: colors.neutral,
                     ),
+                    if (institution case final i?)
+                      InvestancoChip(
+                        label: i.name,
+                        color: colors.secondary,
+                      )
+                    else
+                      InvestancoChip(
+                        label: t.assets.institutionUnassigned,
+                        color: colors.error,
+                      ),
                     if (assetClass case final cls?)
                       InvestancoChip(
                         label: _allocationLabel(cls),

@@ -9,7 +9,7 @@ import 'package:investanco/features/portfolio_import/domain/csv_field_parsers.da
 List<AssetImportRow> parseAssetsCsv(String csv) {
   final table = readCsvTable(csv);
   final cols = mapCsvHeader(table.first);
-  for (final required in const ['ticker', 'kind']) {
+  for (final required in const ['ticker', 'kind', 'institution']) {
     if (!cols.containsKey(required)) {
       throw FormatException('CSV is missing the required "$required" column.');
     }
@@ -41,13 +41,19 @@ AssetImportRow _parseRow(List<String> raw, Map<String, int> cols, int lineNo) {
   final marketStr = cell('market');
   final currencyStr = cell('currency');
   final name = cell('name');
+  final institution = cell('institution');
+  if (institution.isEmpty) {
+    throw FormatException('Row $lineNo: empty institution.');
+  }
 
   return AssetImportRow(
     ticker: ticker.toUpperCase(),
     name: name.isEmpty ? ticker.toUpperCase() : name,
     kind: kind,
     market: marketStr.isEmpty ? defMarket : parseMarket(marketStr, lineNo),
-    currency:
-        currencyStr.isEmpty ? defCurrency : parseCurrency(currencyStr, lineNo),
+    currency: currencyStr.isEmpty
+        ? defCurrency
+        : parseCurrency(currencyStr, lineNo),
+    institutionName: institution,
   );
 }

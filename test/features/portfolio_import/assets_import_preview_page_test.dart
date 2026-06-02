@@ -23,7 +23,7 @@ void main() {
 
   final removeButton = find.byTooltip(t.importCsv.previewRemoveRow);
 
-  const csv = 'ticker,kind\nSOXX,etfUs\nQQQ,etfUs';
+  const csv = 'ticker,kind,institution\nSOXX,etfUs,Avenue\nQQQ,etfUs,Avenue';
 
   testWidgets('lists one removable tile per asset', (tester) async {
     await pump(tester, previewFrom(csv));

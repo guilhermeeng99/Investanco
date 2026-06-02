@@ -50,9 +50,27 @@ class AssetRepositoryImpl implements AssetRepository {
   /// the ticker case-insensitively. Returns the blocking [Failure], or null when
   /// valid. See `docs/specs/assets.md`.
   Future<Failure?> _validate(Asset asset) async {
+    final institutionId = asset.institutionId?.trim();
+    if (institutionId == null || institutionId.isEmpty) {
+      return const ValidationFailure(
+        'An asset must be linked to an institution.',
+        ValidationCode.assetInstitutionRequired,
+      );
+    }
     final ticker = asset.ticker.trim().toUpperCase();
     final market = asset.market.name;
     try {
+      final institution =
+          await (_db.select(_db.institutions)
+                ..where((t) => t.id.equals(institutionId))
+                ..limit(1))
+              .get();
+      if (institution.isEmpty) {
+        return const ValidationFailure(
+          'An asset must be linked to an institution.',
+          ValidationCode.assetInstitutionRequired,
+        );
+      }
       final rows = await _db.select(_db.assets).get();
       final clashes = rows.any(
         (r) =>
@@ -76,10 +94,11 @@ class AssetRepositoryImpl implements AssetRepository {
   Future<Either<Failure, Unit>> delete(String id) =>
       guardedDeleteIfUnreferenced(
         isReferenced: () async {
-          final referencing = await (_db.select(_db.transactions)
-                ..where((t) => t.assetId.equals(id))
-                ..limit(1))
-              .get();
+          final referencing =
+              await (_db.select(_db.transactions)
+                    ..where((t) => t.assetId.equals(id))
+                    ..limit(1))
+                  .get();
           return referencing.isNotEmpty;
         },
         delete: () async {
@@ -97,6 +116,7 @@ class AssetRepositoryImpl implements AssetRepository {
       kind: AssetKind.values.byName(row.kind),
       market: Market.values.byName(row.market),
       currency: Currency.values.byName(row.currency),
+      institutionId: row.institutionId,
       metadata: decoded.map((key, value) => MapEntry(key, value.toString())),
       createdAt: row.createdAt,
     );
@@ -123,6 +143,7 @@ class AssetRepositoryImpl implements AssetRepository {
       kind: asset.kind.name,
       market: asset.market.name,
       currency: asset.currency.name,
+      institutionId: asset.institutionId?.trim(),
       metadata: jsonEncode(asset.metadata),
       createdAt: asset.createdAt,
     );

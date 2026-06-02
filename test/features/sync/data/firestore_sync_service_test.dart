@@ -30,6 +30,7 @@ void main() {
     kind: 'stockBr',
     market: 'br',
     currency: 'brl',
+    institutionId: 'i1',
     metadata: '{}',
     createdAt: DateTime(2026),
   );
@@ -69,8 +70,7 @@ void main() {
     String name,
     String id,
     Map<String, dynamic> json,
-  ) =>
-      firestore.collection('users/$userId/$name').doc(id).set(json);
+  ) => firestore.collection('users/$userId/$name').doc(id).set(json);
 
   Future<void> seedCloud(String userId) async {
     await putDoc(userId, 'institutions', institution.id, institution.toJson());
@@ -113,7 +113,10 @@ void main() {
     await service.sync('u1');
 
     expect((await db.select(db.institutions).get()).single.id, 'i1');
-    expect(await db.select(db.transactions).get(), isEmpty); // delete propagated
+    expect(
+      await db.select(db.transactions).get(),
+      isEmpty,
+    ); // delete propagated
   });
 
   test('sync overwrites a locally-edited row with the cloud version', () async {
@@ -131,10 +134,14 @@ void main() {
   });
 
   test('sync preserves quotes and settings (not mirrored)', () async {
-    await db.into(db.settings).insert(
+    await db
+        .into(db.settings)
+        .insert(
           const SettingsRow(id: 0, themeMode: 'dark', baseCurrency: 'brl'),
         );
-    await db.into(db.quotes).insert(
+    await db
+        .into(db.quotes)
+        .insert(
           QuoteRow(
             assetId: 'a1',
             unitPriceMinor: 4000,

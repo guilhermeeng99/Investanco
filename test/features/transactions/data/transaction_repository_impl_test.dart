@@ -14,9 +14,31 @@ void main() {
   late AppDatabase db;
   late TransactionRepositoryImpl repository;
 
-  setUp(() {
+  setUp(() async {
     db = memoryDatabase();
     repository = TransactionRepositoryImpl(db);
+    await db.into(db.institutions).insert(
+          InstitutionRow(
+            id: 'i1',
+            name: 'Nubank',
+            kind: 'broker',
+            currency: 'brl',
+            createdAt: DateTime(2026),
+          ),
+        );
+    await db.into(db.assets).insert(
+          AssetRow(
+            id: 'a1',
+            ticker: 'PETR4',
+            name: 'Petrobras PN',
+            kind: 'stockBr',
+            market: 'br',
+            currency: 'brl',
+            institutionId: 'i1',
+            metadata: '{}',
+            createdAt: DateTime(2026),
+          ),
+        );
   });
 
   test('save then watchAll emits the transaction', () async {
@@ -137,7 +159,8 @@ void main() {
     expect(result, const Right<Failure, Unit>(unit));
   });
 
-  test('a sell in a different institution from the buy oversells', () async {
+  test('rejects a transaction in a different institution from the asset',
+      () async {
     await repository.save(
       transactionFactory(id: 'b', institutionId: 'i1', quantity: 10),
     );
@@ -153,6 +176,6 @@ void main() {
 
     final failure =
         result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
-    expect(failure.code, ValidationCode.oversell);
+    expect(failure.code, ValidationCode.transactionInstitutionMismatch);
   });
 }

@@ -429,6 +429,17 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, AssetRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _institutionIdMeta = const VerificationMeta(
+    'institutionId',
+  );
+  @override
+  late final GeneratedColumn<String> institutionId = GeneratedColumn<String>(
+    'institution_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _metadataMeta = const VerificationMeta(
     'metadata',
   );
@@ -460,6 +471,7 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, AssetRow> {
     kind,
     market,
     currency,
+    institutionId,
     metadata,
     createdAt,
   ];
@@ -520,6 +532,15 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, AssetRow> {
     } else if (isInserting) {
       context.missing(_currencyMeta);
     }
+    if (data.containsKey('institution_id')) {
+      context.handle(
+        _institutionIdMeta,
+        institutionId.isAcceptableOrUnknown(
+          data['institution_id']!,
+          _institutionIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('metadata')) {
       context.handle(
         _metadataMeta,
@@ -567,6 +588,10 @@ class $AssetsTable extends Assets with TableInfo<$AssetsTable, AssetRow> {
         DriftSqlType.string,
         data['${effectivePrefix}currency'],
       )!,
+      institutionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}institution_id'],
+      ),
       metadata: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}metadata'],
@@ -603,6 +628,10 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
   /// `Currency` name (native).
   final String currency;
 
+  /// FK -> Institutions.id. Nullable only so pre-v10 rows can be edited and
+  /// linked before being saved again.
+  final String? institutionId;
+
   /// JSON-encoded `Map<String, String>` of kind-specific metadata.
   final String metadata;
 
@@ -615,6 +644,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
     required this.kind,
     required this.market,
     required this.currency,
+    this.institutionId,
     required this.metadata,
     required this.createdAt,
   });
@@ -627,6 +657,9 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
     map['kind'] = Variable<String>(kind);
     map['market'] = Variable<String>(market);
     map['currency'] = Variable<String>(currency);
+    if (!nullToAbsent || institutionId != null) {
+      map['institution_id'] = Variable<String>(institutionId);
+    }
     map['metadata'] = Variable<String>(metadata);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -640,6 +673,9 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
       kind: Value(kind),
       market: Value(market),
       currency: Value(currency),
+      institutionId: institutionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(institutionId),
       metadata: Value(metadata),
       createdAt: Value(createdAt),
     );
@@ -657,6 +693,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
       kind: serializer.fromJson<String>(json['kind']),
       market: serializer.fromJson<String>(json['market']),
       currency: serializer.fromJson<String>(json['currency']),
+      institutionId: serializer.fromJson<String?>(json['institutionId']),
       metadata: serializer.fromJson<String>(json['metadata']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -671,6 +708,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
       'kind': serializer.toJson<String>(kind),
       'market': serializer.toJson<String>(market),
       'currency': serializer.toJson<String>(currency),
+      'institutionId': serializer.toJson<String?>(institutionId),
       'metadata': serializer.toJson<String>(metadata),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -683,6 +721,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
     String? kind,
     String? market,
     String? currency,
+    Value<String?> institutionId = const Value.absent(),
     String? metadata,
     DateTime? createdAt,
   }) => AssetRow(
@@ -692,6 +731,9 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
     kind: kind ?? this.kind,
     market: market ?? this.market,
     currency: currency ?? this.currency,
+    institutionId: institutionId.present
+        ? institutionId.value
+        : this.institutionId,
     metadata: metadata ?? this.metadata,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -703,6 +745,9 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
       kind: data.kind.present ? data.kind.value : this.kind,
       market: data.market.present ? data.market.value : this.market,
       currency: data.currency.present ? data.currency.value : this.currency,
+      institutionId: data.institutionId.present
+          ? data.institutionId.value
+          : this.institutionId,
       metadata: data.metadata.present ? data.metadata.value : this.metadata,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
@@ -717,6 +762,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
           ..write('kind: $kind, ')
           ..write('market: $market, ')
           ..write('currency: $currency, ')
+          ..write('institutionId: $institutionId, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -731,6 +777,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
     kind,
     market,
     currency,
+    institutionId,
     metadata,
     createdAt,
   );
@@ -744,6 +791,7 @@ class AssetRow extends DataClass implements Insertable<AssetRow> {
           other.kind == this.kind &&
           other.market == this.market &&
           other.currency == this.currency &&
+          other.institutionId == this.institutionId &&
           other.metadata == this.metadata &&
           other.createdAt == this.createdAt);
 }
@@ -755,6 +803,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
   final Value<String> kind;
   final Value<String> market;
   final Value<String> currency;
+  final Value<String?> institutionId;
   final Value<String> metadata;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
@@ -765,6 +814,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
     this.kind = const Value.absent(),
     this.market = const Value.absent(),
     this.currency = const Value.absent(),
+    this.institutionId = const Value.absent(),
     this.metadata = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -776,6 +826,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
     required String kind,
     required String market,
     required String currency,
+    this.institutionId = const Value.absent(),
     this.metadata = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
@@ -793,6 +844,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
     Expression<String>? kind,
     Expression<String>? market,
     Expression<String>? currency,
+    Expression<String>? institutionId,
     Expression<String>? metadata,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
@@ -804,6 +856,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
       if (kind != null) 'kind': kind,
       if (market != null) 'market': market,
       if (currency != null) 'currency': currency,
+      if (institutionId != null) 'institution_id': institutionId,
       if (metadata != null) 'metadata': metadata,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
@@ -817,6 +870,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
     Value<String>? kind,
     Value<String>? market,
     Value<String>? currency,
+    Value<String?>? institutionId,
     Value<String>? metadata,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
@@ -828,6 +882,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
       kind: kind ?? this.kind,
       market: market ?? this.market,
       currency: currency ?? this.currency,
+      institutionId: institutionId ?? this.institutionId,
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
@@ -855,6 +910,9 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
     if (currency.present) {
       map['currency'] = Variable<String>(currency.value);
     }
+    if (institutionId.present) {
+      map['institution_id'] = Variable<String>(institutionId.value);
+    }
     if (metadata.present) {
       map['metadata'] = Variable<String>(metadata.value);
     }
@@ -876,6 +934,7 @@ class AssetsCompanion extends UpdateCompanion<AssetRow> {
           ..write('kind: $kind, ')
           ..write('market: $market, ')
           ..write('currency: $currency, ')
+          ..write('institutionId: $institutionId, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
@@ -4172,6 +4231,7 @@ typedef $$AssetsTableCreateCompanionBuilder =
       required String kind,
       required String market,
       required String currency,
+      Value<String?> institutionId,
       Value<String> metadata,
       required DateTime createdAt,
       Value<int> rowid,
@@ -4184,6 +4244,7 @@ typedef $$AssetsTableUpdateCompanionBuilder =
       Value<String> kind,
       Value<String> market,
       Value<String> currency,
+      Value<String?> institutionId,
       Value<String> metadata,
       Value<DateTime> createdAt,
       Value<int> rowid,
@@ -4225,6 +4286,11 @@ class $$AssetsTableFilterComposer
 
   ColumnFilters<String> get currency => $composableBuilder(
     column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4278,6 +4344,11 @@ class $$AssetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get metadata => $composableBuilder(
     column: $table.metadata,
     builder: (column) => ColumnOrderings(column),
@@ -4315,6 +4386,11 @@ class $$AssetsTableAnnotationComposer
 
   GeneratedColumn<String> get currency =>
       $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get metadata =>
       $composableBuilder(column: $table.metadata, builder: (column) => column);
@@ -4357,6 +4433,7 @@ class $$AssetsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String> market = const Value.absent(),
                 Value<String> currency = const Value.absent(),
+                Value<String?> institutionId = const Value.absent(),
                 Value<String> metadata = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4367,6 +4444,7 @@ class $$AssetsTableTableManager
                 kind: kind,
                 market: market,
                 currency: currency,
+                institutionId: institutionId,
                 metadata: metadata,
                 createdAt: createdAt,
                 rowid: rowid,
@@ -4379,6 +4457,7 @@ class $$AssetsTableTableManager
                 required String kind,
                 required String market,
                 required String currency,
+                Value<String?> institutionId = const Value.absent(),
                 Value<String> metadata = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
@@ -4389,6 +4468,7 @@ class $$AssetsTableTableManager
                 kind: kind,
                 market: market,
                 currency: currency,
+                institutionId: institutionId,
                 metadata: metadata,
                 createdAt: createdAt,
                 rowid: rowid,

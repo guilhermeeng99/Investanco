@@ -43,6 +43,12 @@ enum ValidationCode {
   /// Another asset already uses this (ticker, market) pair.
   duplicateAsset,
 
+  /// An asset is missing its required institution link.
+  assetInstitutionRequired,
+
+  /// A transaction tried to use an institution different from its asset's.
+  transactionInstitutionMismatch,
+
   /// A transaction dated after today.
   futureTransactionDate,
 

@@ -14,17 +14,24 @@ import '../../../harness/mocks.dart';
 void main() {
   late MockAssetRepository repository;
   late MockAssetClassRepository classRepository;
+  late MockInstitutionRepository institutionRepository;
   final sample = assetFactory();
 
   setUp(() {
     repository = MockAssetRepository();
     classRepository = MockAssetClassRepository();
+    institutionRepository = MockInstitutionRepository();
     when(repository.watchAll).thenAnswer((_) => Stream.value([sample]));
   });
 
   blocTest<AssetsCubit, AssetsState>(
     'emits Loaded from the repository stream',
-    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
+    build: () => AssetsCubit(
+      repository,
+      const FakeIdGenerator(),
+      classRepository,
+      institutionRepository,
+    ),
     expect: () => [
       AssetsLoaded([sample]),
     ],
@@ -32,7 +39,12 @@ void main() {
 
   blocTest<AssetsCubit, AssetsState>(
     'add() upper-cases the ticker and persists',
-    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
+    build: () => AssetsCubit(
+      repository,
+      const FakeIdGenerator(),
+      classRepository,
+      institutionRepository,
+    ),
     setUp: () => when(() => repository.save(any()))
         .thenAnswer((_) async => const Right(unit)),
     act: (cubit) => cubit.add(
@@ -41,18 +53,25 @@ void main() {
       kind: AssetKind.stockUs,
       market: Market.us,
       currency: Currency.usd,
+      institutionId: 'i1',
     ),
     verify: (_) {
       final captured =
           verify(() => repository.save(captureAny())).captured.single;
       expect((captured as Asset).ticker, 'AAPL');
       expect(captured.id, 'generated-id');
+      expect(captured.institutionId, 'i1');
     },
   );
 
   blocTest<AssetsCubit, AssetsState>(
     'remove() surfaces InUseFailure from the repository',
-    build: () => AssetsCubit(repository, const FakeIdGenerator(), classRepository),
+    build: () => AssetsCubit(
+      repository,
+      const FakeIdGenerator(),
+      classRepository,
+      institutionRepository,
+    ),
     setUp: () => when(() => repository.delete(any()))
         .thenAnswer((_) async => const Left(InUseFailure())),
     act: (cubit) async {
@@ -66,7 +85,12 @@ void main() {
     build: () {
       when(repository.watchAll)
           .thenAnswer((_) => Stream.error(Exception('boom')));
-      return AssetsCubit(repository, const FakeIdGenerator(), classRepository);
+      return AssetsCubit(
+        repository,
+        const FakeIdGenerator(),
+        classRepository,
+        institutionRepository,
+      );
     },
     expect: () => [const AssetsError()],
   );

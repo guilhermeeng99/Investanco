@@ -3,6 +3,8 @@ import 'package:investanco/core/error/failures.dart';
 import 'package:investanco/core/utils/id_generator.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
+import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 import 'package:investanco/features/portfolio_import/domain/asset_csv_parser.dart';
 import 'package:investanco/features/portfolio_import/domain/asset_import_models.dart';
 import 'package:investanco/features/portfolio_import/domain/csv_validation_failure.dart';
@@ -14,9 +16,14 @@ export 'package:investanco/features/portfolio_import/domain/asset_import_models.
 /// `docs/specs/csv_import.md`.
 class ImportAssetsCsvUseCase {
   /// Creates the use case.
-  const ImportAssetsCsvUseCase(this._assetRepository, this._idGenerator);
+  const ImportAssetsCsvUseCase(
+    this._assetRepository,
+    this._institutionRepository,
+    this._idGenerator,
+  );
 
   final AssetRepository _assetRepository;
+  final InstitutionRepository _institutionRepository;
   final IdGenerator _idGenerator;
 
   /// Parses [csv] into rows. A malformed file → [ValidationFailure].
@@ -49,17 +56,42 @@ class ImportAssetsCsvUseCase {
     List<AssetImportRow> rows,
   ) async {
     final List<Asset> assets;
+    final List<Institution> institutions;
     try {
       assets = await _assetRepository.watchAll().first;
+      institutions = await _institutionRepository.watchAll().first;
     } on Exception {
-      return const Left(CacheFailure('Could not read existing assets.'));
+      return const Left(
+        CacheFailure('Could not read existing portfolio data.'),
+      );
     }
     final byTicker = {for (final a in assets) a.ticker.toLowerCase(): a};
+    final institutionByName = {
+      for (final i in institutions) i.name.toLowerCase(): i,
+    };
 
     final now = DateTime.now();
     var created = 0;
     for (final row in rows) {
       if (byTicker.containsKey(row.ticker.toLowerCase())) continue; // reuse
+      final institution = institutionByName[row.institutionName.toLowerCase()];
+      final resolvedInstitution =
+          institution ??
+          Institution(
+            id: _idGenerator.newId(),
+            name: row.institutionName,
+            kind: InstitutionKind.broker,
+            currency: row.currency,
+            createdAt: now,
+          );
+      if (institution == null) {
+        final failure = (await _institutionRepository.save(
+          resolvedInstitution,
+        )).failureOrNull;
+        if (failure != null) return Left(failure);
+        institutionByName[row.institutionName.toLowerCase()] =
+            resolvedInstitution;
+      }
       final asset = Asset(
         id: _idGenerator.newId(),
         ticker: row.ticker,
@@ -67,6 +99,7 @@ class ImportAssetsCsvUseCase {
         kind: row.kind,
         market: row.market,
         currency: row.currency,
+        institutionId: resolvedInstitution.id,
         createdAt: now,
       );
       final failure = (await _assetRepository.save(asset)).failureOrNull;

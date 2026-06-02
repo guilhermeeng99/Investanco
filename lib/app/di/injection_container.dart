@@ -182,7 +182,7 @@ void _initAssets() {
     ..registerLazySingleton<AssetRepository>(
       () => AssetRepositoryImpl(sl(), sl()),
     )
-    ..registerFactory<AssetsCubit>(() => AssetsCubit(sl(), sl(), sl()));
+    ..registerFactory<AssetsCubit>(() => AssetsCubit(sl(), sl(), sl(), sl()));
 }
 
 void _initTransactions() {
@@ -200,7 +200,7 @@ void _initTransactions() {
 void _initPortfolioImport() {
   sl
     ..registerLazySingleton<ImportAssetsCsvUseCase>(
-      () => ImportAssetsCsvUseCase(sl(), sl()),
+      () => ImportAssetsCsvUseCase(sl(), sl(), sl()),
     )
     ..registerLazySingleton<ImportTransactionsCsvUseCase>(
       () => ImportTransactionsCsvUseCase(sl(), sl(), sl(), sl()),

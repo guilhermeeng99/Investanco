@@ -230,6 +230,11 @@ class _Translations$assets$en implements Translations$assets$pt {
 	@override String get kind => 'Type';
 	@override String get market => 'Market';
 	@override String get currency => 'Currency';
+	@override String get institution => 'Institution';
+	@override String get institutionPlaceholder => 'Select the institution';
+	@override String get institutionNoInstitutions => 'Create an institution first';
+	@override String get institutionRequired => 'Select the institution';
+	@override String get institutionUnassigned => 'No institution';
 	@override String get tesouroName => 'Tesouro Direto name';
 	@override String get tesouroNameHelp => 'Exactly as on the site, e.g. Tesouro Selic 2027.';
 	@override String get fixedIncomeBasis => 'Index';
@@ -277,7 +282,10 @@ class _Translations$transactions$en implements Translations$transactions$pt {
 	@override String get futureDateError => 'A transaction can\'t be dated in the future.';
 	@override String get oversellError => 'This sell exceeds the quantity held on that date.';
 	@override String get quantityError => 'Quantity must be greater than zero.';
+	@override String get institutionMismatchError => 'The transaction institution must match the asset institution.';
 	@override String get needPrereqs => 'Add an institution and an asset first.';
+	@override String get needLinkedAsset => 'Link an asset to an institution before recording transactions.';
+	@override String get assetInstitutionRequired => 'Link this asset to an institution first.';
 	@override String get filterAll => 'All';
 	@override String get noFilterResults => 'No transactions for this institution.';
 	@override late final _Translations$transactions$kinds$en kinds = _Translations$transactions$kinds$en._(_root);
@@ -317,7 +325,7 @@ class _Translations$importAssets$en implements Translations$importAssets$pt {
 
 	// Translations
 	@override String get title => 'Import assets';
-	@override String get intro => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency. Existing assets (matched by ticker) are reused.';
+	@override String get intro => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency, institution. Existing assets (matched by ticker) are reused.';
 	@override String get previewTitle => 'Review assets';
 	@override String get previewSubtitle => 'Check what will be added before importing';
 	@override String get statNew => 'New assets';
@@ -334,16 +342,21 @@ class _Translations$importTransactions$en implements Translations$importTransact
 
 	// Translations
 	@override String get title => 'Import transactions';
-	@override String get intro => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist; missing institutions are created automatically.';
+	@override String get intro => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist and their institution must match the file.';
 	@override String get previewTitle => 'Review transactions';
 	@override String get previewSubtitle => 'Check what will be added before importing';
 	@override String get statTransactions => 'Transactions';
 	@override String get statNewInstitutions => 'New institutions';
-	@override String get reuseNote => 'Missing institutions are created automatically; existing ones (matched by name) are reused.';
+	@override String get statBlocked => 'Blocked';
+	@override String get reuseNote => 'Transactions use the institution registered on each asset. Rows are blocked when the file disagrees.';
 	@override String submit({required Object count}) => 'Import ${count} transactions';
 	@override String success({required Object count}) => 'Imported ${count} transactions.';
 	@override String get missingTitle => 'Assets not found';
 	@override String missingBody({required Object tickers}) => 'These tickers aren\'t registered yet — import them on the Assets tab first: ${tickers}';
+	@override String get unlinkedTitle => 'Assets without institution';
+	@override String unlinkedBody({required Object tickers}) => 'Edit these assets and select their institution before importing transactions: ${tickers}';
+	@override String get mismatchTitle => 'Institution mismatch';
+	@override String mismatchBody({required Object tickers}) => 'The file\'s institution differs from the institution registered on these assets: ${tickers}';
 }
 
 // Path: profile
@@ -617,6 +630,11 @@ extension on TranslationsEn {
 			'assets.kind' => 'Type',
 			'assets.market' => 'Market',
 			'assets.currency' => 'Currency',
+			'assets.institution' => 'Institution',
+			'assets.institutionPlaceholder' => 'Select the institution',
+			'assets.institutionNoInstitutions' => 'Create an institution first',
+			'assets.institutionRequired' => 'Select the institution',
+			'assets.institutionUnassigned' => 'No institution',
 			'assets.tesouroName' => 'Tesouro Direto name',
 			'assets.tesouroNameHelp' => 'Exactly as on the site, e.g. Tesouro Selic 2027.',
 			'assets.fixedIncomeBasis' => 'Index',
@@ -670,7 +688,10 @@ extension on TranslationsEn {
 			'transactions.futureDateError' => 'A transaction can\'t be dated in the future.',
 			'transactions.oversellError' => 'This sell exceeds the quantity held on that date.',
 			'transactions.quantityError' => 'Quantity must be greater than zero.',
+			'transactions.institutionMismatchError' => 'The transaction institution must match the asset institution.',
 			'transactions.needPrereqs' => 'Add an institution and an asset first.',
+			'transactions.needLinkedAsset' => 'Link an asset to an institution before recording transactions.',
+			'transactions.assetInstitutionRequired' => 'Link this asset to an institution first.',
 			'transactions.filterAll' => 'All',
 			'transactions.noFilterResults' => 'No transactions for this institution.',
 			'transactions.kinds.buy' => 'Buy',
@@ -694,7 +715,7 @@ extension on TranslationsEn {
 			'importCsv.previewImporting' => 'Importing…',
 			'importCsv.previewRemoveRow' => 'Remove',
 			'importAssets.title' => 'Import assets',
-			'importAssets.intro' => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency. Existing assets (matched by ticker) are reused.',
+			'importAssets.intro' => 'Bulk-add your assets from a spreadsheet. One row per asset: ticker, name, type, market, currency, institution. Existing assets (matched by ticker) are reused.',
 			'importAssets.previewTitle' => 'Review assets',
 			'importAssets.previewSubtitle' => 'Check what will be added before importing',
 			'importAssets.statNew' => 'New assets',
@@ -702,16 +723,21 @@ extension on TranslationsEn {
 			'importAssets.submit' => ({required Object count}) => 'Import ${count} assets',
 			'importAssets.success' => ({required Object count}) => 'Imported ${count} new assets.',
 			'importTransactions.title' => 'Import transactions',
-			'importTransactions.intro' => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist; missing institutions are created automatically.',
+			'importTransactions.intro' => 'Bulk-add transactions from a spreadsheet. One row per movement: ticker, institution, operation, quantity, price, date. The referenced assets must already exist and their institution must match the file.',
 			'importTransactions.previewTitle' => 'Review transactions',
 			'importTransactions.previewSubtitle' => 'Check what will be added before importing',
 			'importTransactions.statTransactions' => 'Transactions',
 			'importTransactions.statNewInstitutions' => 'New institutions',
-			'importTransactions.reuseNote' => 'Missing institutions are created automatically; existing ones (matched by name) are reused.',
+			'importTransactions.statBlocked' => 'Blocked',
+			'importTransactions.reuseNote' => 'Transactions use the institution registered on each asset. Rows are blocked when the file disagrees.',
 			'importTransactions.submit' => ({required Object count}) => 'Import ${count} transactions',
 			'importTransactions.success' => ({required Object count}) => 'Imported ${count} transactions.',
 			'importTransactions.missingTitle' => 'Assets not found',
 			'importTransactions.missingBody' => ({required Object tickers}) => 'These tickers aren\'t registered yet — import them on the Assets tab first: ${tickers}',
+			'importTransactions.unlinkedTitle' => 'Assets without institution',
+			'importTransactions.unlinkedBody' => ({required Object tickers}) => 'Edit these assets and select their institution before importing transactions: ${tickers}',
+			'importTransactions.mismatchTitle' => 'Institution mismatch',
+			'importTransactions.mismatchBody' => ({required Object tickers}) => 'The file\'s institution differs from the institution registered on these assets: ${tickers}',
 			'profile.title' => 'Profile',
 			'profile.sectionYourData' => 'Your data',
 			'profile.sectionPreferences' => 'Preferences',

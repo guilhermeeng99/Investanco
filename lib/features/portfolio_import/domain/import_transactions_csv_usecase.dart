@@ -50,16 +50,12 @@ class ImportTransactionsCsvUseCase {
   ) async {
     final assets = await _assetRepository.watchAll().first;
     final institutions = await _institutionRepository.watchAll().first;
-    final tickers = {for (final a in assets) a.ticker.toLowerCase()};
-    final names = {for (final i in institutions) i.name.toLowerCase()};
+    final assetByTicker = {for (final a in assets) a.ticker.toLowerCase(): a};
+    final institutionById = {for (final i in institutions) i.id: i};
     return TransactionImportPreview(
       rows: [
         for (final row in rows)
-          TransactionImportPreviewRow(
-            row: row,
-            assetExists: tickers.contains(row.ticker.toLowerCase()),
-            institutionIsNew: !names.contains(row.institutionName.toLowerCase()),
-          ),
+          _previewRow(row, assetByTicker, institutionById),
       ],
     );
   }
@@ -82,9 +78,7 @@ class ImportTransactionsCsvUseCase {
       );
     }
     final assetByTicker = {for (final a in assets) a.ticker.toLowerCase(): a};
-    final institutionByName = {
-      for (final i in institutions) i.name.toLowerCase(): i,
-    };
+    final institutionById = {for (final i in institutions) i.id: i};
 
     // Persist oldest-first (buys before sells on a date tie) so the repository's
     // per-save oversell guard sees each sell's covering buys already stored.
@@ -92,7 +86,6 @@ class ImportTransactionsCsvUseCase {
 
     final now = DateTime.now();
     var transactionsCreated = 0;
-    var institutionsCreated = 0;
 
     for (final row in ordered) {
       final asset = assetByTicker[row.ticker.toLowerCase()];
@@ -100,28 +93,33 @@ class ImportTransactionsCsvUseCase {
         return Left(ValidationFailure('Asset not found: ${row.ticker}'));
       }
 
-      final institution = institutionByName[row.institutionName.toLowerCase()];
-      final resolvedInstitution = institution ??
-          Institution(
-            id: _idGenerator.newId(),
-            name: row.institutionName,
-            kind: InstitutionKind.broker,
-            currency: asset.currency,
-            createdAt: now,
-          );
-      if (institution == null) {
-        final failure = await _save(
-          _institutionRepository.save(resolvedInstitution),
+      final institutionId = asset.institutionId?.trim();
+      final resolvedInstitution = institutionId == null
+          ? null
+          : institutionById[institutionId];
+      if (institutionId == null ||
+          institutionId.isEmpty ||
+          resolvedInstitution == null) {
+        return const Left(
+          ValidationFailure(
+            'The asset must be linked to an institution first.',
+            ValidationCode.assetInstitutionRequired,
+          ),
         );
-        if (failure != null) return Left(failure);
-        institutionByName[row.institutionName.toLowerCase()] =
-            resolvedInstitution;
-        institutionsCreated++;
+      }
+      if (resolvedInstitution.name.toLowerCase() !=
+          row.institutionName.toLowerCase()) {
+        return const Left(
+          ValidationFailure(
+            'The transaction institution must match the asset institution.',
+            ValidationCode.transactionInstitutionMismatch,
+          ),
+        );
       }
 
       final failure = await _save(
         _transactionRepository.save(
-          _buildTransaction(row, asset, resolvedInstitution.id, now),
+          _buildTransaction(row, asset, institutionId, now),
         ),
       );
       if (failure != null) return Left(failure);
@@ -131,8 +129,32 @@ class ImportTransactionsCsvUseCase {
     return Right(
       TransactionImportResult(
         transactionsCreated: transactionsCreated,
-        institutionsCreated: institutionsCreated,
+        institutionsCreated: 0,
       ),
+    );
+  }
+
+  TransactionImportPreviewRow _previewRow(
+    TransactionImportRow row,
+    Map<String, Asset> assetByTicker,
+    Map<String, Institution> institutionById,
+  ) {
+    final asset = assetByTicker[row.ticker.toLowerCase()];
+    final institutionId = asset?.institutionId;
+    final institution = institutionId == null
+        ? null
+        : institutionById[institutionId];
+    final assetExists = asset != null;
+    final assetHasInstitution = assetExists && institution != null;
+    final institutionMatchesAsset =
+        institution != null &&
+        institution.name.toLowerCase() == row.institutionName.toLowerCase();
+    return TransactionImportPreviewRow(
+      row: row,
+      assetExists: assetExists,
+      institutionIsNew: false,
+      assetHasInstitution: assetHasInstitution,
+      institutionMatchesAsset: institutionMatchesAsset,
     );
   }
 

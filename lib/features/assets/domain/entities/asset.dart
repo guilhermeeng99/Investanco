@@ -40,6 +40,7 @@ class Asset extends Equatable {
     required this.market,
     required this.currency,
     required this.createdAt,
+    this.institutionId,
     this.metadata = const {},
   });
 
@@ -62,6 +63,10 @@ class Asset extends Equatable {
   /// Native quote currency.
   final Currency currency;
 
+  /// Institution where this asset is custodied. Nullable only for legacy rows
+  /// loaded before the user links them through the edit form.
+  final String? institutionId;
+
   /// Kind-specific data (e.g. fixed-income `fiBasis`/`fiRate` via
   /// `FixedIncomeMetadata`, or `tesouroName`). See `docs/specs/assets.md`.
   final Map<String, String> metadata;
@@ -76,6 +81,7 @@ class Asset extends Equatable {
     AssetKind? kind,
     Market? market,
     Currency? currency,
+    String? institutionId,
     Map<String, String>? metadata,
   }) {
     return Asset(
@@ -85,12 +91,22 @@ class Asset extends Equatable {
       kind: kind ?? this.kind,
       market: market ?? this.market,
       currency: currency ?? this.currency,
+      institutionId: institutionId ?? this.institutionId,
       metadata: metadata ?? this.metadata,
       createdAt: createdAt,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, ticker, name, kind, market, currency, metadata, createdAt];
+  List<Object?> get props => [
+    id,
+    ticker,
+    name,
+    kind,
+    market,
+    currency,
+    institutionId,
+    metadata,
+    createdAt,
+  ];
 }

@@ -60,6 +60,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         ValidationCode.futureTransactionDate,
       );
     }
+    final assetFailure = await _validateAssetInstitution(tx);
+    if (assetFailure != null) return assetFailure;
     // Dividends never change quantity; only a sell (directly) or a buy edit
     // (stranding a later sell) can break the position's timeline.
     if (tx.kind == TransactionKind.dividend) return null;
@@ -73,13 +75,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
     final List<AssetTransaction> position;
     try {
-      final stored = await (_db.select(_db.transactions)
-            ..where(
-              (t) =>
-                  t.assetId.equals(tx.assetId) &
-                  t.institutionId.equals(tx.institutionId),
-            ))
-          .get();
+      final stored =
+          await (_db.select(_db.transactions)..where(
+                (t) =>
+                    t.assetId.equals(tx.assetId) &
+                    t.institutionId.equals(tx.institutionId),
+              ))
+              .get();
       position = [
         for (final row in stored.where((r) => r.id != tx.id)) _toEntity(row),
         tx,
@@ -96,11 +98,43 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return null;
   }
 
+  Future<Failure?> _validateAssetInstitution(AssetTransaction tx) async {
+    try {
+      final rows =
+          await (_db.select(_db.assets)
+                ..where((t) => t.id.equals(tx.assetId))
+                ..limit(1))
+              .get();
+      if (rows.isEmpty) {
+        return const ValidationFailure(
+          'The asset must be linked to an institution first.',
+          ValidationCode.assetInstitutionRequired,
+        );
+      }
+      final institutionId = rows.single.institutionId?.trim();
+      if (institutionId == null || institutionId.isEmpty) {
+        return const ValidationFailure(
+          'The asset must be linked to an institution first.',
+          ValidationCode.assetInstitutionRequired,
+        );
+      }
+      if (institutionId != tx.institutionId) {
+        return const ValidationFailure(
+          'The transaction institution must match the asset institution.',
+          ValidationCode.transactionInstitutionMismatch,
+        );
+      }
+    } on Exception {
+      return const CacheFailure();
+    }
+    return null;
+  }
+
   @override
   Future<Either<Failure, Unit>> delete(String id) => guardedWrite(() async {
-        await _mirror.delete(_collection, id);
-        await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
-      });
+    await _mirror.delete(_collection, id);
+    await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
+  });
 
   AssetTransaction _toEntity(TransactionRow row) {
     final currency = Currency.values.byName(row.currency);

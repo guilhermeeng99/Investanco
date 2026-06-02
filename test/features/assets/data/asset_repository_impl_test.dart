@@ -16,9 +16,18 @@ void main() {
   late AppDatabase db;
   late AssetRepositoryImpl repository;
 
-  setUp(() {
+  setUp(() async {
     db = memoryDatabase();
     repository = AssetRepositoryImpl(db);
+    await db.into(db.institutions).insert(
+          InstitutionRow(
+            id: 'i1',
+            name: 'Nubank',
+            kind: 'broker',
+            currency: 'brl',
+            createdAt: DateTime(2026),
+          ),
+        );
   });
 
   test('save then watchAll emits the asset', () async {
@@ -38,6 +47,15 @@ void main() {
 
     final stored = (await repository.watchAll().first).single;
     expect(stored.metadata, {'fiBasis': 'cdi', 'fiRate': '110'});
+  });
+
+  test('rejects an asset without an institution', () async {
+    final result = await repository.save(assetFactory(institutionId: null));
+
+    final failure =
+        result.swap().getOrElse(() => throw StateError('x')) as ValidationFailure;
+    expect(failure.code, ValidationCode.assetInstitutionRequired);
+    expect(await repository.watchAll().first, isEmpty);
   });
 
   test('delete returns InUseFailure when a transaction references it', () async {
@@ -84,6 +102,7 @@ void main() {
             kind: 'crypto',
             market: 'global',
             currency: 'brl',
+            institutionId: 'i1',
             metadata: 'not-json{',
             createdAt: DateTime(2026),
           ),

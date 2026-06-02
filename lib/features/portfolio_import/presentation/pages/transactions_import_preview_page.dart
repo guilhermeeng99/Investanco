@@ -88,6 +88,8 @@ class _PreviewList extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = preview.rows;
     final missing = preview.missingTickers;
+    final unlinked = preview.unlinkedTickers;
+    final mismatched = preview.institutionMismatchTickers;
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -97,7 +99,38 @@ class _PreviewList extends StatelessWidget {
         if (missing.isNotEmpty)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            sliver: SliverToBoxAdapter(child: _MissingBanner(tickers: missing)),
+            sliver: SliverToBoxAdapter(
+              child: _BlockingBanner(
+                title: t.importTransactions.missingTitle,
+                body: t.importTransactions.missingBody(
+                  tickers: missing.join(', '),
+                ),
+              ),
+            ),
+          ),
+        if (unlinked.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: _BlockingBanner(
+                title: t.importTransactions.unlinkedTitle,
+                body: t.importTransactions.unlinkedBody(
+                  tickers: unlinked.join(', '),
+                ),
+              ),
+            ),
+          ),
+        if (mismatched.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: _BlockingBanner(
+                title: t.importTransactions.mismatchTitle,
+                body: t.importTransactions.mismatchBody(
+                  tickers: mismatched.join(', '),
+                ),
+              ),
+            ),
           ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -151,10 +184,10 @@ class _SummaryCard extends StatelessWidget {
               ),
               Expanded(
                 child: ImportSummaryStat(
-                  icon: FontAwesomeIcons.buildingColumns,
-                  value: '${preview.newInstitutionCount}',
-                  label: t.importTransactions.statNewInstitutions,
-                  color: colors.secondary,
+                  icon: FontAwesomeIcons.triangleExclamation,
+                  value: '${preview.rows.where((r) => !r.canImport).length}',
+                  label: t.importTransactions.statBlocked,
+                  color: colors.error,
                 ),
               ),
             ],
@@ -169,12 +202,12 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-/// Error banner listing tickers whose asset isn't registered yet; import is
-/// blocked until they're removed or the assets are imported first.
-class _MissingBanner extends StatelessWidget {
-  const _MissingBanner({required this.tickers});
+/// Error banner listing rows blocked by missing or inconsistent references.
+class _BlockingBanner extends StatelessWidget {
+  const _BlockingBanner({required this.title, required this.body});
 
-  final List<String> tickers;
+  final String title;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +232,7 @@ class _MissingBanner extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  t.importTransactions.missingTitle,
+                  title,
                   style: context.textTheme.labelMedium?.copyWith(
                     color: colors.error,
                     fontWeight: FontWeight.w600,
@@ -210,7 +243,7 @@ class _MissingBanner extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            t.importTransactions.missingBody(tickers: tickers.join(', ')),
+            body,
             style: context.textTheme.bodySmall?.copyWith(color: colors.error),
           ),
         ],
@@ -235,7 +268,10 @@ class _TransactionRowTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          BrandAvatar(background: accent, icon: transactionKindIcon(row.operation)),
+          BrandAvatar(
+            background: accent,
+            icon: transactionKindIcon(row.operation),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -250,13 +286,13 @@ class _TransactionRowTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: context.textTheme.titleSmall?.copyWith(
                           // Dim tickers whose asset is missing — they block import.
-                          color: entry.assetExists
+                          color: entry.canImport
                               ? colors.onBackground
                               : colors.error,
                         ),
                       ),
                     ),
-                    if (!entry.assetExists) ...[
+                    if (!entry.canImport) ...[
                       const SizedBox(width: 6),
                       FaIcon(
                         FontAwesomeIcons.circleExclamation,
@@ -278,9 +314,9 @@ class _TransactionRowTile extends StatelessWidget {
                     ),
                     InvestancoChip(
                       label: row.institutionName,
-                      color: entry.institutionIsNew
-                          ? colors.positive
-                          : colors.neutral,
+                      color: entry.institutionMatchesAsset
+                          ? colors.neutral
+                          : colors.error,
                       icon: FontAwesomeIcons.buildingColumns,
                     ),
                   ],

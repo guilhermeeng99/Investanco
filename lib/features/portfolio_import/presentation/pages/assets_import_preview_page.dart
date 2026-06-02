@@ -226,6 +226,10 @@ class _AssetRowTile extends StatelessWidget {
                       label: row.currency.code,
                       color: colors.neutral,
                     ),
+                    InvestancoChip(
+                      label: row.institutionName,
+                      color: colors.secondary,
+                    ),
                   ],
                 ),
               ],

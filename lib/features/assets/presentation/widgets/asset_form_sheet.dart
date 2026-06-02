@@ -15,6 +15,7 @@ import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_labels.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_cubit.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/valuation/domain/entities/fixed_income_terms.dart';
 import 'package:investanco/features/valuation/domain/fixed_income_metadata.dart';
 import 'package:investanco/gen/i18n/strings.g.dart';
@@ -71,6 +72,8 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
   late FixedIncomeBasis _fiBasis;
   late Market _market;
   late Currency _currency;
+  String? _institutionId;
+  List<Institution> _institutions = const [];
   late final TextEditingController _allocationTargetController;
   String? _allocationClassId;
   List<AssetClass> _allocationClasses = const [];
@@ -87,8 +90,9 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _fiRateController = TextEditingController(
       text: existing?.metadata[FixedIncomeMetadata.rateKey] ?? '',
     );
-    final fiBasis =
-        existing == null ? null : FixedIncomeMetadata.read(existing)?.$1;
+    final fiBasis = existing == null
+        ? null
+        : FixedIncomeMetadata.read(existing)?.$1;
     _fiBasis = fiBasis ?? FixedIncomeBasis.cdi;
     // New assets default to the first selectable kind (and its usual
     // market/currency) so the pre-filled Type is one the picker can re-select.
@@ -97,6 +101,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     _kind = existing?.kind ?? defaultKind;
     _market = existing?.market ?? defaultMarket;
     _currency = existing?.currency ?? defaultCurrency;
+    _institutionId = existing?.institutionId;
 
     _allocationClassId = existing == null
         ? widget.presetAllocationClassId
@@ -106,7 +111,13 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           ? ''
           : (existing.metadata[allocationTargetKey] ?? ''),
     );
+    unawaited(_loadInstitutions());
     unawaited(_loadAllocationClasses());
+  }
+
+  Future<void> _loadInstitutions() async {
+    final institutions = await widget.cubit.loadInstitutions();
+    if (mounted) setState(() => _institutions = institutions);
   }
 
   Future<void> _loadAllocationClasses() async {
@@ -128,6 +139,14 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
     if (id == null) return null;
     for (final c in _allocationClasses) {
       if (c.id == id) return c;
+    }
+    return null;
+  }
+
+  Institution? _institutionOf(String? id) {
+    if (id == null) return null;
+    for (final institution in _institutions) {
+      if (institution.id == id) return institution;
     }
     return null;
   }
@@ -210,6 +229,21 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
 
   void _noop() {}
 
+  Future<void> _pickInstitution(FormFieldState<String> field) async {
+    final picked = await showOptionPicker<String>(
+      context,
+      title: t.assets.institution,
+      selected: _institutionId ?? '',
+      items: [
+        for (final institution in _institutions)
+          OptionPickerItem(value: institution.id, label: institution.name),
+      ],
+    );
+    if (picked == null) return;
+    setState(() => _institutionId = picked);
+    field.didChange(picked);
+  }
+
   Future<void> _pickAllocationClass(FormFieldState<String> field) async {
     final picked = await showOptionPicker<String>(
       context,
@@ -276,6 +310,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
             kind: _kind,
             market: _market,
             currency: _currency,
+            institutionId: _institutionId ?? '',
             metadata: _buildMetadata(),
           )
         : widget.cubit.edit(
@@ -285,6 +320,7 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
               kind: _kind,
               market: _market,
               currency: _currency,
+              institutionId: _institutionId,
               metadata: _buildMetadata(),
             ),
           );
@@ -302,16 +338,53 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           label: t.assets.ticker,
           controller: _tickerController,
           textCapitalization: TextCapitalization.characters,
-          validator: (value) =>
-              (value == null || value.trim().isEmpty) ? t.common.required : null,
+          validator: (value) => (value == null || value.trim().isEmpty)
+              ? t.common.required
+              : null,
         ),
         const SizedBox(height: 12),
         InvestancoTextField(
           label: t.assets.name,
           controller: _nameController,
           textCapitalization: TextCapitalization.words,
-          validator: (value) =>
-              (value == null || value.trim().isEmpty) ? t.common.required : null,
+          validator: (value) => (value == null || value.trim().isEmpty)
+              ? t.common.required
+              : null,
+        ),
+        const SizedBox(height: 12),
+        FormField<String>(
+          initialValue: _institutionId,
+          validator: (v) =>
+              _institutionOf(v) == null ? t.assets.institutionRequired : null,
+          builder: (field) {
+            final selected = _institutionOf(field.value);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InvestancoPickerField(
+                  label: t.assets.institution,
+                  value: selected?.name ?? '',
+                  placeholder: _institutions.isEmpty
+                      ? t.assets.institutionNoInstitutions
+                      : t.assets.institutionPlaceholder,
+                  isError: field.hasError,
+                  onTap: _institutions.isEmpty
+                      ? _noop
+                      : () => _pickInstitution(field),
+                ),
+                if (field.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, left: 4),
+                    child: Text(
+                      field.errorText!,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.appColors.error,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 12),
         InvestancoPickerField(
@@ -352,8 +425,8 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
           initialValue: _allocationClassId,
           validator: (v) =>
               (_allocationClasses.isNotEmpty && (v == null || v.isEmpty))
-                  ? t.assets.allocationClassRequired
-                  : null,
+              ? t.assets.allocationClassRequired
+              : null,
           builder: (field) {
             final selected = _classOf(field.value);
             return Column(
@@ -382,8 +455,9 @@ class _AssetFormSheetState extends State<AssetFormSheet> {
                     padding: const EdgeInsets.only(top: 6, left: 4),
                     child: Text(
                       field.errorText!,
-                      style: context.textTheme.bodySmall
-                          ?.copyWith(color: context.appColors.error),
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.appColors.error,
+                      ),
                     ),
                   ),
               ],

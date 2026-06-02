@@ -11,6 +11,7 @@ class AssetImportRow extends Equatable {
     required this.kind,
     required this.market,
     required this.currency,
+    required this.institutionName,
   });
 
   /// Asset symbol (uppercased).
@@ -28,8 +29,18 @@ class AssetImportRow extends Equatable {
   /// Native currency.
   final Currency currency;
 
+  /// Custodian name; matched case-insensitively, created if missing.
+  final String institutionName;
+
   @override
-  List<Object?> get props => [ticker, name, kind, market, currency];
+  List<Object?> get props => [
+    ticker,
+    name,
+    kind,
+    market,
+    currency,
+    institutionName,
+  ];
 }
 
 /// A preview row: the parsed [row] plus whether it would create a new asset.

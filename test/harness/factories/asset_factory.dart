@@ -9,6 +9,7 @@ Asset assetFactory({
   AssetKind kind = AssetKind.stockBr,
   Market market = Market.br,
   Currency currency = Currency.brl,
+  String? institutionId = 'i1',
   Map<String, String> metadata = const {},
   DateTime? createdAt,
 }) {
@@ -19,6 +20,7 @@ Asset assetFactory({
     kind: kind,
     market: market,
     currency: currency,
+    institutionId: institutionId,
     metadata: metadata,
     createdAt: createdAt ?? DateTime(2026),
   );

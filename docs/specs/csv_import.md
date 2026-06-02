@@ -38,6 +38,7 @@ work. Numbers accept BR (`1.234,56`) and EN (`1,234.56`) grouping; dates accept
 |----------------|----------|---------|
 | ticker | yes | — |
 | kind | yes | — |
+| institution | yes | — |
 | name | no | = ticker |
 | market | no | by kind (`assetKindDefaults`) |
 | currency | no | by kind |
@@ -50,7 +51,7 @@ work. Numbers accept BR (`1.234,56`) and EN (`1,234.56`) grouping; dates accept
 | Logical column | Required | Default |
 |----------------|----------|---------|
 | ticker | yes (must already exist) | — |
-| institution | yes (created if missing) | — |
+| institution | yes (must match the asset's institution) | — |
 | quantity | yes (buy/sell) | — |
 | price | yes (buy/sell) | — |
 | amount | dividends only | — |
@@ -60,12 +61,14 @@ work. Numbers accept BR (`1.234,56`) and EN (`1,234.56`) grouping; dates accept
 | notes | no | — |
 
 The transaction's money is denominated in the **referenced asset's currency**
-(the file carries no currency column). A new institution is created with that
-currency and `kind = broker`.
+(the file carries no currency column). The institution column is kept for import
+safety and compatibility: it must match the institution already linked to the
+referenced asset, and no institution is created by the transactions import.
 
 ## Entity contracts
 
-`AssetImportRow` (Equatable): `ticker, name, kind, market, currency`.
+`AssetImportRow` (Equatable): `ticker, name, kind, market, currency,
+institutionName`.
 `AssetImportPreview`: `rows` of `AssetImportPreviewRow {row, isNew}` with derived
 `newCount`, `reusedCount` (distinct by ticker) and `withoutRowAt(i)`.
 `AssetImportResult`: `assetsCreated`.
@@ -73,14 +76,15 @@ currency and `kind = broker`.
 `TransactionImportRow` (Equatable): `ticker, institutionName, operation,
 quantity, unitPriceMajor, feesMajor, amountMajor?, date, notes?`.
 `TransactionImportPreview`: `rows` of `TransactionImportPreviewRow {row,
-assetExists, institutionIsNew}` with `transactionCount`, `newInstitutionCount`,
-`missingTickers` (distinct tickers with no asset), `canImport` (rows present and
-no missing assets) and `withoutRowAt(i)`.
+assetExists, institutionIsNew, assetHasInstitution, institutionMatchesAsset}`
+with `transactionCount`, `newInstitutionCount` (kept for result compatibility),
+`missingTickers`, `unlinkedTickers`, `institutionMismatchTickers`, `canImport`
+(rows present and no blocked row) and `withoutRowAt(i)`.
 `TransactionImportResult`: `transactionsCreated, institutionsCreated`.
 
 ## Use cases
 
-`ImportAssetsCsvUseCase(AssetRepository, IdGenerator)`:
+`ImportAssetsCsvUseCase(AssetRepository, InstitutionRepository, IdGenerator)`:
 
 ```dart
 Either<Failure, List<AssetImportRow>> parseRows(String csv);        // pure
@@ -96,12 +100,14 @@ Business rules:
 1. **Parse is pure** — no I/O. A malformed file (missing required column, bad
    number/date, unknown kind, empty, zero quantity, dividend without amount) →
    `ValidationFailure` with a row-tagged message; nothing is written.
-2. **Assets**: matched by ticker (case-insensitive). A miss is created; a hit is
-   reused (row fields ignored). Re-importing the same file doesn't duplicate.
-3. **Transactions**: the asset **must already exist** (matched by ticker) — a
-   missing asset returns a `ValidationFailure` from `importRows` (the preview
-   blocks it upstream). The institution is reused by name or **created**
-   (currency from the asset, kind `broker`). One transaction per row.
+2. **Assets**: matched by ticker (case-insensitive). A miss creates/reuses the
+   institution by name, then creates the asset linked to that institution; a hit
+   is reused (row fields ignored). Re-importing the same file doesn't duplicate.
+3. **Transactions**: the asset **must already exist** (matched by ticker) and
+   already have an institution. The CSV institution must match that linked
+   institution; mismatches return
+   `ValidationFailure(code: transactionInstitutionMismatch)`. One transaction
+   per row.
 4. Reads are guarded: a repository read error → `CacheFailure`. Persistence stops
    at the first write failure and returns it (counts reflect only what was
    created; partial data may remain).
@@ -127,13 +133,14 @@ download live in `csv_import_dialog.dart` (`showCsvImportIntroDialog`,
 ### Review pages
 
 - `AssetsImportPreviewPage` (`/import/assets/preview`): summary (items, new
-  assets + `+N reused` caption) + per-row list (ticker, name, kind/currency
-  chips, `New` badge) + remove + submit. Pops an `AssetImportResult`.
+  assets + `+N reused` caption) + per-row list (ticker, name,
+  kind/currency/institution chips, `New` badge) + remove + submit. Pops an
+  `AssetImportResult`.
 - `TransactionsImportPreviewPage` (`/import/transactions/preview`): summary
-  (transactions, new institutions) + a **missing-assets banner** (lists tickers
-  with no asset) that disables submit, + per-row list (operation/institution
-  chips, `qty × price · date`, missing rows flagged in error colour) + remove +
-  submit. Pops a `TransactionImportResult`.
+  (transactions, blocked rows) + banners for missing assets, unlinked assets and
+  institution mismatches that disable submit, + per-row list
+  (operation/institution chips, `qty x price - date`, blocked rows flagged in
+  error colour) + remove + submit. Pops a `TransactionImportResult`.
 
 Both: removing rows recomputes the summary (and the transactions banner) live; a
 blocking overlay covers the page during the import; on success the page pops the
@@ -147,6 +154,10 @@ page opens the transactions import (both via the stacked `ImportAddFab`).
 
 - Transaction referencing an unknown ticker → flagged in the preview, import
   blocked until the row is removed or the asset is imported first.
+- Transaction referencing an asset without `institutionId` → flagged in preview;
+  edit the asset and choose the institution first.
+- Transaction CSV institution different from the asset's institution → flagged
+  in preview and rejected by `importRows`.
 - Asset exists but the asset row repeats name/kind → existing asset reused.
 - Unknown kind/currency/market token → `ValidationFailure` (kind) or default
   (market/currency).

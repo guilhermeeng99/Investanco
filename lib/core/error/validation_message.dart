@@ -11,6 +11,9 @@ String? validationMessage(ValidationFailure failure) {
   return switch (code) {
     ValidationCode.duplicateInstitutionName => t.institutions.duplicateName,
     ValidationCode.duplicateAsset => t.assets.duplicateAsset,
+    ValidationCode.assetInstitutionRequired => t.assets.institutionRequired,
+    ValidationCode.transactionInstitutionMismatch =>
+      t.transactions.institutionMismatchError,
     ValidationCode.futureTransactionDate => t.transactions.futureDateError,
     ValidationCode.oversell => t.transactions.oversellError,
     ValidationCode.nonPositiveQuantity => t.transactions.quantityError,

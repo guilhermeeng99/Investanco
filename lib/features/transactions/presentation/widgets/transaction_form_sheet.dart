@@ -9,7 +9,6 @@ import 'package:investanco/core/format/money_input.dart';
 import 'package:investanco/core/money/money.dart';
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/presentation/asset_visuals.dart';
-import 'package:investanco/features/institutions/domain/entities/institution.dart';
 import 'package:investanco/features/transactions/domain/entities/asset_transaction.dart';
 import 'package:investanco/features/transactions/domain/transaction_amounts.dart';
 import 'package:investanco/features/transactions/presentation/cubit/transactions_cubit.dart';
@@ -23,7 +22,6 @@ class TransactionFormSheet extends StatefulWidget {
   const TransactionFormSheet({
     required this.cubit,
     required this.assets,
-    required this.institutions,
     this.existing,
     super.key,
   });
@@ -34,9 +32,6 @@ class TransactionFormSheet extends StatefulWidget {
   /// Assets available to pick.
   final List<Asset> assets;
 
-  /// Institutions available to pick.
-  final List<Institution> institutions;
-
   /// When non-null, the sheet edits this transaction.
   final AssetTransaction? existing;
 
@@ -45,7 +40,6 @@ class TransactionFormSheet extends StatefulWidget {
     BuildContext context,
     TransactionsCubit cubit, {
     required List<Asset> assets,
-    required List<Institution> institutions,
     AssetTransaction? existing,
   }) {
     return showModalBottomSheet<void>(
@@ -54,7 +48,6 @@ class TransactionFormSheet extends StatefulWidget {
       builder: (_) => TransactionFormSheet(
         cubit: cubit,
         assets: assets,
-        institutions: institutions,
         existing: existing,
       ),
     );
@@ -72,7 +65,6 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
   late final TextEditingController _amountController;
   late final TextEditingController _notesController;
 
-  late String _institutionId;
   late String _assetId;
   late TransactionKind _kind;
   late DateTime _date;
@@ -81,8 +73,9 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
   void initState() {
     super.initState();
     final existing = widget.existing;
-    _quantityController =
-        TextEditingController(text: existing?.quantity.toString() ?? '');
+    _quantityController = TextEditingController(
+      text: existing?.quantity.toString() ?? '',
+    );
     _priceController = TextEditingController(
       text: existing == null ? '' : existing.unitPrice.major.toString(),
     );
@@ -93,8 +86,8 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       text: existing == null ? '' : existing.amount.major.toString(),
     );
     _notesController = TextEditingController(text: existing?.notes ?? '');
-    _institutionId = existing?.institutionId ?? widget.institutions.first.id;
-    _assetId = existing?.assetId ?? widget.assets.first.id;
+    _assetId =
+        existing?.assetId ?? _firstLinkedAssetId() ?? widget.assets.first.id;
     _kind = existing?.kind ?? TransactionKind.buy;
     _date = existing?.date ?? DateTime.now();
   }
@@ -109,10 +102,17 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     super.dispose();
   }
 
-  Asset get _selectedAsset => widget.assets.firstWhere((a) => a.id == _assetId);
+  String? _firstLinkedAssetId() {
+    for (final asset in widget.assets) {
+      if (asset.institutionId != null &&
+          asset.institutionId!.trim().isNotEmpty) {
+        return asset.id;
+      }
+    }
+    return null;
+  }
 
-  Institution get _selectedInstitution =>
-      widget.institutions.firstWhere((i) => i.id == _institutionId);
+  Asset get _selectedAsset => widget.assets.firstWhere((a) => a.id == _assetId);
 
   bool get _isDividend => _kind == TransactionKind.dividend;
 
@@ -134,20 +134,8 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
           ),
       ],
     );
-    if (picked != null) setState(() => _assetId = picked);
-  }
-
-  Future<void> _pickInstitution() async {
-    final picked = await showOptionPicker<String>(
-      context,
-      title: t.transactions.institution,
-      selected: _institutionId,
-      items: [
-        for (final institution in widget.institutions)
-          OptionPickerItem(value: institution.id, label: institution.name),
-      ],
-    );
-    if (picked != null) setState(() => _institutionId = picked);
+    if (picked == null) return;
+    setState(() => _assetId = picked);
   }
 
   Future<void> _pickDate() async {
@@ -160,23 +148,37 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     if (picked != null) setState(() => _date = picked);
   }
 
-  Future<Failure?> _persist() {
+  Future<Failure?> _persist() async {
+    final institutionId = _selectedAsset.institutionId?.trim();
+    if (institutionId == null || institutionId.isEmpty) {
+      return const ValidationFailure(
+        'The asset must be linked to an institution first.',
+        ValidationCode.assetInstitutionRequired,
+      );
+    }
     final currency = _selectedAsset.currency;
     final amounts = resolveTransactionAmounts(
       kind: _kind,
       quantity: parseMajor(_quantityController.text) ?? 0,
-      unitPrice:
-          Money.fromMajor(parseMajor(_priceController.text) ?? 0, currency),
-      amount: Money.fromMajor(parseMajor(_amountController.text) ?? 0, currency),
+      unitPrice: Money.fromMajor(
+        parseMajor(_priceController.text) ?? 0,
+        currency,
+      ),
+      amount: Money.fromMajor(
+        parseMajor(_amountController.text) ?? 0,
+        currency,
+      ),
       currency: currency,
     );
-    final fees =
-        Money.fromMajor(parseMajor(_feesController.text) ?? 0, currency);
+    final fees = Money.fromMajor(
+      parseMajor(_feesController.text) ?? 0,
+      currency,
+    );
 
     final existing = widget.existing;
     return existing == null
         ? widget.cubit.add(
-            institutionId: _institutionId,
+            institutionId: institutionId,
             assetId: _assetId,
             kind: _kind,
             quantity: amounts.quantity,
@@ -190,7 +192,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
           )
         : widget.cubit.edit(
             existing.copyWith(
-              institutionId: _institutionId,
+              institutionId: institutionId,
               assetId: _assetId,
               kind: _kind,
               quantity: amounts.quantity,
@@ -208,12 +210,13 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     return parseMajor(value) == null ? t.common.required : null;
   }
 
-  static const _decimalKeyboard =
-      TextInputType.numberWithOptions(decimal: true);
+  static const _decimalKeyboard = TextInputType.numberWithOptions(
+    decimal: true,
+  );
 
   List<TextInputFormatter> get _decimalFormatters => [
-        FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
-      ];
+    FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -248,13 +251,6 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
             background: assetKindColor(_selectedAsset.kind),
             initials: tickerInitials(_selectedAsset.ticker),
           ),
-        ),
-        const SizedBox(height: 12),
-        InvestancoPickerField(
-          label: t.transactions.institution,
-          value: _selectedInstitution.name,
-          placeholder: t.transactions.institution,
-          onTap: _pickInstitution,
         ),
         const SizedBox(height: 12),
         if (!_isDividend)

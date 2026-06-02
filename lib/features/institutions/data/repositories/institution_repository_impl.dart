@@ -71,16 +71,24 @@ class InstitutionRepositoryImpl implements InstitutionRepository {
   Future<Either<Failure, Unit>> delete(String id) =>
       guardedDeleteIfUnreferenced(
         isReferenced: () async {
-          final referencing = await (_db.select(_db.transactions)
-                ..where((t) => t.institutionId.equals(id))
-                ..limit(1))
-              .get();
-          return referencing.isNotEmpty;
+          final referencingTransaction =
+              await (_db.select(_db.transactions)
+                    ..where((t) => t.institutionId.equals(id))
+                    ..limit(1))
+                  .get();
+          if (referencingTransaction.isNotEmpty) return true;
+          final referencingAsset =
+              await (_db.select(_db.assets)
+                    ..where((t) => t.institutionId.equals(id))
+                    ..limit(1))
+                  .get();
+          return referencingAsset.isNotEmpty;
         },
         delete: () async {
           await _mirror.delete(_collection, id);
-          await (_db.delete(_db.institutions)..where((t) => t.id.equals(id)))
-              .go();
+          await (_db.delete(
+            _db.institutions,
+          )..where((t) => t.id.equals(id))).go();
         },
       );
 

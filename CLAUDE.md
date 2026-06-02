@@ -125,12 +125,18 @@ See `docs/specs/quotes.md` for endpoints, contracts and the asset→source map.
 flutter test                              # Run all tests
 flutter test test/features/holdings/      # Run feature tests
 flutter analyze                           # Static analysis (must be zero issues)
-flutter run -d chrome                      # Run the app (web)
+flutter run -d chrome --web-hostname localhost --web-port 54231 --dart-define-from-file=env.json  # Run the app (web)
 dart run build_runner build   # Generate Drift code
 dart run slang                            # Generate i18n
 ```
 
 > Per the user's global config, prefix shell commands with `rtk` (see RTK section).
+
+**Web auth local testing:** always open the Flutter web app through
+`http://localhost:<port>`, never `http://127.0.0.1:<port>`. Firebase Auth's
+authorized domains allow `localhost` by default; `127.0.0.1` can fail Google
+sign-in with `auth/unauthorized-domain`, which this app currently surfaces as
+the generic "Server error. Please try again." snackbar.
 
 ---
 
@@ -251,7 +257,8 @@ the user's name/email/photo come from Firebase Auth, not Firestore.
 
 ```
 users/{uid}/institutions/{id}   → id, name, kind, currency, createdAt
-users/{uid}/assets/{id}         → id, ticker, name, kind, market, currency, metadata, createdAt
+users/{uid}/assets/{id}         → id, ticker, name, kind, market, currency,
+                                   institutionId, metadata, createdAt
 users/{uid}/transactions/{id}   → id, institutionId, assetId, kind, quantity,
                                    unitPriceMinor, feesMinor, amountMinor, currency,
                                    date, notes, createdAt, updatedAt

@@ -9,12 +9,18 @@ import 'package:investanco/features/allocation/domain/repositories/asset_class_r
 import 'package:investanco/features/assets/domain/entities/asset.dart';
 import 'package:investanco/features/assets/domain/repositories/asset_repository.dart';
 import 'package:investanco/features/assets/presentation/cubit/assets_state.dart';
+import 'package:investanco/features/institutions/domain/entities/institution.dart';
+import 'package:investanco/features/institutions/domain/repositories/institution_repository.dart';
 
 /// Orchestrates the assets list and CRUD. Reactive list via a stream.
 class AssetsCubit extends Cubit<AssetsState> {
   /// Subscribes to the assets stream on creation.
-  AssetsCubit(this._repository, this._idGenerator, this._assetClassRepository)
-      : super(const AssetsLoading()) {
+  AssetsCubit(
+    this._repository,
+    this._idGenerator,
+    this._assetClassRepository,
+    this._institutionRepository,
+  ) : super(const AssetsLoading()) {
     _subscription = _repository.watchAll().listen(
       (items) => emit(AssetsLoaded(items)),
       onError: (Object _, StackTrace _) => emit(const AssetsError()),
@@ -24,6 +30,7 @@ class AssetsCubit extends Cubit<AssetsState> {
   final AssetRepository _repository;
   final IdGenerator _idGenerator;
   final AssetClassRepository _assetClassRepository;
+  final InstitutionRepository _institutionRepository;
   late final StreamSubscription<List<Asset>> _subscription;
 
   /// Creates a new asset. Returns a [Failure] on error, else null.
@@ -33,6 +40,7 @@ class AssetsCubit extends Cubit<AssetsState> {
     required AssetKind kind,
     required Market market,
     required Currency currency,
+    required String institutionId,
     Map<String, String> metadata = const {},
   }) {
     final asset = Asset(
@@ -42,6 +50,7 @@ class AssetsCubit extends Cubit<AssetsState> {
       kind: kind,
       market: market,
       currency: currency,
+      institutionId: institutionId,
       metadata: metadata,
       createdAt: DateTime.now(),
     );
@@ -62,6 +71,10 @@ class AssetsCubit extends Cubit<AssetsState> {
   /// layer instead of reaching into the service locator directly.
   Future<List<AssetClass>> loadAllocationClasses() =>
       _assetClassRepository.watchAll().first;
+
+  /// One-shot load of institutions for the asset form's custodian picker.
+  Future<List<Institution>> loadInstitutions() =>
+      _institutionRepository.watchAll().first;
 
   Future<Failure?> _save(Asset asset) async {
     final result = await _repository.save(asset);

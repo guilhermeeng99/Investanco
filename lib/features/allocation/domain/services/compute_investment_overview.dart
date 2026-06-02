@@ -25,12 +25,15 @@ InvestmentOverview computeInvestmentOverview({
 
   // Market value per asset (summed across institutions; skip fx-missing).
   final valueByAsset = <String, int>{};
+  final nativeValueByAsset = <String, int>{};
   var totalMinor = 0;
   for (final h in holdings) {
     if (h.fxMissing) continue;
     final minor = h.marketValueBase.minorUnits;
     totalMinor += minor;
     valueByAsset[h.assetId] = (valueByAsset[h.assetId] ?? 0) + minor;
+    nativeValueByAsset[h.assetId] =
+        (nativeValueByAsset[h.assetId] ?? 0) + h.marketValueNative.minorUnits;
   }
 
   // Group assets under their class.
@@ -47,8 +50,9 @@ InvestmentOverview computeInvestmentOverview({
   final classSlices = <InvestmentClassSlice>[];
   for (final root in classes.where((c) => c.isRoot)) {
     final classAssets = (assetsByClass[root.id] ?? [])
-      ..sort((a, b) =>
-          (valueByAsset[b.id] ?? 0).compareTo(valueByAsset[a.id] ?? 0));
+      ..sort(
+        (a, b) => (valueByAsset[b.id] ?? 0).compareTo(valueByAsset[a.id] ?? 0),
+      );
     final classTotalMinor = classAssets.fold<int>(
       0,
       (sum, a) => sum + (valueByAsset[a.id] ?? 0),
@@ -61,6 +65,7 @@ InvestmentOverview computeInvestmentOverview({
           final v = valueByAsset[asset.id] ?? 0;
           final at = allocationTargetOf(asset);
           final suggestedMinor = (targetValueMinor * at / 100).round();
+          final suggestedDeltaMinor = suggestedMinor - v;
           return InvestmentSubclassSlice(
             id: asset.id,
             name: asset.ticker,
@@ -69,7 +74,14 @@ InvestmentOverview computeInvestmentOverview({
             percentOfTotal: totalMinor == 0 ? 0 : v / totalMinor,
             targetPercent: at,
             suggestedValue: money(suggestedMinor),
-            suggestedDelta: money(suggestedMinor - v),
+            suggestedDelta: money(suggestedDeltaMinor),
+            suggestedDeltaNative: _nativeDelta(
+              asset: asset,
+              base: base,
+              currentBaseMinor: v,
+              currentNativeMinor: nativeValueByAsset[asset.id] ?? 0,
+              deltaBaseMinor: suggestedDeltaMinor,
+            ),
           );
         }(),
     ];
@@ -90,27 +102,33 @@ InvestmentOverview computeInvestmentOverview({
     );
   }
   classSlices.sort((a, b) {
-    final byValue =
-        b.currentValue.minorUnits.compareTo(a.currentValue.minorUnits);
+    final byValue = b.currentValue.minorUnits.compareTo(
+      a.currentValue.minorUnits,
+    );
     return byValue != 0 ? byValue : a.name.compareTo(b.name);
   });
 
-  final actions = classSlices
-      .where((s) => s.deltaValue.minorUnits.abs() >= kRebalanceThresholdMinor)
-      .map(
-        (s) => RebalanceAction(
-          classId: s.id,
-          className: s.name,
-          direction:
-              s.isUnderTarget ? RebalanceDirection.buy : RebalanceDirection.sell,
-          amount: money(s.deltaValue.minorUnits.abs()),
-        ),
-      )
-      .toList()
-    ..sort((a, b) => b.amount.minorUnits.compareTo(a.amount.minorUnits));
+  final actions =
+      classSlices
+          .where(
+            (s) => s.deltaValue.minorUnits.abs() >= kRebalanceThresholdMinor,
+          )
+          .map(
+            (s) => RebalanceAction(
+              classId: s.id,
+              className: s.name,
+              direction: s.isUnderTarget
+                  ? RebalanceDirection.buy
+                  : RebalanceDirection.sell,
+              amount: money(s.deltaValue.minorUnits.abs()),
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.amount.minorUnits.compareTo(a.amount.minorUnits));
 
-  final targetSum =
-      classes.where((c) => c.isRoot).fold<double>(0, (s, r) => s + r.targetPercent);
+  final targetSum = classes
+      .where((c) => c.isRoot)
+      .fold<double>(0, (s, r) => s + r.targetPercent);
 
   return InvestmentOverview(
     total: money(totalMinor),
@@ -120,4 +138,18 @@ InvestmentOverview computeInvestmentOverview({
     rebalanceActions: actions,
     targetSumPercent: targetSum,
   );
+}
+
+Money? _nativeDelta({
+  required Asset asset,
+  required Currency base,
+  required int currentBaseMinor,
+  required int currentNativeMinor,
+  required int deltaBaseMinor,
+}) {
+  if (asset.currency == base) return null;
+  if (currentBaseMinor == 0 || currentNativeMinor == 0) return null;
+  final nativeMinor = (deltaBaseMinor * currentNativeMinor / currentBaseMinor)
+      .round();
+  return Money(nativeMinor, asset.currency);
 }

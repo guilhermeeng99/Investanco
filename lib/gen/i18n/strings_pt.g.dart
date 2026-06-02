@@ -444,6 +444,21 @@ class Translations$assets$pt {
 	/// pt: 'Moeda'
 	String get currency => 'Moeda';
 
+	/// pt: 'Instituição'
+	String get institution => 'Instituição';
+
+	/// pt: 'Selecione a instituição'
+	String get institutionPlaceholder => 'Selecione a instituição';
+
+	/// pt: 'Cadastre uma instituição primeiro'
+	String get institutionNoInstitutions => 'Cadastre uma instituição primeiro';
+
+	/// pt: 'Selecione a instituição'
+	String get institutionRequired => 'Selecione a instituição';
+
+	/// pt: 'Sem instituição'
+	String get institutionUnassigned => 'Sem instituição';
+
 	/// pt: 'Nome no Tesouro Direto'
 	String get tesouroName => 'Nome no Tesouro Direto';
 
@@ -563,8 +578,17 @@ class Translations$transactions$pt {
 	/// pt: 'A quantidade deve ser maior que zero.'
 	String get quantityError => 'A quantidade deve ser maior que zero.';
 
+	/// pt: 'A instituição do lançamento deve ser a mesma do ativo.'
+	String get institutionMismatchError => 'A instituição do lançamento deve ser a mesma do ativo.';
+
 	/// pt: 'Cadastre uma instituição e um ativo antes.'
 	String get needPrereqs => 'Cadastre uma instituição e um ativo antes.';
+
+	/// pt: 'Vincule um ativo a uma instituição antes de cadastrar lançamentos.'
+	String get needLinkedAsset => 'Vincule um ativo a uma instituição antes de cadastrar lançamentos.';
+
+	/// pt: 'Vincule este ativo a uma instituição primeiro.'
+	String get assetInstitutionRequired => 'Vincule este ativo a uma instituição primeiro.';
 
 	/// pt: 'Todas'
 	String get filterAll => 'Todas';
@@ -646,8 +670,8 @@ class Translations$importAssets$pt {
 	/// pt: 'Importar ativos'
 	String get title => 'Importar ativos';
 
-	/// pt: 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.'
-	String get intro => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.';
+	/// pt: 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda, instituição. Ativos existentes (por ticker) são reaproveitados.'
+	String get intro => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda, instituição. Ativos existentes (por ticker) são reaproveitados.';
 
 	/// pt: 'Revisar ativos'
 	String get previewTitle => 'Revisar ativos';
@@ -679,8 +703,8 @@ class Translations$importTransactions$pt {
 	/// pt: 'Importar lançamentos'
 	String get title => 'Importar lançamentos';
 
-	/// pt: 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.'
-	String get intro => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.';
+	/// pt: 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir e a instituição deve bater com o arquivo.'
+	String get intro => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir e a instituição deve bater com o arquivo.';
 
 	/// pt: 'Revisar lançamentos'
 	String get previewTitle => 'Revisar lançamentos';
@@ -694,8 +718,11 @@ class Translations$importTransactions$pt {
 	/// pt: 'Novas instituições'
 	String get statNewInstitutions => 'Novas instituições';
 
-	/// pt: 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.'
-	String get reuseNote => 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.';
+	/// pt: 'Bloqueados'
+	String get statBlocked => 'Bloqueados';
+
+	/// pt: 'Os lançamentos usam a instituição cadastrada no ativo. Linhas são bloqueadas quando o arquivo diverge.'
+	String get reuseNote => 'Os lançamentos usam a instituição cadastrada no ativo. Linhas são bloqueadas quando o arquivo diverge.';
 
 	/// pt: 'Importar $count lançamentos'
 	String submit({required Object count}) => 'Importar ${count} lançamentos';
@@ -708,6 +735,18 @@ class Translations$importTransactions$pt {
 
 	/// pt: 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: $tickers'
 	String missingBody({required Object tickers}) => 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: ${tickers}';
+
+	/// pt: 'Ativos sem instituição'
+	String get unlinkedTitle => 'Ativos sem instituição';
+
+	/// pt: 'Edite estes ativos e selecione a instituição antes de importar lançamentos: $tickers'
+	String unlinkedBody({required Object tickers}) => 'Edite estes ativos e selecione a instituição antes de importar lançamentos: ${tickers}';
+
+	/// pt: 'Instituição divergente'
+	String get mismatchTitle => 'Instituição divergente';
+
+	/// pt: 'A instituição do arquivo difere da instituição cadastrada nestes ativos: $tickers'
+	String mismatchBody({required Object tickers}) => 'A instituição do arquivo difere da instituição cadastrada nestes ativos: ${tickers}';
 }
 
 // Path: profile
@@ -1127,6 +1166,11 @@ extension on Translations {
 			'assets.kind' => 'Tipo',
 			'assets.market' => 'Mercado',
 			'assets.currency' => 'Moeda',
+			'assets.institution' => 'Instituição',
+			'assets.institutionPlaceholder' => 'Selecione a instituição',
+			'assets.institutionNoInstitutions' => 'Cadastre uma instituição primeiro',
+			'assets.institutionRequired' => 'Selecione a instituição',
+			'assets.institutionUnassigned' => 'Sem instituição',
 			'assets.tesouroName' => 'Nome no Tesouro Direto',
 			'assets.tesouroNameHelp' => 'Exato como no site, ex.: Tesouro Selic 2027.',
 			'assets.fixedIncomeBasis' => 'Indexador',
@@ -1180,7 +1224,10 @@ extension on Translations {
 			'transactions.futureDateError' => 'A data do lançamento não pode ser no futuro.',
 			'transactions.oversellError' => 'A venda excede a quantidade disponível nessa data.',
 			'transactions.quantityError' => 'A quantidade deve ser maior que zero.',
+			'transactions.institutionMismatchError' => 'A instituição do lançamento deve ser a mesma do ativo.',
 			'transactions.needPrereqs' => 'Cadastre uma instituição e um ativo antes.',
+			'transactions.needLinkedAsset' => 'Vincule um ativo a uma instituição antes de cadastrar lançamentos.',
+			'transactions.assetInstitutionRequired' => 'Vincule este ativo a uma instituição primeiro.',
 			'transactions.filterAll' => 'Todas',
 			'transactions.noFilterResults' => 'Nenhum lançamento nesta instituição.',
 			'transactions.kinds.buy' => 'Compra',
@@ -1204,7 +1251,7 @@ extension on Translations {
 			'importCsv.previewImporting' => 'Importando…',
 			'importCsv.previewRemoveRow' => 'Remover',
 			'importAssets.title' => 'Importar ativos',
-			'importAssets.intro' => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda. Ativos existentes (por ticker) são reaproveitados.',
+			'importAssets.intro' => 'Cadastre vários ativos a partir de uma planilha. Uma linha por ativo: ticker, nome, tipo, mercado, moeda, instituição. Ativos existentes (por ticker) são reaproveitados.',
 			'importAssets.previewTitle' => 'Revisar ativos',
 			'importAssets.previewSubtitle' => 'Confira o que será adicionado antes de importar',
 			'importAssets.statNew' => 'Novos ativos',
@@ -1212,16 +1259,21 @@ extension on Translations {
 			'importAssets.submit' => ({required Object count}) => 'Importar ${count} ativos',
 			'importAssets.success' => ({required Object count}) => 'Importados ${count} novos ativos.',
 			'importTransactions.title' => 'Importar lançamentos',
-			'importTransactions.intro' => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir; instituições faltantes são criadas automaticamente.',
+			'importTransactions.intro' => 'Cadastre vários lançamentos a partir de uma planilha. Uma linha por movimento: ticker, instituição, operação, quantidade, preço, data. Os ativos referenciados precisam já existir e a instituição deve bater com o arquivo.',
 			'importTransactions.previewTitle' => 'Revisar lançamentos',
 			'importTransactions.previewSubtitle' => 'Confira o que será adicionado antes de importar',
 			'importTransactions.statTransactions' => 'Lançamentos',
 			'importTransactions.statNewInstitutions' => 'Novas instituições',
-			'importTransactions.reuseNote' => 'Instituições faltantes são criadas automaticamente; as existentes (por nome) são reaproveitadas.',
+			'importTransactions.statBlocked' => 'Bloqueados',
+			'importTransactions.reuseNote' => 'Os lançamentos usam a instituição cadastrada no ativo. Linhas são bloqueadas quando o arquivo diverge.',
 			'importTransactions.submit' => ({required Object count}) => 'Importar ${count} lançamentos',
 			'importTransactions.success' => ({required Object count}) => 'Importados ${count} lançamentos.',
 			'importTransactions.missingTitle' => 'Ativos não encontrados',
 			'importTransactions.missingBody' => ({required Object tickers}) => 'Estes tickers ainda não estão cadastrados — importe-os na aba Ativos primeiro: ${tickers}',
+			'importTransactions.unlinkedTitle' => 'Ativos sem instituição',
+			'importTransactions.unlinkedBody' => ({required Object tickers}) => 'Edite estes ativos e selecione a instituição antes de importar lançamentos: ${tickers}',
+			'importTransactions.mismatchTitle' => 'Instituição divergente',
+			'importTransactions.mismatchBody' => ({required Object tickers}) => 'A instituição do arquivo difere da instituição cadastrada nestes ativos: ${tickers}',
 			'profile.title' => 'Perfil',
 			'profile.sectionYourData' => 'Seus dados',
 			'profile.sectionPreferences' => 'Preferências',
