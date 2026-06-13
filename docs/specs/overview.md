@@ -59,6 +59,9 @@ The daily-changing part is fully automated. The manual part is low-frequency.
 - Tax reports (IR / DARF); FIFO cost basis; base-currency switcher.
 - Hardened refresh orchestration (retry/backoff, periodic timer) — see `sync.md`.
 
+> Dependency risk and test-coverage debt (e.g. unmaintained `dartz`, the
+> `sqlite3_flutter_libs` no-op shim) is tracked in `../tech_debt.md`.
+
 ---
 
 ## 3. Glossary

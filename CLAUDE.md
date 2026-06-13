@@ -182,7 +182,11 @@ code or tests.
 
 ### Test Structure
 
-* One test file per source file (mirrors `lib/`)
+* One test file per **logic-bearing** source file, mirroring `lib/`: domain
+  (use cases, entities with behavior, parsers, calculators), data (repositories,
+  datasources, models) and presentation cubits/blocs. Pure-declarative files
+  (state classes, plain entities, widgets/pages, barrels, DI wiring) are exempt —
+  cover their behavior through the cubit/widget tests that exercise them.
 * Use `bloc_test` for cubit/bloc testing
 * Use factories for test data — never hardcode entities
 * Mock at boundaries: repositories for cubits, datasources for repositories
