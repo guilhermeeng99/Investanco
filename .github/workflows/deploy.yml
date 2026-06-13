@@ -31,6 +31,14 @@ jobs:
           channel: stable
           cache: true
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - run: flutter pub get
       - run: dart run build_runner build
       - run: dart run slang
@@ -54,7 +62,7 @@ jobs:
         run: |
           flutter build web --release \
             --no-tree-shake-icons \
-            --base-href /Investanco/ \
+            --base-href /Investanco/app/ \
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define=FINNHUB_TOKEN=${{ secrets.FINNHUB_TOKEN }} \
             --dart-define=BRAPI_TOKEN=${{ secrets.BRAPI_TOKEN }}
@@ -92,11 +100,23 @@ jobs:
           file: build/app/outputs/flutter-apk/app-release.apk
           releaseNotes: "Build ${{ github.run_number }} from main"
 
-      - name: Bundle APK with web build
-        run: cp build/app/outputs/flutter-apk/app-release.apk build/web/investanco.apk
+      - name: Build landing site
+        run: |
+          pnpm -C site install
+          pnpm -C site build
+
+      - name: Assemble GitHub Pages bundle
+        run: |
+          # Landing page at the Pages root (/Investanco/), Flutter web app one
+          # level down (/Investanco/app/), signed APK at the root for download.
+          rm -rf public
+          mkdir -p public/app
+          cp -r site/dist/. public/
+          cp -r build/web/. public/app/
+          cp build/app/outputs/flutter-apk/app-release.apk public/investanco.apk
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web
+          publish_dir: public

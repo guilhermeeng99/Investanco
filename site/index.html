@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <title>Investanco — your portfolio, valued automatically</title>
+    <meta
+      name="description"
+      content="Investanco is an open-source investment portfolio tracker for Web and Android. Enter what you own once; it values your holdings every day from public market data — stocks, funds, crypto and fixed income, no broker login."
+    />
+    <meta property="og:title" content="Investanco — your portfolio, valued automatically" />
+    <meta
+      property="og:description"
+      content="Open-source investment portfolio tracker for Web and Android. Daily valuation from public market data — no broker login, no scraping."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://guilhermeeng99.github.io/Investanco/" />
+    <meta property="og:image" content="https://guilhermeeng99.github.io/Investanco/logo.png" />
+    <meta name="theme-color" content="#00a868" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 border-b border-hairline bg-canvas/85 backdrop-blur">
+      <div class="mx-auto flex h-16 max-w-[1100px] items-center justify-between px-6">
+        <a href="#top" class="flex items-center gap-2.5">
+          <img src="./logo.png" alt="" width="32" height="32" class="h-8 w-8" />
+          <span class="font-display text-heading font-bold tracking-tight text-ink">Investanco</span>
+        </a>
+        <nav class="flex items-center gap-6">
+          <a href="#features" class="hidden font-body text-body-lg font-medium text-ink-soft hover:text-growth sm:inline">Features</a>
+          <a href="#data" class="hidden font-body text-body-lg font-medium text-ink-soft hover:text-growth sm:inline">Data</a>
+          <a
+            href="https://github.com/guilhermeeng99/Investanco"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-body text-body-lg font-medium text-ink-soft hover:text-growth"
+            >GitHub</a
+          >
+          <a
+            href="./app/"
+            class="rounded-pill bg-growth px-5 py-2 font-body text-body-lg font-semibold text-surface transition hover:bg-growth-dark"
+            >Open app</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="relative overflow-hidden">
+        <!-- Soft brand glow orbs — page-only decoration. -->
+        <div aria-hidden="true" class="pointer-events-none absolute -top-28 -right-24 h-96 w-96 rounded-full bg-growth/15 blur-3xl"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute -bottom-32 -left-28 h-96 w-96 rounded-full bg-info/15 blur-3xl"></div>
+
+        <div class="relative mx-auto flex max-w-[1100px] flex-col items-center px-6 pt-24 pb-16 text-center">
+          <span class="rounded-pill border border-hairline bg-surface px-4 py-1 font-body text-body font-semibold text-ink-soft shadow-sm">
+            Open source · Web &amp; Android · Automatic valuation
+          </span>
+          <h1 class="mt-7 max-w-4xl font-display text-display-sm font-bold tracking-tight text-ink md:text-display lg:text-display-lg">
+            Your whole portfolio, valued automatically
+          </h1>
+          <p class="mt-6 max-w-2xl text-subheading text-ink-soft">
+            Investanco tracks what you own — across institutions and asset classes — and values it
+            every day from public market data. No broker login, no scraping. You enter your
+            holdings once; prices, FX and indices update themselves.
+          </p>
+          <div class="mt-10 flex flex-col items-center gap-3 sm:flex-row">
+            <a
+              href="./app/"
+              class="rounded-pill bg-growth px-7 py-3 font-body text-body-lg font-semibold text-surface transition hover:bg-growth-dark hover:-translate-y-0.5"
+              >Open the app</a
+            >
+            <a
+              href="https://github.com/guilhermeeng99/Investanco"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded-pill border border-hairline bg-surface px-7 py-3 font-body text-body-lg font-semibold text-ink transition hover:-translate-y-0.5 hover:border-growth hover:text-growth"
+              >View on GitHub</a
+            >
+          </div>
+          <p class="mt-4 font-body text-body text-ink-soft">Web &amp; Android · free and open source · built with Flutter</p>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="mx-auto max-w-[1100px] px-6 py-16">
+        <div class="mx-auto mb-10 max-w-2xl text-center">
+          <h2 class="font-display text-display-sm font-bold tracking-tight text-ink">Know exactly where your money stands</h2>
+          <p class="mt-3 text-body-lg text-ink-soft">
+            Holdings, valuation, allocation and history — computed for you and synced across web
+            and Android.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-growth-tint text-2xl">📒</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Holdings &amp; records</h3>
+            <p class="text-body-lg text-ink-soft">
+              Institutions, assets and transactions — buy, sell, dividend — one at a time or via
+              bulk CSV import with a review screen.
+            </p>
+          </article>
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-positive-tint text-2xl">📈</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Automatic valuation</h3>
+            <p class="text-body-lg text-ink-soft">
+              Per-holding market value, profit/loss and return, updated daily — including
+              fixed-income accrual (CDI, Selic, prefixed, IPCA+).
+            </p>
+          </article>
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-growth-tint text-2xl">🎯</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Allocation &amp; rebalancing</h3>
+            <p class="text-body-lg text-ink-soft">
+              Set a target percentage per class, see real-vs-target at a glance, and get a
+              rebalancing plan to hit your goals.
+            </p>
+          </article>
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-info-tint text-2xl">🌐</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Multi-asset coverage</h3>
+            <p class="text-body-lg text-ink-soft">
+              BR equities, FIIs, ETFs and BDRs, US equities, crypto and Tesouro Direto — valued
+              from public market data in BRL and USD.
+            </p>
+          </article>
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-growth-tint text-2xl">📅</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Daily snapshots</h3>
+            <p class="text-body-lg text-ink-soft">
+              Daily snapshots of total value, invested and profit/loss build a history you can
+              chart over time.
+            </p>
+          </article>
+          <article class="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="flex h-11 w-11 items-center justify-center rounded-bubble bg-info-tint text-2xl">☁️</span>
+            <h3 class="font-display text-heading font-semibold tracking-tight text-ink">Cloud sync</h3>
+            <p class="text-body-lg text-ink-soft">
+              Firebase Auth (Google) with Firestore as the source of truth and a single-owner
+              lock. A local cache renders instantly and refreshes in the background.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Public market data highlight -->
+      <section id="data" class="border-y border-hairline bg-canvas-deep">
+        <div class="mx-auto max-w-[1100px] px-6 py-16">
+          <div class="mx-auto mb-10 max-w-2xl text-center">
+            <span class="rounded-pill bg-growth/10 px-3 py-1 font-body text-body font-semibold text-growth">Automatic, from public data</span>
+            <h2 class="mt-4 font-display text-display-sm font-bold tracking-tight text-ink">
+              You enter holdings. Investanco does the math.
+            </h2>
+            <p class="mt-4 text-body-lg text-ink-soft">
+              The only manual data is what you own — and that changes rarely. Everything that
+              moves daily (prices, FX, indices) is fetched automatically from public sources. No
+              broker credentials, no scraping, no aggregator.
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">brapi.dev</h3>
+              <p class="text-body text-ink-soft">BR equities, FIIs, ETFs, BDRs</p>
+            </div>
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">Finnhub</h3>
+              <p class="text-body text-ink-soft">US equities &amp; ETFs</p>
+            </div>
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">CoinGecko</h3>
+              <p class="text-body text-ink-soft">Crypto prices (BRL/USD)</p>
+            </div>
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">Tesouro Direto</h3>
+              <p class="text-body text-ink-soft">Government bond prices</p>
+            </div>
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">BCB SGS</h3>
+              <p class="text-body text-ink-soft">CDI / Selic / IPCA series</p>
+            </div>
+            <div class="rounded-card border border-hairline bg-surface p-5 shadow-sm">
+              <h3 class="font-display text-body-lg font-semibold text-ink">AwesomeAPI</h3>
+              <p class="text-body text-ink-soft">USD → BRL exchange rate</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="mx-auto max-w-[1100px] px-6 py-16">
+        <div class="mx-auto mb-10 max-w-2xl text-center">
+          <h2 class="font-display text-display-sm font-bold tracking-tight text-ink">In three steps</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div class="rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="font-display text-display-sm font-bold text-growth">1</span>
+            <h3 class="mt-2 font-display text-heading font-semibold text-ink">Sign in with Google</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Secure login. Firestore is the source of truth and syncs across web and Android.
+            </p>
+          </div>
+          <div class="rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="font-display text-display-sm font-bold text-growth">2</span>
+            <h3 class="mt-2 font-display text-heading font-semibold text-ink">Add your holdings</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Enter institutions, assets and transactions, or bulk-import from CSV. Update only
+              when you buy or sell.
+            </p>
+          </div>
+          <div class="rounded-card border border-hairline bg-surface p-6 shadow-sm">
+            <span class="font-display text-display-sm font-bold text-growth">3</span>
+            <h3 class="mt-2 font-display text-heading font-semibold text-ink">Watch it value itself</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Investanco fetches prices, FX and indices daily and computes value, profit/loss and
+              allocation for you.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why Investanco -->
+      <section class="border-y border-hairline bg-canvas-deep">
+        <div class="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-6 py-16 sm:grid-cols-3">
+          <div class="text-center sm:text-left">
+            <h3 class="font-display text-heading font-semibold text-ink">Open source</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Open code, built in the open. Read the code, audit it, contribute, or run it
+              yourself.
+            </p>
+          </div>
+          <div class="text-center sm:text-left">
+            <h3 class="font-display text-heading font-semibold text-ink">No broker login</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Only your holdings are manual. No broker credentials, no scraping, no aggregator —
+              just public market data.
+            </p>
+          </div>
+          <div class="text-center sm:text-left">
+            <h3 class="font-display text-heading font-semibold text-ink">Multi-asset &amp; multi-currency</h3>
+            <p class="mt-2 text-body-lg text-ink-soft">
+              Stocks, funds, crypto and fixed income across BRL and USD, with FX handled for you.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="mx-auto max-w-[1100px] px-6 py-20 text-center">
+        <h2 class="font-display text-display-sm font-bold tracking-tight text-ink">Start tracking your investments today</h2>
+        <p class="mx-auto mt-3 max-w-xl text-body-lg text-ink-soft">
+          Free and open source, in the browser and on Android.
+        </p>
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href="./app/"
+            class="rounded-pill bg-growth px-8 py-4 font-body text-subheading font-semibold text-surface transition hover:bg-growth-dark hover:-translate-y-0.5"
+            >Open the app</a
+          >
+          <a
+            href="./investanco.apk"
+            class="rounded-pill border border-hairline bg-surface px-8 py-4 font-body text-subheading font-semibold text-ink transition hover:-translate-y-0.5 hover:border-growth hover:text-growth"
+            >Download for Android</a
+          >
+        </div>
+        <p class="mt-4 font-body text-body text-ink-soft">Signed APK, published with every build.</p>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-hairline bg-surface">
+      <div class="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row">
+        <a href="#top" class="flex items-center gap-2.5">
+          <img src="./logo.png" alt="" width="32" height="32" class="h-8 w-8" />
+          <span class="font-display text-body-lg font-bold tracking-tight text-ink">Investanco</span>
+        </a>
+        <p class="font-body text-body text-ink-soft">Open source · Web &amp; Android · built with Flutter</p>
+        <nav class="flex items-center gap-5">
+          <a
+            href="https://github.com/guilhermeeng99/Investanco"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-body text-body-lg font-medium text-ink-soft hover:text-growth"
+            >GitHub</a
+          >
+          <a
+            href="https://www.linkedin.com/in/guigapassos/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-body text-body-lg font-medium text-ink-soft hover:text-growth"
+            >LinkedIn</a
+          >
+        </nav>
+      </div>
+      <div class="pb-8 text-center font-body text-body text-ink-soft">© <span id="year">2026</span> Investanco</div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -8,7 +8,7 @@ and performance using **public market-data APIs** — no broker login, no scrapi
 aggregator. The only manual data is your holdings, which change rarely; everything
 that changes daily (prices, FX, indices) is fetched automatically.
 
-Live web build: https://guilhermeeng99.github.io/Investanco/
+Landing page: https://guilhermeeng99.github.io/Investanco/ — live web app: https://guilhermeeng99.github.io/Investanco/app/
 
 ## Why this design
 

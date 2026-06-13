@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Investanco landing-page tokens — mirror the app's light palette from
+   lib/app/theme/app_colors.dart (AppColors.light). Growth-green primary with a
+   blue secondary and the gain/loss accents the app uses for performance. Clean,
+   light surface; soft green-tinted shadows ground floating cards. */
+@theme {
+  /* Surfaces & ink (AppColors.light) */
+  --color-canvas: #f4f7f5; /* background */
+  --color-canvas-deep: #eaf0ec; /* surfaceVariant */
+  --color-surface: #ffffff;
+  --color-ink: #14181b; /* onBackground */
+  --color-ink-soft: #5f6b66; /* onBackgroundLight */
+  --color-hairline: #dde6e0;
+
+  /* Brand — growth green */
+  --color-growth: #00a868; /* primary / seed */
+  --color-growth-light: #2ecc8f; /* primaryLight */
+  --color-growth-dark: #007a4d; /* primaryDark */
+  --color-growth-tint: #e6f5ee; /* faint green fill for cards */
+
+  /* Secondary — informational blue */
+  --color-info: #2f6fed; /* secondary */
+  --color-info-tint: #e8effd;
+
+  /* Performance accents */
+  --color-positive: #1b873f; /* gains */
+  --color-positive-tint: #e6f3ea;
+  --color-negative: #d32f2f; /* losses */
+  --color-negative-tint: #fbeaea;
+  --color-neutral: #6b7280;
+  --color-warning: #f59e0b;
+
+  /* Type families — Poppins (display) + Inter (body), shared with the Financo
+     site for a consistent sibling identity. Loaded via the Google Fonts link. */
+  --font-display: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+
+  /* Type scale (poster-scaled for the web hero) */
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+  --text-body: 14px;
+  --text-body--line-height: 1.6;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.6;
+  --text-subheading: 19px;
+  --text-subheading--line-height: 1.55;
+  --text-heading: 24px;
+  --text-heading--line-height: 1.3;
+  --text-display-sm: 34px;
+  --text-display-sm--line-height: 1.15;
+  --text-display: 52px;
+  --text-display--line-height: 1.05;
+  --text-display-lg: 72px;
+  --text-display-lg--line-height: 1.02;
+
+  /* Radius */
+  --radius-card: 16px;
+  --radius-bubble: 24px;
+  --radius-pill: 999px;
+
+  /* Elevation — soft green-tinted shadows that only ground floating cards */
+  --shadow-sm: 0 1px 2px rgba(20, 24, 27, 0.04), 0 4px 12px rgba(0, 168, 104, 0.07);
+  --shadow-card: 0 2px 6px rgba(20, 24, 27, 0.05), 0 18px 40px rgba(0, 168, 104, 0.1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-body-lg);
+    line-height: 1.6;
+  }
+}
